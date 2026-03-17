@@ -1,61 +1,107 @@
 <!DOCTYPE html>
-<html>
+<html lang="he" dir="rtl">
 <head>
-    <title>Upload to Drive</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מעלה קבצים מהיר</title>
+    <style>
+        :root { --primary: #007bff; --bg: #f8f9fa; }
+        body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); display: flex; justify-content: center; padding-top: 50px; margin: 0; }
+        .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); width: 100%; max-width: 400px; text-align: center; }
+        input, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; font-size: 15px; }
+        button { background: var(--primary); color: white; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        button:hover { opacity: 0.9; }
+        button:disabled { background: #ccc; }
+        .status { margin-top: 15px; font-size: 14px; color: #555; min-height: 20px; }
+        .hidden { display: none; }
+    </style>
 </head>
 <body>
-    <h2>העלאת קבצים ל-Google Drive</h2>
-    <button id="auth_button">התחבר לגוגל</button>
-    <input type="file" id="file_picker" style="display:none;">
-    <p id="status"></p>
 
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script>
-        let tokenClient;
-        let accessToken = null;
+<div class="card">
+    <h2>העלאה לדרייב מקישור</h2>
+    
+    <div id="login-section">
+        <p>יש להתחבר כדי לאפשר העלאה</p>
+        <button id="btn-login">התחברות לגוגל</button>
+    </div>
 
-        // הגדרת הלקוח
-        function gapiLoaded() {
-            tokenClient = google.accounts.oauth2.initTokenClient({
-                client_id: '35488533313-r07s467bb6lnd03bb03iqif0eroq6jcl.apps.googleusercontent.com',
-                scope: 'https://www.googleapis.com/auth/drive.file',
-                callback: (tokenResponse) => {
-                    accessToken = tokenResponse.access_token;
-                    document.getElementById('file_picker').style.display = 'block';
-                    document.getElementById('status').innerText = "מחובר בהצלחה!";
-                },
-            });
-        }
+    <div id="upload-section" class="hidden">
+        <input type="text" id="url-input" placeholder="הדבק כאן את הקישור (URL)">
+        <button id="btn-upload">התחל העלאה מהירה</button>
+        <div class="status" id="msg">מוכן להעלאה</div>
+    </div>
+</div>
 
-        document.getElementById('auth_button').onclick = () => {
-            tokenClient.requestAccessToken();
-        };
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+    let tokenClient;
+    let accessToken = null;
 
-        document.getElementById('file_picker').onchange = (e) => {
-            const file = e.target.files[0];
-            uploadFile(file);
-        };
+    // ה-Client ID שיצרת ב-Google Cloud (מסוג Web Application)
+    const CLIENT_ID = '35488533313-r07s467bb6lnd03bb03iqif0eroq6jcl.apps.googleusercontent.com'; 
 
-        async function uploadFile(file) {
-            const metadata = {
-                name: file.name,
-                mimeType: file.type,
-            };
+    function initGapi() {
+        tokenClient = google.accounts.oauth2.initTokenClient({
+            client_id: CLIENT_ID,
+            scope: 'https://www.googleapis.com/auth/drive.file',
+            callback: (res) => {
+                accessToken = res.access_token;
+                document.getElementById('login-section').classList.add('hidden');
+                document.getElementById('upload-section').classList.remove('hidden');
+            },
+        });
+    }
 
-            const formData = new FormData();
-            formData.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-            formData.append('file', file);
+    document.getElementById('btn-login').onclick = () => tokenClient.requestAccessToken();
 
-            fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
-                method: 'POST',
-                headers: new Headers({ 'Authorization': 'Bearer ' + accessToken }),
-                body: formData,
-            }).then(res => res.json()).then(val => {
-                document.getElementById('status').innerText = "הקובץ הועלה בהצלחה! מזהה: " + val.id;
-            });
-        }
+    document.getElementById('btn-upload').onclick = async () => {
+        const url = document.getElementById('url-input').value;
+        if (!url) return;
+
+        const msg = document.getElementById('msg');
+        const btn = document.getElementById('btn-upload');
         
-        window.onload = gapiLoaded;
-    </script>
+        msg.innerText = "⏳ מושך נתונים מהקישור...";
+        btn.disabled = true;
+
+        try {
+            // שלב 1: הורדת הקובץ לזיכרון הדפדפן
+            const response = await fetch(url);
+            if (!response.ok) throw new Error("לא ניתן לגשת לקישור");
+            
+            const blob = await response.blob();
+            const name = url.split('/').pop().split('?')[0] || "file_" + Date.now();
+
+            msg.innerText = "📤 מעלה ל-Google Drive...";
+
+            // שלב 2: העלאה לדרייב
+            const metadata = { name: name, mimeType: blob.type };
+            const form = new FormData();
+            form.append('metadata', new Blob([JSON.stringify(metadata)], {type: 'application/json'}));
+            form.append('file', blob);
+
+            const uploadRes = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + accessToken },
+                body: form
+            });
+
+            if (uploadRes.ok) {
+                msg.innerHTML = "<b style='color:green'>✅ הסתיים בהצלחה!</b>";
+                document.getElementById('url-input').value = "";
+            } else {
+                throw new Error("שגיאה בהעלאה");
+            }
+        } catch (err) {
+            msg.innerHTML = "<b style='color:red'>❌ שגיאה: " + err.message + "</b>";
+        } finally {
+            btn.disabled = false;
+        }
+    };
+
+    window.onload = initGapi;
+</script>
+
 </body>
 </html>
