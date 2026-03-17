@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload to Drive</title>
+</head>
+<body>
+    <h2>העלאת קבצים ל-Google Drive</h2>
+    <button id="auth_button">התחבר לגוגל</button>
+    <input type="file" id="file_picker" style="display:none;">
+    <p id="status"></p>
+
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script>
+        let tokenClient;
+        let accessToken = null;
+
+        // הגדרת הלקוח
+        function gapiLoaded() {
+            tokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: 'AIzaSyDO1Pj-QNvBesioGtYBIdsENN3Gzy52dn0.apps.googleusercontent.com',
+                scope: 'https://www.googleapis.com/auth/drive.file',
+                callback: (tokenResponse) => {
+                    accessToken = tokenResponse.access_token;
+                    document.getElementById('file_picker').style.display = 'block';
+                    document.getElementById('status').innerText = "מחובר בהצלחה!";
+                },
+            });
+        }
+
+        document.getElementById('auth_button').onclick = () => {
+            tokenClient.requestAccessToken();
+        };
+
+        document.getElementById('file_picker').onchange = (e) => {
+            const file = e.target.files[0];
+            uploadFile(file);
+        };
+
+        async function uploadFile(file) {
+            const metadata = {
+                name: file.name,
+                mimeType: file.type,
+            };
+
+            const formData = new FormData();
+            formData.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+            formData.append('file', file);
+
+            fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+                method: 'POST',
+                headers: new Headers({ 'Authorization': 'Bearer ' + accessToken }),
+                body: formData,
+            }).then(res => res.json()).then(val => {
+                document.getElementById('status').innerText = "הקובץ הועלה בהצלחה! מזהה: " + val.id;
+            });
+        }
+        
+        window.onload = gapiLoaded;
+    </script>
+</body>
+</html>
