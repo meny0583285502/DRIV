@@ -2,88 +2,120 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>מעלה קבצים עוקף חסימות</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drive & Mail Transfer</title>
     <style>
-        body { font-family: sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding: 40px; }
-        .card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 400px; text-align: center; }
-        input, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; }
-        button { background: #007bff; color: white; border: none; cursor: pointer; font-weight: bold; }
+        :root { --primary: #007bff; --success: #28a745; --bg: #f4f7f9; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .card { background: white; padding: 30px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 450px; text-align: center; }
+        h2 { color: #333; margin-bottom: 20px; }
+        input[type="text"] { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        .options { text-align: right; margin: 15px 0; font-size: 14px; color: #555; }
+        button { width: 100%; padding: 14px; border: none; border-radius: 8px; background: var(--primary); color: white; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 16px; }
+        button:hover { opacity: 0.9; transform: translateY(-1px); }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        #status { margin-top: 20px; font-size: 14px; min-height: 20px; line-height: 1.5; }
         .hidden { display: none; }
-        #status { font-size: 14px; color: #666; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2>העלאה מהירה לדרייב</h2>
-    <div id="login-area">
-        <button id="btn-login">שלב 1: התחברות לגוגל</button>
+    <h2>מעביר קבצים חכם</h2>
+    
+    <div id="auth-section">
+        <p>יש להתחבר כדי להתחיל</p>
+        <button id="btn-login">התחברות לגוגל</button>
     </div>
-    <div id="upload-area" class="hidden">
-        <input type="text" id="url-input" placeholder="הדבק כאן קישור לקובץ">
-        <button id="btn-upload">שלב 2: העבר לדרייב</button>
-        <div id="status">מחובר ומוכן</div>
+
+    <div id="main-section" class="hidden">
+        <input type="text" id="url-input" placeholder="הדבק קישור (תומך גם בקישורי דרייב)">
+        
+        <div class="options">
+            <label>
+                <input type="checkbox" id="send-email" checked> 
+                שלח לי מייל אישור כשההעלאה מסתיימת
+            </label>
+        </div>
+
+        <button id="btn-action">התחל העברה לענן</button>
+        <div id="status">מחובר ומוכן לעבודה</div>
     </div>
 </div>
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
-    let tokenClient;
     let accessToken = null;
+    let tokenClient;
 
-    // --- הגדרות חשובות ---
+    // --- הגדרות - תחליף כאן! ---
     const CLIENT_ID = '35488533313-r07s467bb6lnd03bb03iqif0eroq6jcl.apps.googleusercontent.com'; 
-    const WORKER_URL = 'https://wandering-boat-c837.meny85502.workers.dev'; 
-    // ----------------------
+    const WORKER_URL = 'https://wandering-boat-c837.meny85502.workers.dev/'; 
 
-    function init() {
+    function initGapi() {
         tokenClient = google.accounts.oauth2.initTokenClient({
             client_id: CLIENT_ID,
-            scope: 'https://www.googleapis.com/auth/drive.file',
-            callback: (res) => {
-                accessToken = res.access_token;
-                document.getElementById('login-area').className = 'hidden';
-                document.getElementById('upload-area').className = '';
+            scope: 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/gmail.send',
+            callback: (tokenResponse) => {
+                accessToken = tokenResponse.access_token;
+                document.getElementById('auth-section').classList.add('hidden');
+                document.getElementById('main-section').classList.remove('hidden');
             },
         });
     }
 
     document.getElementById('btn-login').onclick = () => tokenClient.requestAccessToken();
 
-    document.getElementById('btn-upload').onclick = async () => {
-        const fileUrl = document.getElementById('url-input').value;
-        const status = document.getElementById('status');
-        if (!fileUrl) return;
+    // פונקציה להמרת קישורי גוגל דרייב להורדה ישירה
+    function convertDriveUrl(url) {
+        if (url.includes('drive.google.com')) {
+            const match = url.match(/\/d\/(.+?)\/(view|edit|usp)/) || url.match(/id=(.+?)(&|$)/);
+            if (match && match[1]) {
+                return `https://docs.google.com/uc?export=download&id=${match[1]}`;
+            }
+        }
+        return url;
+    }
 
-        status.innerText = "⏳ הענן מושך את הקובץ...";
+    document.getElementById('btn-action').onclick = async () => {
+        let rawUrl = document.getElementById('url-input').value;
+        if (!rawUrl) return alert("נא להזין קישור");
+
+        const targetUrl = convertDriveUrl(rawUrl);
+        const shouldSendEmail = document.getElementById('send-email').checked;
+        const status = document.getElementById('status');
+        const btn = document.getElementById('btn-action');
+
+        status.innerHTML = "⏳ שולח פקודה לענן (Server-to-Server)...";
+        btn.disabled = true;
 
         try {
-            // משתמש בוורקר כדי לעקוף את החסימה של המחשב והדפדפן
-            const response = await fetch(`${WORKER_URL}?url=${encodeURIComponent(fileUrl)}`);
-            const blob = await response.blob();
-            const fileName = fileUrl.split('/').pop().split('?')[0] || 'file';
-
-            status.innerText = "📤 מעלה לגוגל דרייב...";
-
-            const metadata = { name: fileName, mimeType: blob.type };
-            const form = new FormData();
-            form.append('metadata', new Blob([JSON.stringify(metadata)], {type: 'application/json'}));
-            form.append('file', blob);
-
-            const upRes = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+            const response = await fetch(WORKER_URL, {
                 method: 'POST',
-                headers: { 'Authorization': 'Bearer ' + accessToken },
-                body: form
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    url: targetUrl,
+                    fileName: "Uploaded_File_" + Date.now(),
+                    accessToken: accessToken,
+                    sendEmail: shouldSendEmail
+                })
             });
 
-            if (upRes.ok) status.innerHTML = "<b style='color:green'>✅ הצלחה! הקובץ בדרייב.</b>";
-            else throw new Error("נכשל בהעלאה");
-        } catch (e) {
-            status.innerHTML = "<b style='color:red'>❌ שגיאה: " + e.message + "</b>";
+            const result = await response.json();
+
+            if (result.error) throw new Error(result.error);
+            
+            status.innerHTML = "<b style='color:green'>✅ הקובץ הועבר בהצלחה!</b>";
+            if (shouldSendEmail) status.innerHTML += "<br>📧 מייל אישור נשלח אליך.";
+            
+        } catch (err) {
+            status.innerHTML = "<b style='color:red'>❌ שגיאה: " + err.message + "</b>";
+        } finally {
+            btn.disabled = false;
         }
     };
 
-    window.onload = init;
+    window.onload = initGapi;
 </script>
 </body>
 </html>
