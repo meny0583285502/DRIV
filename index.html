@@ -2,34 +2,27 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>מעלה קבצים מהיר</title>
+    <title>מעלה קבצים עוקף חסימות</title>
     <style>
-        :root { --primary: #007bff; --bg: #f8f9fa; }
-        body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); display: flex; justify-content: center; padding-top: 50px; margin: 0; }
-        .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); width: 100%; max-width: 400px; text-align: center; }
-        input, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; font-size: 15px; }
-        button { background: var(--primary); color: white; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; }
-        button:hover { opacity: 0.9; }
-        button:disabled { background: #ccc; }
-        .status { margin-top: 15px; font-size: 14px; color: #555; min-height: 20px; }
+        body { font-family: sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding: 40px; }
+        .card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 400px; text-align: center; }
+        input, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; }
+        button { background: #007bff; color: white; border: none; cursor: pointer; font-weight: bold; }
         .hidden { display: none; }
+        #status { font-size: 14px; color: #666; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2>העלאה לדרייב מקישור</h2>
-    
-    <div id="login-section">
-        <p>יש להתחבר כדי לאפשר העלאה</p>
-        <button id="btn-login">התחברות לגוגל</button>
+    <h2>העלאה מהירה לדרייב</h2>
+    <div id="login-area">
+        <button id="btn-login">שלב 1: התחברות לגוגל</button>
     </div>
-
-    <div id="upload-section" class="hidden">
-        <input type="text" id="url-input" placeholder="הדבק כאן את הקישור (URL)">
-        <button id="btn-upload">התחל העלאה מהירה</button>
-        <div class="status" id="msg">מוכן להעלאה</div>
+    <div id="upload-area" class="hidden">
+        <input type="text" id="url-input" placeholder="הדבק כאן קישור לקובץ">
+        <button id="btn-upload">שלב 2: העבר לדרייב</button>
+        <div id="status">מחובר ומוכן</div>
     </div>
 </div>
 
@@ -38,17 +31,19 @@
     let tokenClient;
     let accessToken = null;
 
-    // ה-Client ID שיצרת ב-Google Cloud (מסוג Web Application)
+    // --- הגדרות חשובות ---
     const CLIENT_ID = '35488533313-r07s467bb6lnd03bb03iqif0eroq6jcl.apps.googleusercontent.com'; 
+    const WORKER_URL = 'https://wandering-boat-c837.meny85502.workers.dev'; 
+    // ----------------------
 
-    function initGapi() {
+    function init() {
         tokenClient = google.accounts.oauth2.initTokenClient({
             client_id: CLIENT_ID,
             scope: 'https://www.googleapis.com/auth/drive.file',
             callback: (res) => {
                 accessToken = res.access_token;
-                document.getElementById('login-section').classList.add('hidden');
-                document.getElementById('upload-section').classList.remove('hidden');
+                document.getElementById('login-area').className = 'hidden';
+                document.getElementById('upload-area').className = '';
             },
         });
     }
@@ -56,52 +51,39 @@
     document.getElementById('btn-login').onclick = () => tokenClient.requestAccessToken();
 
     document.getElementById('btn-upload').onclick = async () => {
-        const url = document.getElementById('url-input').value;
-        if (!url) return;
+        const fileUrl = document.getElementById('url-input').value;
+        const status = document.getElementById('status');
+        if (!fileUrl) return;
 
-        const msg = document.getElementById('msg');
-        const btn = document.getElementById('btn-upload');
-        
-        msg.innerText = "⏳ מושך נתונים מהקישור...";
-        btn.disabled = true;
+        status.innerText = "⏳ הענן מושך את הקובץ...";
 
         try {
-            // שלב 1: הורדת הקובץ לזיכרון הדפדפן
-            const response = await fetch(url);
-            if (!response.ok) throw new Error("לא ניתן לגשת לקישור");
-            
+            // משתמש בוורקר כדי לעקוף את החסימה של המחשב והדפדפן
+            const response = await fetch(`${WORKER_URL}?url=${encodeURIComponent(fileUrl)}`);
             const blob = await response.blob();
-            const name = url.split('/').pop().split('?')[0] || "file_" + Date.now();
+            const fileName = fileUrl.split('/').pop().split('?')[0] || 'file';
 
-            msg.innerText = "📤 מעלה ל-Google Drive...";
+            status.innerText = "📤 מעלה לגוגל דרייב...";
 
-            // שלב 2: העלאה לדרייב
-            const metadata = { name: name, mimeType: blob.type };
+            const metadata = { name: fileName, mimeType: blob.type };
             const form = new FormData();
             form.append('metadata', new Blob([JSON.stringify(metadata)], {type: 'application/json'}));
             form.append('file', blob);
 
-            const uploadRes = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+            const upRes = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
                 method: 'POST',
                 headers: { 'Authorization': 'Bearer ' + accessToken },
                 body: form
             });
 
-            if (uploadRes.ok) {
-                msg.innerHTML = "<b style='color:green'>✅ הסתיים בהצלחה!</b>";
-                document.getElementById('url-input').value = "";
-            } else {
-                throw new Error("שגיאה בהעלאה");
-            }
-        } catch (err) {
-            msg.innerHTML = "<b style='color:red'>❌ שגיאה: " + err.message + "</b>";
-        } finally {
-            btn.disabled = false;
+            if (upRes.ok) status.innerHTML = "<b style='color:green'>✅ הצלחה! הקובץ בדרייב.</b>";
+            else throw new Error("נכשל בהעלאה");
+        } catch (e) {
+            status.innerHTML = "<b style='color:red'>❌ שגיאה: " + e.message + "</b>";
         }
     };
 
-    window.onload = initGapi;
+    window.onload = init;
 </script>
-
 </body>
 </html>
