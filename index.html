@@ -38,7 +38,7 @@
     // 1. פונקציית האתחול - חייבת להופיע לפני טעינת הסקריפט של גוגל
     function initClient() {
         tokenClient = google.accounts.oauth2.initTokenClient({
-            client_id: '785055376161-l86l773uup6tqf8h6f0g5p09p4f0p0p0.apps.googleusercontent.com', // וודא שזה ה-ID שלך
+              const CLIENT_ID = '35488533313-r07s467bb6lnd03bb03iqif0eroq6jcl.apps.googleusercontent.com', // וודא שזה ה-ID שלך
             scope: 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/gmail.send',
             callback: (tokenResponse) => {
                 if (tokenResponse && tokenResponse.access_token) {
