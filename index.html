@@ -3,96 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Drive & Mail Transfer</title>
+    <title>מעביר קבצים חכם</title>
     <style>
-        :root { --primary: #007bff; --success: #28a745; --bg: #f4f7f9; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .card { background: white; padding: 30px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 450px; text-align: center; }
-        h2 { color: #333; margin-bottom: 20px; }
-        input[type="text"] { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        .options { text-align: right; margin: 15px 0; font-size: 14px; color: #555; }
-        button { width: 100%; padding: 14px; border: none; border-radius: 8px; background: var(--primary); color: white; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 16px; }
-        button:hover { opacity: 0.9; transform: translateY(-1px); }
-        button:disabled { background: #ccc; cursor: not-allowed; }
-        #status { margin-top: 20px; font-size: 14px; min-height: 20px; line-height: 1.5; }
+        body { font-family: system-ui, -apple-system, sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .card { background: white; padding: 2rem; border-radius: 1rem; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
+        input { width: 100%; padding: 0.8rem; margin: 1rem 0; border: 1px solid #ccc; border-radius: 0.5rem; box-sizing: border-box; }
+        button { width: 100%; padding: 0.8rem; background: #007bff; color: white; border: none; border-radius: 0.5rem; cursor: pointer; font-weight: bold; font-size: 1rem; }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #ccc; }
+        #status { margin-top: 1rem; font-size: 0.9rem; color: #555; }
         .hidden { display: none; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2>מעביר קבצים חכם</h2>
+    <h2>מעביר קבצים לענן</h2>
     
-    <div id="auth-section">
-        <p>יש להתחבר כדי להתחיל</p>
+    <div id="login-section">
+        <p>התחבר לחשבון גוגל כדי להמשיך</p>
         <button id="btn-login">התחברות לגוגל</button>
     </div>
 
-    <div id="main-section" class="hidden">
-        <input type="text" id="url-input" placeholder="הדבק קישור (תומך גם בקישורי דרייב)">
-        
-        <div class="options">
-            <label>
-                <input type="checkbox" id="send-email" checked> 
-                שלח לי מייל אישור כשההעלאה מסתיימת
-            </label>
-        </div>
-
-        <button id="btn-action">התחל העברה לענן</button>
-        <div id="status">מחובר ומוכן לעבודה</div>
+    <div id="upload-section" class="hidden">
+        <input type="text" id="url-input" placeholder="הדבק קישור כאן">
+        <label style="display: block; margin-bottom: 1rem; font-size: 0.9rem;">
+            <input type="checkbox" id="send-email" checked> שלח לי מייל אישור
+        </label>
+        <button id="btn-upload">התחל העברה לענן</button>
     </div>
+
+    <div id="status"></div>
 </div>
 
-<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://accounts.google.com/gsi/client" onload="initClient()"></script>
+
 <script>
-    'https://wandering-boat-c837.meny85502.workers.dev/'; 
+    let tokenClient;
+    let accessToken = null;
 
-  let tokenClient;
-let accessToken = null;
+    // --- הגדרות ---
+      const CLIENT_ID = '35488533313-r07s467bb6lnd03bb03iqif0eroq6jcl.apps.googleusercontent.com'; 
+    const WORKER_URL = 'https://wandering-boat-c837.meny85502.workers.dev/'; 
 
-const CLIENT_ID = '35488533313-r07s467bb6lnd03bb03iqif0eroq6jcl.apps.googleusercontent.com' // וודא שזה נכון!
-const WORKER_URL = 'https://wandering-boat-c837.meny85502.workers.dev/';
-
-function init() {
-    tokenClient = google.accounts.oauth2.initTokenClient({
-        client_id: CLIENT_ID,
-        scope: 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/gmail.send',
-        callback: (res) => {
-            if (res.error) return;
-            accessToken = res.access_token;
-            document.getElementById('auth-section').classList.add('hidden');
-            document.getElementById('main-section').classList.remove('hidden');
-        },
-    });
-}
-
-document.getElementById('btn-login').onclick = () => {
-    tokenClient.requestAccessToken();
-};
-
-document.getElementById('btn-action').onclick = async () => {
-    const url = document.getElementById('url-input').value;
-    if (!url || !accessToken) return;
-
-    const status = document.getElementById('status');
-    status.innerText = "⏳ מעביר לתיקיית 'ההורדות שלי'...";
-
-    try {
-        const response = await fetch(WORKER_URL, {
-            method: 'POST',
-            body: JSON.stringify({
-                url: url,
-                fileName: "קובץ_" + Date.now(),
-                accessToken: accessToken,
-                sendEmail: document.getElementById('send-email').checked
-            })
-        });
-        const resData = await response.json();
-        if (resData.id) status.innerHTML = "<b style='color:green'>✅ הצלחה! הקובץ בתיקייה ומייל נשלח.</b>";
-        else throw new Error(resData.error || "שגיאה לא ידועה");
-    } catch (e) {
-        status.innerText = "❌ שגיאה: " + e.message;
+    // פונקציה שנקראת כשהספריה של גוגל נטענת
+    function initClient() {
+        try {
+            tokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: CLIENT_ID,
+                scope: 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/gmail.send',
+                callback: (res) => {
+                    if (res.access_token) {
+                        accessToken = res.access_token;
+                        document.getElementById('login-section').classList.add('hidden');
+                        document.getElementById('upload-section').classList.remove('hidden');
+                        document.getElementById('status').innerText = "✅ מחובר בהצלחה";
+                    }
+                },
+            });
+        } catch (e) {
+            console.error("שגיאה באתחול גוגל:", e);
+        }
     }
-};
 
-window.onload = init;
+    // לחיצה על כפתור התחברות
+    document.getElementById('btn-login').onclick = () => {
+        if (tokenClient) {
+            tokenClient.requestAccessToken();
+        } else {
+            alert("הספריה של גוגל עדיין נטענת, נסה שוב בעוד רגע");
+        }
+    };
+
+    // לחיצה על כפתור העלאה
+    document.getElementById('btn-upload').onclick = async () => {
+        const url = document.getElementById('url-input').value;
+        if (!url) return alert("נא להזין קישור");
+
+        const status = document.getElementById('status');
+        const btn = document.getElementById('btn-upload');
+        
+        status.innerText = "⏳ העברה מתבצעת בענן (זה עשוי לקחת דקה)...";
+        btn.disabled = true;
+
+        try {
+            const response = await fetch(WORKER_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    url: url,
+                    fileName: "הורדה_" + Date.now(),
+                    accessToken: accessToken,
+                    sendEmail: document.getElementById('send-email').checked
+                })
+            });
+
+            const data = await response.json();
+            if (data.id) {
+                status.innerHTML = "<b style='color:green'>✅ הקובץ הועבר לתיקייה 'ההורדות שלי'!</b>";
+            } else {
+                throw new Error(data.error || "שגיאה בשרת");
+            }
+        } catch (e) {
+            status.innerHTML = "<b style='color:red'>❌ שגיאה: " + e.message + "</b>";
+        } finally {
+            btn.disabled = false;
+        }
+    };
+</script>
+
+</body>
+</html>
