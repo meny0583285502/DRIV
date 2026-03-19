@@ -2,83 +2,90 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>מעביר קבצים לענן</title>
+    <title>מערכת שליטה חכמה</title>
     <style>
-        body { font-family: system-ui, sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .card { background: white; padding: 2rem; border-radius: 1rem; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 350px; text-align: center; }
-        input { width: 100%; padding: 0.8rem; margin: 1rem 0; border: 1px solid #ccc; border-radius: 0.5rem; box-sizing: border-box; }
+        body { font-family: system-ui, sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding: 20px; }
+        .container { width: 100%; max-width: 500px; }
+        .card { background: white; padding: 1.5rem; border-radius: 1rem; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        h3 { margin-top: 0; color: #007bff; border-bottom: 2px solid #f0f2f5; padding-bottom: 10px; }
+        input { width: 100%; padding: 0.8rem; margin: 10px 0; border: 1px solid #ccc; border-radius: 0.5rem; box-sizing: border-box; }
         button { width: 100%; padding: 0.8rem; background: #007bff; color: white; border: none; border-radius: 0.5rem; cursor: pointer; font-weight: bold; }
+        button:hover { background: #0056b3; }
+        .status { margin-top: 10px; font-size: 0.85rem; color: #555; min-height: 1.2rem; }
         .hidden { display: none; }
-        #status { margin-top: 1rem; font-size: 0.9rem; white-space: pre-wrap; }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h2>מעביר קבצים לענן</h2>
-    <div id="login-section">
+<div class="container">
+    <div id="login-section" class="card">
+        <h2>מערכת אישית</h2>
         <button id="btn-login">התחברות לגוגל</button>
     </div>
-    <div id="upload-section" class="hidden">
-        <input type="text" id="url-input" placeholder="הדבק קישור כאן">
-        <label><input type="checkbox" id="send-email" checked> שלח מייל אישור</label>
-        <button id="btn-upload">התחל העברה לענן</button>
+
+    <div id="main-sections" class="hidden">
+        <div class="card">
+            <h3>📂 העלאת קובץ לדרייב</h3>
+            <input type="text" id="file-url" placeholder="הדבק קישור לקובץ (PDF, תמונה וכו')">
+            <button onclick="processAction('file', 'file-url', 'status-file')">שלח לדרייב ולמייל</button>
+            <div id="status-file" class="status"></div>
+        </div>
+
+        <div class="card">
+            <h3>📖 חיפוש בוויקיפדיה</h3>
+            <input type="text" id="wiki-query" placeholder="הכנס ערך (למשל: ירושלים)">
+            <button onclick="processAction('wiki', 'wiki-query', 'status-wiki')" style="background: #28a745;">שלח ערך למייל</button>
+            <div id="status-wiki" class="status"></div>
+        </div>
+
+        <div class="card">
+            <h3>🔍 חיפוש מהיר בגוגל</h3>
+            <input type="text" id="google-query" placeholder="מה תרצה לחפש?">
+            <button onclick="processAction('search', 'google-query', 'status-search')" style="background: #6f42c1;">שלח תוצאות למייל</button>
+            <div id="status-search" class="status"></div>
+        </div>
     </div>
-    <div id="status">טוען מערכת...</div>
 </div>
 
+<script src="https://accounts.google.com/gsi/client" onload="initClient()"></script>
 <script>
     let tokenClient;
     let accessToken = null;
-
-    // הגדרות - אל תשנה כאן כלום!
-    const MY_CLIENT_ID = '35488533313-r07s467bb6lnd03bb03iqif0eroq6jcl.apps.googleusercontent.com';
-    const MY_WORKER_URL = 'https://wandering-boat-c837.meny85502.workers.dev/';
+    const CLIENT_ID = '35488533313-r07s467bb6lnd03bb03iqif0eroq6jcl.apps.googleusercontent.com';
+    const WORKER_URL = 'https://wandering-boat-c837.meny85502.workers.dev/';
 
     function initClient() {
         tokenClient = google.accounts.oauth2.initTokenClient({
-            client_id: MY_CLIENT_ID,
+            client_id: CLIENT_ID,
             scope: 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/gmail.send',
             callback: (res) => {
-                if (res.access_token) {
-                    accessToken = res.access_token;
-                    document.getElementById('login-section').classList.add('hidden');
-                    document.getElementById('upload-section').classList.remove('hidden');
-                    document.getElementById('status').innerText = "✅ מחובר";
-                }
+                accessToken = res.access_token;
+                document.getElementById('login-section').classList.add('hidden');
+                document.getElementById('main-sections').classList.remove('hidden');
             },
         });
-        document.getElementById('status').innerText = "מוכן להתחברות";
     }
 
     document.getElementById('btn-login').onclick = () => tokenClient.requestAccessToken();
 
-    document.getElementById('btn-upload').onclick = async () => {
-        const url = document.getElementById('url-input').value;
-        const status = document.getElementById('status');
-        if (!url) return;
+    async function processAction(type, inputId, statusId) {
+        const val = document.getElementById(inputId).value;
+        const status = document.getElementById(statusId);
+        if (!val) return;
 
-        status.innerText = "⏳ העברה מתבצעת שרת-אל-שרת...";
-        
+        status.innerText = "⏳ מעבד בקשה...";
         try {
-            const response = await fetch(MY_WORKER_URL, {
+            const res = await fetch(WORKER_URL, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    url: url,
-                    fileName: "הורדה_" + Date.now(),
-                    accessToken: accessToken,
-                    sendEmail: document.getElementById('send-email').checked
-                })
+                body: JSON.stringify({ type, value: val, accessToken })
             });
-            const data = await response.json();
-            if (data.id) status.innerHTML = "<b style='color:green'>✅ הצלחה! הקובץ בתיקייה 'ההורדות שלי' בדרייב.</b>";
-            else status.innerText = "❌ שגיאה: " + (data.error || "תקלה");
+            const data = await res.json();
+            if (data.success) status.innerHTML = "<b style='color:green'>✅ נשלח בהצלחה למייל!</b>";
+            else throw new Error(data.error);
         } catch (e) {
-            status.innerText = "❌ שגיאה בחיבור לענן";
+            status.innerHTML = "<b style='color:red'>❌ שגיאה: " + e.message + "</b>";
         }
-    };
+    }
 </script>
-<script src="https://accounts.google.com/gsi/client" onload="initClient()" async defer></script>
 </body>
 </html>
