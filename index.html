@@ -2,44 +2,51 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>מערכת אישית חכמה</title>
+    <title>מערכת שליטה חכמה - גרסה 2.0</title>
     <style>
         body { font-family: system-ui, sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding: 20px; }
-        .card { background: white; padding: 1.5rem; border-radius: 1rem; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; width: 350px; text-align: center; }
+        .card { background: white; padding: 1.5rem; border-radius: 1rem; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; width: 400px; }
+        h3 { margin-top: 0; color: #007bff; border-bottom: 2px solid #eee; padding-bottom: 10px; }
         input { width: 100%; padding: 0.8rem; margin: 10px 0; border: 1px solid #ccc; border-radius: 0.5rem; box-sizing: border-box; }
         button { width: 100%; padding: 0.8rem; background: #007bff; color: white; border: none; border-radius: 0.5rem; cursor: pointer; font-weight: bold; }
+        button:hover { background: #0056b3; }
+        .status { margin-top: 10px; font-size: 0.85rem; min-height: 1.2rem; }
         .hidden { display: none; }
-        .status { margin-top: 10px; font-size: 0.85rem; color: #555; }
+        .checkbox-group { margin: 10px 0; font-size: 0.9rem; display: flex; align-items: center; gap: 5px; }
     </style>
 </head>
 <body>
 
 <div id="container">
-    <div id="login-card" class="card">
-        <h2>מערכת אישית</h2>
-        <button id="btn-login">התחברות לגוגל</button>
-        <p id="init-status">טוען ספריות...</p>
+    <div id="login-card" class="card" style="text-align:center">
+        <h2>כניסה למערכת</h2>
+        <button id="btn-login">התחברות מאובטחת לגוגל</button>
+        <p id="init-status" style="font-size:0.8rem; color:gray; margin-top:10px">טוען הגדרות...</p>
     </div>
 
     <div id="main-actions" class="hidden">
         <div class="card">
-            <h3>📂 העלאה לדרייב</h3>
-            <input type="text" id="file-url" placeholder="קישור לקובץ">
-            <button onclick="doAction('file', 'file-url', 's1')">העבר לדרייב ומייל</button>
+            <h3>📂 העלאה לתיקיית "הורדות"</h3>
+            <input type="text" id="file-url" placeholder="הדבק קישור לקובץ">
+            <div class="checkbox-group">
+                <input type="checkbox" id="send-email-file" checked>
+                <label for="send-email-file">שלח לי מייל אישור לאחר ההעלאה</label>
+            </div>
+            <button onclick="doAction('file', 'file-url', 's1', 'send-email-file')">בצע העברה לדרייב</button>
             <div id="s1" class="status"></div>
         </div>
 
         <div class="card">
-            <h3>📖 ויקיפדיה למייל</h3>
-            <input type="text" id="wiki-q" placeholder="ערך לחיפוש">
-            <button onclick="doAction('wiki', 'wiki-q', 's2')" style="background:#28a745">שלח ערך</button>
+            <h3>📖 ויקיפדיה מעוצב למייל</h3>
+            <input type="text" id="wiki-q" placeholder="שם הערך (למשל: תל אביב)">
+            <button onclick="doAction('wiki', 'wiki-q', 's2')" style="background:#28a745">שלח ערך עם תמונות</button>
             <div id="s2" class="status"></div>
         </div>
 
         <div class="card">
-            <h3>🔍 חיפוש גוגל</h3>
-            <input type="text" id="google-q" placeholder="מה לחפש?">
-            <button onclick="doAction('search', 'google-q', 's3')" style="background:#6f42c1">שלח תוצאות</button>
+            <h3>🔍 חיפוש גוגל (עמוד ראשון)</h3>
+            <input type="text" id="google-q" placeholder="מה תרצה למצוא?">
+            <button onclick="doAction('search', 'google-q', 's3')" style="background:#6f42c1">שלח סיכום תוצאות</button>
             <div id="s3" class="status"></div>
         </div>
     </div>
@@ -48,44 +55,45 @@
 <script>
     let client;
     let access_token = null;
+    // Client ID המעודכן שלך
+    const CLIENT_ID = '35488533313-r07s467bb6lnd03bb03iqif0eroq6jcl.apps.googleusercontent.com';
     const WORKER = 'https://wandering-boat-c837.meny85502.workers.dev/';
 
     function initClient() {
         client = google.accounts.oauth2.initTokenClient({
-            client_id: '35488533313-r07s467bb6lnd03bb03iqif0eroq6jcl.apps.googleusercontent.com',
+            client_id: CLIENT_ID,
             scope: 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/gmail.send',
-            callback: (tokenRes) => {
-                access_token = tokenRes.access_token;
+            callback: (res) => {
+                access_token = res.access_token;
                 document.getElementById('login-card').classList.add('hidden');
                 document.getElementById('main-actions').classList.remove('hidden');
             },
         });
-        document.getElementById('init-status').innerText = "מוכן להתחברות ✅";
+        document.getElementById('init-status').innerText = "מוכן ✅";
     }
 
-    document.getElementById('btn-login').onclick = () => {
-        if (client) client.requestAccessToken();
-    };
+    document.getElementById('btn-login').onclick = () => client.requestAccessToken();
 
-    async function doAction(type, inputId, statusId) {
+    async function doAction(type, inputId, statusId, checkId = null) {
         const val = document.getElementById(inputId).value;
         const status = document.getElementById(statusId);
+        const sendEmail = checkId ? document.getElementById(checkId).checked : true;
+        
         if (!val) return;
-
-        status.innerText = "⌛ מעבד...";
+        status.innerHTML = "⏳ בתהליך... מיד תקבל מייל";
+        
         try {
             const res = await fetch(WORKER, {
                 method: 'POST',
-                body: JSON.stringify({ type, value: val, accessToken: access_token })
+                body: JSON.stringify({ type, value: val, accessToken: access_token, sendEmail })
             });
             const data = await res.json();
-            status.innerHTML = data.success ? "<b style='color:green'>✅ בוצע!</b>" : "❌ " + data.error;
+            status.innerHTML = data.success ? "<b style='color:green'>✅ הושלם בהצלחה!</b>" : "<b style='color:red'>❌ שגיאה: " + data.error + "</b>";
         } catch (e) {
-            status.innerText = "❌ תקלה בתקשורת";
+            status.innerHTML = "<b style='color:red'>❌ תקלה בתקשורת</b>";
         }
     }
 </script>
 <script src="https://accounts.google.com/gsi/client" onload="initClient()" async defer></script>
-
 </body>
 </html>
