@@ -8,23 +8,22 @@
         .card { background: white; padding: 1.5rem; border-radius: 1rem; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; width: 100%; max-width: 400px; }
         input { width: 100%; padding: 0.8rem; margin: 10px 0; border: 1px solid #ccc; border-radius: 0.5rem; box-sizing: border-box; }
         button { width: 100%; padding: 0.8rem; background: #007bff; color: white; border: none; border-radius: 0.5rem; cursor: pointer; font-weight: bold; }
-        .status { margin-top: 10px; font-size: 0.85rem; font-weight: bold; }
+        .status { margin-top: 10px; font-size: 0.85rem; font-weight: bold; min-height: 1.2rem; }
         .hidden { display: none; }
     </style>
 </head>
 <body>
-
     <div id="login-section" class="card" style="text-align:center">
         <h2>התחברות למערכת</h2>
         <button id="btn-login">התחבר עם גוגל</button>
-        <p id="init-msg">טוען...</p>
+        <p id="init-msg" style="font-size:0.8rem; color:gray">טוען ספריות...</p>
     </div>
 
     <div id="main-ui" class="hidden">
         <div class="card">
             <h3>📂 העלאה לדרייב</h3>
             <input type="text" id="file-url" placeholder="קישור לקובץ">
-            <label><input type="checkbox" id="file-mail" checked> שלח מייל אישור</label>
+            <label style="font-size:0.9rem"><input type="checkbox" id="file-mail" checked> שלח מייל אישור</label>
             <button onclick="send('file', 'file-url', 'st1', 'file-mail')">בצע העלאה</button>
             <div id="st1" class="status"></div>
         </div>
@@ -47,23 +46,29 @@
 <script>
     let tokenClient;
     let access_token = null;
-    // המפתח המעודכן שלך:
+    let userEmail = "";
     const CLIENT_ID = '35488533313-r07s467bb6lnd03bb03iqif0eroq6jcl.apps.googleusercontent.com';
     const WORKER_URL = 'https://wandering-boat-c837.meny85502.workers.dev/';
 
     function init() {
         tokenClient = google.accounts.oauth2.initTokenClient({
             client_id: CLIENT_ID,
-            scope: 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/gmail.send',
-            callback: (resp) => {
+            scope: 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/userinfo.email',
+            callback: async (resp) => {
                 if (resp.access_token) {
                     access_token = resp.access_token;
+                    // השגת המייל של המשתמש כדי לשלוח אליו
+                    const info = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                        headers: { Authorization: `Bearer ${access_token}` }
+                    });
+                    const userData = await info.json();
+                    userEmail = userData.email;
                     document.getElementById('login-section').classList.add('hidden');
                     document.getElementById('main-ui').classList.remove('hidden');
                 }
             },
         });
-        document.getElementById('init-msg').innerText = "מוכן ✅";
+        document.getElementById('init-msg').innerText = "המערכת מוכנה ✅";
     }
 
     document.getElementById('btn-login').onclick = () => tokenClient.requestAccessToken();
@@ -74,17 +79,17 @@
         const mail = checkId ? document.getElementById(checkId).checked : true;
         if(!val) return;
 
-        status.innerText = "⏳ מעבד...";
+        status.innerHTML = "⏳ מעבד בקשה...";
         try {
             const r = await fetch(WORKER_URL, {
                 method: 'POST',
-                body: JSON.stringify({ type, value: val, accessToken: access_token, sendEmail: mail })
+                body: JSON.stringify({ type, value: val, accessToken: access_token, userEmail: userEmail, sendEmail: mail })
             });
             const data = await r.json();
-            if(data.success) status.innerHTML = "<span style='color:green'>✅ הצליח! בדוק את המייל/דרייב</span>";
+            if(data.success) status.innerHTML = "<span style='color:green'>✅ בוצע בהצלחה!</span>";
             else status.innerHTML = "<span style='color:red'>❌ שגיאה: " + data.error + "</span>";
         } catch(e) {
-            status.innerHTML = "<span style='color:red'>❌ שגיאת תקשורת</span>";
+            status.innerHTML = "<span style='color:red'>❌ תקלה בתקשורת</span>";
         }
     }
 </script>
