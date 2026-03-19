@@ -3,50 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>מערכת חכמה - גרסה 5.0</title>
+    <title>מערכת שליטה אחודה 6.0</title>
     <style>
-        :root { --primary: #007bff; --success: #28a745; --gray: #6c757d; --bg: #f8f9fa; }
+        :root { --primary: #007bff; --success: #28a745; --bg: #f4f7f6; }
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; }
         .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; width: 100%; max-width: 450px; border-top: 5px solid var(--primary); }
-        h3 { margin-top: 0; color: #333; display: flex; align-items: center; gap: 10px; }
+        h3 { margin-top: 0; color: #333; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
         input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; box-sizing: border-box; }
         .btn-group { display: flex; gap: 10px; margin-top: 5px; }
-        button { flex: 1; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; font-size: 0.9rem; }
-        .btn-preview { background: var(--gray); color: white; }
+        button { flex: 1; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; font-size: 0.9rem; }
+        .btn-preview { background: #6c757d; color: white; }
         .btn-send { background: var(--primary); color: white; }
         .btn-drive { background: var(--success); color: white; width: 100%; }
-        button:hover { opacity: 0.9; transform: translateY(-1px); }
-        .status { margin-top: 10px; font-size: 0.85rem; text-align: center; min-height: 20px; font-weight: 500; }
+        button:hover { opacity: 0.9; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        .status { margin-top: 10px; font-size: 0.85rem; text-align: center; min-height: 20px; font-weight: bold; }
         
-        /* מודאל תצוגה מקדימה */
-        #preview-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; box-sizing: border-box; }
-        .modal-content { background: white; padding: 25px; border-radius: 15px; width: 100%; max-width: 600px; max-height: 85vh; overflow-y: auto; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        /* מודאל */
+        #preview-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
+        .modal-content { background: white; padding: 25px; border-radius: 15px; width: 100%; max-width: 600px; max-height: 85vh; overflow-y: auto; position: relative; }
         .close-modal { position: absolute; top: 15px; left: 15px; cursor: pointer; font-size: 30px; color: #999; }
-        .search-item { border-bottom: 1px solid #eee; padding: 15px 0; }
-        .search-item:last-child { border: none; }
-        .search-item a { color: #1a0dab; text-decoration: none; font-weight: bold; font-size: 1.1rem; }
     </style>
 </head>
 <body>
 
     <div id="login-section" class="card" style="text-align:center">
-        <h2>מערכת ניהול תוכן</h2>
-        <p>יש להתחבר כדי להשתמש ביכולות הדרייב והחיפוש</p>
-        <button class="btn-send" onclick="tokenClient.requestAccessToken()" style="padding: 15px; font-size: 1.1rem;">התחברות עם Google</button>
+        <h2>מערכת חכמה</h2>
+        <p>התחבר כדי להתחיל לעבוד</p>
+        <button class="btn-send" id="login-btn" onclick="tokenClient.requestAccessToken()">התחברות עם Google</button>
     </div>
 
     <div id="main-ui" style="display:none">
         
-        <div class="card">
+        <div class="card" style="border-top-color: var(--success);">
             <h3>📂 העלאה לדרייב</h3>
-            <input type="text" id="drive-url" placeholder="הדבק קישור לקובץ (תמונה, PDF וכו')...">
+            <input type="text" id="drive-url" placeholder="קישור לקובץ להעברה...">
+            <label style="font-size: 0.9rem; display: block; margin-bottom: 10px;">
+                <input type="checkbox" id="drive-confirm-mail" checked> שלח מייל אישור בסיום
+            </label>
             <button class="btn-drive" onclick="process('file', 'send', 'drive-url', 'st-drive')">העבר לדרייב שלי</button>
             <div id="st-drive" class="status"></div>
         </div>
 
         <div class="card">
             <h3>📖 ויקיפדיה (ערך מלא)</h3>
-            <input type="text" id="wiki-q" placeholder="חפש ערך (למשל: ירושלים)..." list="wiki-list" oninput="fetchWikiSuggestions(this.value)">
+            <input type="text" id="wiki-q" placeholder="חפש ערך ספציפי..." list="wiki-list" oninput="fetchWikiSug(this.value)">
             <datalist id="wiki-list"></datalist>
             <div class="btn-group">
                 <button class="btn-preview" onclick="process('wiki', 'preview', 'wiki-q', 'st-wiki')">👀 תצוגה מקדימה</button>
@@ -55,23 +56,24 @@
             <div id="st-wiki" class="status"></div>
         </div>
 
-        <div class="card">
+        <div class="card" style="border-top-color: #ffc107;">
             <h3>🔍 חיפוש Google (20 תוצאות)</h3>
-            <input type="text" id="google-q" placeholder="מה תרצה לחפש ברשת?">
+            <input type="text" id="google-q" placeholder="מה תרצה למצוא?">
             <div class="btn-group">
-                <button class="btn-preview" onclick="process('google', 'preview', 'google-q', 'st-google')">👀 הצג 20 תוצאות</button>
-                <button class="btn-send" onclick="process('google', 'send', 'google-q', 'st-google')">📧 שלח הכל למייל</button>
+                <button class="btn-preview" onclick="process('google', 'preview', 'google-q', 'st-google')">👀 הצג רשימה</button>
+                <button class="btn-send" onclick="process('google', 'send', 'google-q', 'st-google')">📧 שלח למייל</button>
             </div>
             <div id="st-google" class="status"></div>
         </div>
+
     </div>
 
     <div id="preview-modal">
-        <div class="modal-content">
+        <div class="modal-content" dir="rtl">
             <span class="close-modal" onclick="closeModal()">×</span>
             <div id="modal-body"></div>
             <hr style="margin: 20px 0;">
-            <button id="modal-send-btn" class="btn-send" style="width:100%; font-size: 1.1rem;">התוכן מעולה, שלח לי אותו למייל</button>
+            <button id="modal-send-btn" class="btn-send" style="width:100%">נראה מצוין, שלח למייל!</button>
         </div>
     </div>
 
@@ -80,80 +82,59 @@
     const CLIENT_ID = '35488533313-r07s467bb6lnd03bb03iqif0eroq6jcl.apps.googleusercontent.com';
     const WORKER_URL = 'https://wandering-boat-c837.meny85502.workers.dev/';
 
-    // אתחול Google Identity
     function init() {
         tokenClient = google.accounts.oauth2.initTokenClient({
             client_id: CLIENT_ID,
             scope: 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/userinfo.email',
             callback: async (res) => {
-                if (res.error) return;
                 access_token = res.access_token;
-                
-                // שליחת פרטי המשתמש
-                const info = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', { 
-                    headers: { Authorization: `Bearer ${access_token}` } 
-                });
+                const info = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', { headers: { Authorization: `Bearer ${access_token}` } });
                 const data = await info.json();
                 userEmail = data.email;
-                
                 document.getElementById('login-section').style.display = 'none';
                 document.getElementById('main-ui').style.display = 'block';
             }
         });
     }
 
-    // הצעות חיפוש מוויקיפדיה תוך כדי הקלדה
-    async function fetchWikiSuggestions(q) {
+    async function fetchWikiSug(q) {
         if (q.length < 2) return;
-        try {
-            const res = await fetch(`https://he.wikipedia.org/w/api.php?action=opensearch&format=json&origin=*&search=${encodeURIComponent(q)}`);
-            const data = await res.json();
-            document.getElementById('wiki-list').innerHTML = data[1].map(item => `<option value="${item}">`).join('');
-        } catch (e) { console.error("Wiki suggestion error", e); }
+        const res = await fetch(`https://he.wikipedia.org/w/api.php?action=opensearch&format=json&origin=*&search=${encodeURIComponent(q)}`);
+        const data = await res.json();
+        document.getElementById('wiki-list').innerHTML = data[1].map(i => `<option value="${i}">`).join('');
     }
 
-    // פונקציית העבודה המרכזית
     async function process(type, mode, inputId, statusId) {
         const val = document.getElementById(inputId).value;
         const status = document.getElementById(statusId);
-        if (!val) { status.innerText = "⚠️ נא להזין ערך"; return; }
+        if (!val) return;
         
-        status.innerHTML = "⏳ מעבד בקשה...";
-
+        status.innerHTML = "⏳ בתהליך...";
         try {
             const response = await fetch(WORKER_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
-                    type, 
-                    value: val, 
-                    mode, 
-                    accessToken: access_token, 
-                    userEmail 
+                    type, value: val, mode, accessToken: access_token, userEmail, 
+                    sendEmail: document.getElementById('drive-confirm-mail')?.checked 
                 })
             });
 
-            // בדיקה אם התגובה היא JSON תקין
-            const text = await response.text();
-            let data;
-            try {
-                data = JSON.parse(text);
-            } catch (e) {
-                throw new Error("השרת החזיר תגובה לא תקינה (לא JSON)");
-            }
+            const data = await response.json();
+            status.innerText = "";
 
-            if (mode === 'preview' && data.success) {
-                showModal(data.html, () => process(type, 'send', inputId, statusId));
-                status.innerText = "";
-            } else if (data.success) {
-                status.innerHTML = "<span style='color:green'>✅ הפעולה הושלמה בהצלחה!</span>";
-                if (mode === 'send') closeModal();
+            if (data.success) {
+                if (mode === 'preview') {
+                    showModal(data.html, () => process(type, 'send', inputId, statusId));
+                } else {
+                    status.innerHTML = "<span style='color:green'>✅ בוצע בהצלחה!</span>";
+                    closeModal();
+                }
             } else {
                 status.innerHTML = `<span style='color:red'>❌ שגיאה: ${data.error}</span>`;
             }
         } catch (e) {
-            status.innerHTML = `<span style='color:red'>❌ תקלה: ${e.message}</span>`;
-            console.error(e);
+            status.innerHTML = "<span style='color:red'>❌ תקלה בשרת</span>";
         }
     }
 
@@ -163,16 +144,8 @@
         document.getElementById('preview-modal').style.display = 'flex';
     }
 
-    function closeModal() {
-        document.getElementById('preview-modal').style.display = 'none';
-    }
-
-    // סגירת מודאל בלחיצה בחוץ
-    window.onclick = function(event) {
-        if (event.target == document.getElementById('preview-modal')) closeModal();
-    }
+    function closeModal() { document.getElementById('preview-modal').style.display = 'none'; }
 </script>
-
 <script src="https://accounts.google.com/gsi/client" onload="init()" async defer></script>
 </body>
 </html>
