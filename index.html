@@ -3,76 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>מערכת שליטה 9.0</title>
+    <title>מערכת חכמה - גרסה סופית</title>
     <style>
-        :root { --main: #007bff; --bg: #f8f9fa; }
-        body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; width: 100%; max-width: 450px; border-top: 5px solid var(--main); }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 1rem; }
-        .btn-group { display: flex; gap: 10px; }
-        button { flex: 1; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; }
-        .btn-pre { background: #6c757d; color: white; }
-        .btn-go { background: var(--main); color: white; }
-        .status { margin-top: 10px; font-size: 0.9rem; text-align: center; min-height: 20px; font-weight: bold; }
-        #modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 1000; }
-        .modal-box { background: white; padding: 25px; border-radius: 15px; width: 90%; max-width: 600px; max-height: 80vh; overflow-y: auto; position: relative; }
-        .close { position: absolute; top: 10px; left: 15px; cursor: pointer; font-size: 30px; color: #999; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 25px; width: 100%; max-width: 450px; border-top: 5px solid #007bff; }
+        input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 1rem; }
+        button { width: 100%; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1rem; transition: 0.3s; background: #6c757d; color: white; }
+        button:hover { opacity: 0.9; }
+        .btn-main { background: #007bff; }
+        .status { margin-top: 10px; font-size: 0.9rem; text-align: center; font-weight: bold; }
+        
+        /* חלון תצוגה מקדימה */
+        #modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: white; padding: 30px; border-radius: 20px; width: 90%; max-width: 650px; max-height: 85vh; overflow-y: auto; position: relative; }
+        .close { position: absolute; top: 15px; left: 15px; cursor: pointer; font-size: 35px; color: #333; }
     </style>
 </head>
 <body>
 
     <div class="card">
         <h3>📖 ויקיפדיה (ערך מלא)</h3>
-        <input type="text" id="wiki-in" placeholder="הקלד ערך (למשל: תל אביב)">
-        <div class="btn-group">
-            <button class="btn-pre" onclick="doAction('wiki', 'wiki-in', 'st-w')">👀 תצוגה מקדימה</button>
-        </div>
+        <input type="text" id="wiki-in" placeholder="הקלד שם ערך...">
+        <button class="btn-main" onclick="run('wiki', 'wiki-in', 'st-w')">👀 תצוגה מקדימה</button>
         <div id="st-w" class="status"></div>
     </div>
 
     <div class="card" style="border-top-color: #ffc107">
-        <h3>🔍 חיפוש (20 תוצאות)</h3>
-        <input type="text" id="goog-in" placeholder="מה לחפש?">
-        <div class="btn-group">
-            <button class="btn-pre" onclick="doAction('google', 'goog-in', 'st-g')">👀 הצג רשימה</button>
-        </div>
+        <h3>🔍 חיפוש Google (20 תוצאות)</h3>
+        <input type="text" id="goog-in" placeholder="מה לחפש היום?">
+        <button class="btn-main" onclick="run('google', 'goog-in', 'st-g')">👀 הצג רשימה</button>
         <div id="st-g" class="status"></div>
     </div>
 
     <div id="modal">
-        <div class="modal-box" dir="rtl">
+        <div class="modal-content" dir="rtl">
             <span class="close" onclick="document.getElementById('modal').style.display='none'">×</span>
-            <div id="modal-content"></div>
+            <div id="modal-body"></div>
+            <hr style="margin: 25px 0;">
+            <button class="btn-main" onclick="alert('פונקציית המייל תעודכן לאחר תיקון החיפוש')">נראה טוב, שלח למייל</button>
         </div>
     </div>
 
 <script>
-    const WORKER = 'https://wandering-boat-c837.meny85502.workers.dev/';
+    const WORKER_URL = 'https://wandering-boat-c837.meny85502.workers.dev/';
 
-    async function doAction(type, inputId, statusId) {
+    async function run(type, inputId, statusId) {
         const val = document.getElementById(inputId).value;
         const status = document.getElementById(statusId);
         if (!val) return;
 
-        status.innerHTML = "⏳ טוען נתונים...";
+        status.innerHTML = "⏳ מחלץ נתונים...";
         try {
-            const res = await fetch(WORKER, {
+            const res = await fetch(WORKER_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ type, value: val, mode: 'preview' })
+                body: JSON.stringify({ type, value: val })
             });
 
             const data = await res.json();
-            status.innerText = ""; // עוצר את הדיסק המסתובב
+            status.innerText = "";
 
             if (data.success) {
-                document.getElementById('modal-content').innerHTML = data.html;
+                document.getElementById('modal-body').innerHTML = data.html;
                 document.getElementById('modal').style.display = 'flex';
             } else {
                 status.innerHTML = `<span style="color:red">❌ ${data.error}</span>`;
             }
         } catch (e) {
-            status.innerHTML = `<span style="color:red">❌ תקלה בתקשורת עם השרת</span>`;
+            status.innerHTML = `<span style="color:red">❌ תקלה בשרת. וודא שה-Worker מעודכן.</span>`;
         }
     }
 </script>
