@@ -2,51 +2,68 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>מערכת אישית 2.0</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מערכת אישית חכמה 2.0</title>
     <style>
-        body { font-family: system-ui, sans-serif; background: #f0f2f5; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .card { background: white; padding: 1.5rem; border-radius: 1rem; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; width: 100%; max-width: 400px; }
-        input { width: 100%; padding: 0.8rem; margin: 10px 0; border: 1px solid #ccc; border-radius: 0.5rem; box-sizing: border-box; }
-        button { width: 100%; padding: 0.8rem; background: #007bff; color: white; border: none; border-radius: 0.5rem; cursor: pointer; font-weight: bold; }
-        .status { margin-top: 10px; font-size: 0.85rem; font-weight: bold; min-height: 1.2rem; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f9; display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; }
+        .card { background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin-bottom: 20px; width: 100%; max-width: 450px; transition: transform 0.2s; }
+        .card:hover { transform: translateY(-5px); }
+        h2, h3 { margin-top: 0; color: #333; }
+        h3 { font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
+        input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 1rem; }
+        button { width: 100%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1rem; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        .status { margin-top: 12px; font-size: 0.9rem; font-weight: 600; min-height: 1.5rem; text-align: center; }
         .hidden { display: none; }
+        .checkbox-area { display: flex; align-items: center; gap: 8px; margin-bottom: 15px; font-size: 0.9rem; color: #666; }
+        #init-msg { font-size: 0.8rem; color: #888; margin-top: 10px; }
     </style>
 </head>
 <body>
+
     <div id="login-section" class="card" style="text-align:center">
-        <h2>התחברות למערכת</h2>
-        <button id="btn-login">התחבר עם גוגל</button>
-        <p id="init-msg" style="font-size:0.8rem; color:gray">טוען ספריות...</p>
+        <h2>👋 ברוך הבא</h2>
+        <p>יש להתחבר כדי להפעיל את הפקודות</p>
+        <button id="btn-login">התחברות מאובטחת לגוגל</button>
+        <div id="init-msg">טוען ספריות מערכת...</div>
     </div>
 
     <div id="main-ui" class="hidden">
+        
         <div class="card">
             <h3>📂 העלאה לדרייב</h3>
-            <input type="text" id="file-url" placeholder="קישור לקובץ">
-            <label style="font-size:0.9rem"><input type="checkbox" id="file-mail" checked> שלח מייל אישור</label>
-            <button onclick="send('file', 'file-url', 'st1', 'file-mail')">בצע העלאה</button>
+            <input type="text" id="file-url" placeholder="הדבק קישור לקובץ להורדה">
+            <div class="checkbox-area">
+                <input type="checkbox" id="file-mail" checked>
+                <label for="file-mail">שלח לי מייל אישור בסיום</label>
+            </div>
+            <button onclick="send('file', 'file-url', 'st1', 'file-mail')">העבר לענן</button>
             <div id="st1" class="status"></div>
         </div>
 
         <div class="card">
             <h3>📖 ויקיפדיה למייל</h3>
-            <input type="text" id="wiki-q" placeholder="שם הערך">
+            <input type="text" id="wiki-q" placeholder="הקלד ערך (למשל: ירושלים)" list="wiki-suggestions" oninput="fetchWikiSuggestions(this.value)">
+            <datalist id="wiki-suggestions"></datalist>
             <button onclick="send('wiki', 'wiki-q', 'st2')" style="background:#28a745">שלח ערך מעוצב</button>
             <div id="st2" class="status"></div>
         </div>
 
         <div class="card">
             <h3>🔍 חיפוש גוגל</h3>
-            <input type="text" id="google-q" placeholder="מילות חיפוש">
-            <button onclick="send('search', 'google-q', 'st3')" style="background:#6f42c1">שלח תוצאות</button>
+            <input type="text" id="google-q" placeholder="מה תרצה לחפש?">
+            <button onclick="send('search', 'google-q', 'st3')" style="background:#6f42c1">שלח תוצאות למייל</button>
             <div id="st3" class="status"></div>
         </div>
+
     </div>
 
 <script>
     let tokenClient;
     let access_token = null;
     let userEmail = "";
+    
+    // מפתח הלקוח המעודכן שלך
     const CLIENT_ID = '35488533313-r07s467bb6lnd03bb03iqif0eroq6jcl.apps.googleusercontent.com';
     const WORKER_URL = 'https://wandering-boat-c837.meny85502.workers.dev/';
 
@@ -57,39 +74,75 @@
             callback: async (resp) => {
                 if (resp.access_token) {
                     access_token = resp.access_token;
-                    // השגת המייל של המשתמש כדי לשלוח אליו
-                    const info = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-                        headers: { Authorization: `Bearer ${access_token}` }
-                    });
-                    const userData = await info.json();
-                    userEmail = userData.email;
-                    document.getElementById('login-section').classList.add('hidden');
-                    document.getElementById('main-ui').classList.remove('hidden');
+                    // השגת אימייל המשתמש לשליחה תקינה
+                    try {
+                        const info = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                            headers: { Authorization: `Bearer ${access_token}` }
+                        });
+                        const userData = await info.json();
+                        userEmail = userData.email;
+                        document.getElementById('login-section').classList.add('hidden');
+                        document.getElementById('main-ui').classList.remove('hidden');
+                    } catch(e) {
+                        alert("שגיאה בקבלת פרטי משתמש");
+                    }
                 }
             },
         });
-        document.getElementById('init-msg').innerText = "המערכת מוכנה ✅";
+        document.getElementById('init-msg').innerText = "המערכת מוכנה לשימוש ✅";
     }
 
     document.getElementById('btn-login').onclick = () => tokenClient.requestAccessToken();
 
+    // פונקציית השלמה אוטומטית לוויקיפדיה
+    async function fetchWikiSuggestions(query) {
+        if (query.length < 2) return;
+        try {
+            const res = await fetch(`https://he.wikipedia.org/w/api.php?action=opensearch&format=json&origin=*&search=${encodeURIComponent(query)}`);
+            const data = await res.json();
+            const list = document.getElementById('wiki-suggestions');
+            list.innerHTML = ""; 
+            data[1].forEach(item => {
+                const option = document.createElement('option');
+                option.value = item;
+                list.appendChild(option);
+            });
+        } catch(e) {}
+    }
+
     async function send(type, inputId, statusId, checkId = null) {
         const val = document.getElementById(inputId).value;
         const status = document.getElementById(statusId);
-        const mail = checkId ? document.getElementById(checkId).checked : true;
-        if(!val) return;
+        const mailChecked = checkId ? document.getElementById(checkId).checked : true;
+        
+        if(!val) {
+            status.innerHTML = "<span style='color:orange'>נא להזין טקסט/קישור</span>";
+            return;
+        }
 
-        status.innerHTML = "⏳ מעבד בקשה...";
+        status.innerHTML = "⏳ בתהליך...";
         try {
             const r = await fetch(WORKER_URL, {
                 method: 'POST',
-                body: JSON.stringify({ type, value: val, accessToken: access_token, userEmail: userEmail, sendEmail: mail })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    type, 
+                    value: val, 
+                    accessToken: access_token, 
+                    userEmail: userEmail, 
+                    sendEmail: mailChecked 
+                })
             });
+            
             const data = await r.json();
-            if(data.success) status.innerHTML = "<span style='color:green'>✅ בוצע בהצלחה!</span>";
-            else status.innerHTML = "<span style='color:red'>❌ שגיאה: " + data.error + "</span>";
+            if(data.success) {
+                status.innerHTML = "<span style='color:green'>✅ הושלם! בדוק את המייל</span>";
+                document.getElementById(inputId).value = ""; // ניקוי התיבה
+            } else {
+                status.innerHTML = "<span style='color:red'>❌ שגיאה: " + data.error + "</span>";
+            }
         } catch(e) {
-            status.innerHTML = "<span style='color:red'>❌ תקלה בתקשורת</span>";
+            status.innerHTML = "<span style='color:red'>❌ תקלה בתקשורת עם השרת</span>";
         }
     }
 </script>
