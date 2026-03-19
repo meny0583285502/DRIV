@@ -2,80 +2,65 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>מערכת ניהול תוכן - גרסה יציבה</title>
+    <title>מערכת אחודה 10.0</title>
     <style>
-        :root { --primary: #007bff; --success: #28a745; --bg: #f8f9fa; }
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; width: 100%; max-width: 450px; border-top: 5px solid var(--primary); }
+        body { font-family: sans-serif; background: #f4f7f6; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 20px; width: 100%; max-width: 450px; border-top: 5px solid #007bff; }
         input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; transition: 0.3s; }
-        .btn-login { background: var(--primary); color: white; padding: 15px; font-size: 1.1rem; }
-        .btn-send { background: var(--primary); color: white; }
-        .btn-drive { background: var(--success); color: white; }
-        .status { margin-top: 10px; font-size: 0.85rem; text-align: center; font-weight: bold; min-height: 20px; }
-        
-        #preview-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 1000; }
-        .modal-content { background: white; padding: 25px; border-radius: 15px; width: 90%; max-width: 600px; max-height: 80vh; overflow-y: auto; position: relative; }
-        .close { position: absolute; top: 15px; left: 15px; cursor: pointer; font-size: 30px; }
+        button { width: 100%; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        .btn-blue { background: #007bff; color: white; }
+        .btn-green { background: #28a745; color: white; }
+        .status { margin-top: 10px; font-size: 0.9rem; text-align: center; font-weight: bold; }
+        #modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; }
+        .modal-box { background: white; padding: 25px; border-radius: 15px; width: 90%; max-width: 600px; max-height: 80vh; overflow-y: auto; position: relative; }
     </style>
 </head>
 <body>
 
     <div id="login-section" class="card" style="text-align:center">
-        <h2>מערכת חכמה</h2>
-        <p>יש להתחבר עם גוגל כדי להפעיל את הדרייב והמייל</p>
-        <button class="btn-login" onclick="tokenClient.requestAccessToken()">התחבר עם גוגל</button>
+        <h2>התחברות למערכת</h2>
+        <button class="btn-blue" onclick="tokenClient.requestAccessToken()">התחבר עם Google</button>
     </div>
 
     <div id="main-ui" style="display:none">
-        
-        <div class="card" style="border-top-color: var(--success);">
+        <div class="card" style="border-top-color: #28a745;">
             <h3>📂 העלאה לדרייב</h3>
-            <input type="text" id="drive-url" placeholder="הדבק קישור לקובץ...">
-            <label><input type="checkbox" id="drive-confirm" checked> שלח מייל אישור בסיום</label>
-            <button class="btn-drive" onclick="process('file', 'send', 'drive-url', 'st-drive')">העבר לדרייב שלי</button>
-            <div id="st-drive" class="status"></div>
+            <input type="text" id="drive-url" placeholder="קישור לקובץ...">
+            <label><input type="checkbox" id="drive-confirm" checked> שלח מייל אישור</label>
+            <button class="btn-green" onclick="run('file', 'send', 'drive-url', 'st-d')">העבר לדרייב שלי</button>
+            <div id="st-d" class="status"></div>
         </div>
 
         <div class="card">
-            <h3>📖 ויקיפדיה למייל</h3>
-            <input type="text" id="wiki-q" placeholder="חפש ערך (למשל: ירושלים)...">
-            <button class="btn-send" onclick="process('wiki', 'preview', 'wiki-q', 'st-wiki')">👀 תצוגה מקדימה ושליחה</button>
-            <div id="st-wiki" class="status"></div>
-        </div>
-
-        <div class="card" style="border-top-color: #ffc107;">
-            <h3>🔍 חיפוש Google (20 תוצאות)</h3>
-            <input type="text" id="google-q" placeholder="מה תרצה לחפש?">
-            <button class="btn-send" onclick="process('google', 'preview', 'google-q', 'st-google')" style="background:#ffc107; color:black;">👀 הצג תוצאות ושלח</button>
-            <div id="st-google" class="status"></div>
+            <h3>📖 ויקיפדיה / 🔍 חיפוש</h3>
+            <input type="text" id="q-in" placeholder="ערך או חיפוש...">
+            <div style="display:flex; gap:10px;">
+                <button class="btn-blue" onclick="run('wiki', 'preview', 'q-in', 'st-q')">ויקיפדיה</button>
+                <button class="btn-blue" style="background:#ffc107; color:black;" onclick="run('google', 'preview', 'q-in', 'st-q')">חיפוש 20</button>
+            </div>
+            <div id="st-q" class="status"></div>
         </div>
     </div>
 
-    <div id="preview-modal">
-        <div class="modal-content" dir="rtl">
-            <span class="close" onclick="closeModal()">×</span>
+    <div id="modal">
+        <div class="modal-box" dir="rtl">
+            <span style="position:absolute; top:10px; left:15px; cursor:pointer; font-size:25px;" onclick="document.getElementById('modal').style.display='none'">×</span>
             <div id="modal-body"></div>
-            <hr style="margin: 20px 0;">
-            <button id="modal-send-btn" class="btn-send" style="width:100%">נראה מעולה, שלח לי למייל</button>
+            <hr><button id="send-btn" class="btn-blue">שלח למייל</button>
         </div>
     </div>
 
 <script>
     let tokenClient, access_token, userEmail;
-    const CLIENT_ID = '35488533313-r07s467bb6lnd03bb03iqif0eroq6jcl.apps.googleusercontent.com';
-    const WORKER_URL = 'https://wandering-boat-c837.meny85502.workers.dev/';
+    const WORKER = 'https://wandering-boat-c837.meny85502.workers.dev/';
 
     function init() {
         tokenClient = google.accounts.oauth2.initTokenClient({
-            client_id: CLIENT_ID,
+            client_id: '35488533313-r07s467bb6lnd03bb03iqif0eroq6jcl.apps.googleusercontent.com',
             scope: 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/userinfo.email',
             callback: async (res) => {
                 access_token = res.access_token;
-                const info = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', { 
-                    headers: { Authorization: `Bearer ${access_token}` } 
-                });
+                const info = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', { headers: { Authorization: `Bearer ${access_token}` } });
                 const data = await info.json();
                 userEmail = data.email;
                 document.getElementById('login-section').style.display = 'none';
@@ -84,47 +69,31 @@
         });
     }
 
-    async function process(type, mode, inputId, statusId) {
+    async function run(type, mode, inputId, statusId) {
         const val = document.getElementById(inputId).value;
         const status = document.getElementById(statusId);
         if (!val) return;
-        
-        status.innerHTML = "⏳ מעבד...";
+        status.innerHTML = "⏳ בתהליך...";
         try {
-            const response = await fetch(WORKER_URL, {
+            const response = await fetch(WORKER, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    type, value: val, mode, accessToken: access_token, userEmail,
-                    sendEmail: document.getElementById('drive-confirm')?.checked 
-                })
+                body: JSON.stringify({ type, value: val, mode, accessToken: access_token, userEmail, sendEmail: document.getElementById('drive-confirm')?.checked })
             });
-
             const data = await response.json();
             status.innerText = "";
-
             if (data.success) {
                 if (mode === 'preview') {
-                    showModal(data.html, () => process(type, 'send', inputId, statusId));
+                    document.getElementById('modal-body').innerHTML = data.html;
+                    document.getElementById('send-btn').onclick = () => run(type, 'send', inputId, statusId);
+                    document.getElementById('modal').style.display = 'flex';
                 } else {
-                    status.innerHTML = "<span style='color:green'>✅ הפעולה הושלמה!</span>";
-                    closeModal();
+                    status.innerHTML = "<span style='color:green'>✅ בוצע בהצלחה!</span>";
+                    document.getElementById('modal').style.display = 'none';
                 }
-            } else {
-                status.innerHTML = `<span style='color:red'>❌ שגיאה: ${data.error}</span>`;
-            }
-        } catch (e) {
-            status.innerHTML = "<span style='color:red'>❌ שגיאה בחיבור לשרת</span>";
-        }
+            } else { status.innerHTML = `<span style='color:red'>❌ ${data.error}</span>`; }
+        } catch (e) { status.innerHTML = "❌ שגיאת תקשורת"; }
     }
-
-    function showModal(html, sendFn) {
-        document.getElementById('modal-body').innerHTML = html;
-        document.getElementById('modal-send-btn').onclick = sendFn;
-        document.getElementById('preview-modal').style.display = 'flex';
-    }
-
-    function closeModal() { document.getElementById('preview-modal').style.display = 'none'; }
 </script>
 <script src="https://accounts.google.com/gsi/client" onload="init()" async defer></script>
 </body>
