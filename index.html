@@ -2,51 +2,52 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>מערכת אחודה 10.0</title>
+    <title>מערכת שליטה אחודה 12.0</title>
     <style>
-        body { font-family: sans-serif; background: #f4f7f6; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 20px; width: 100%; max-width: 450px; border-top: 5px solid #007bff; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; }
-        .btn-blue { background: #007bff; color: white; }
-        .btn-green { background: #28a745; color: white; }
-        .status { margin-top: 10px; font-size: 0.9rem; text-align: center; font-weight: bold; }
-        #modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; }
-        .modal-box { background: white; padding: 25px; border-radius: 15px; width: 90%; max-width: 600px; max-height: 80vh; overflow-y: auto; position: relative; }
+        :root { --p: #007bff; --s: #28a745; --bg: #f4f7f9; }
+        body { font-family: 'Segoe UI', system-ui; background: var(--bg); display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .card { background: white; padding: 25px; border-radius: 18px; box-shadow: 0 8px 20px rgba(0,0,0,0.08); margin-bottom: 20px; width: 100%; max-width: 450px; border-top: 6px solid var(--p); }
+        input { width: 100%; padding: 14px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 1rem; }
+        button { width: 100%; padding: 14px; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; transition: 0.3s; font-size: 1rem; }
+        .btn-drive { background: var(--s); color: white; }
+        .btn-wiki { background: var(--p); color: white; }
+        .status { margin-top: 12px; font-size: 0.9rem; text-align: center; font-weight: 600; color: #555; }
+        #modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-box { background: white; padding: 30px; border-radius: 20px; width: 90%; max-width: 600px; max-height: 85vh; overflow-y: auto; position: relative; }
     </style>
 </head>
 <body>
 
     <div id="login-section" class="card" style="text-align:center">
-        <h2>התחברות למערכת</h2>
-        <button class="btn-blue" onclick="tokenClient.requestAccessToken()">התחבר עם Google</button>
+        <h2>שירותים חכמים</h2>
+        <button class="btn-wiki" onclick="tokenClient.requestAccessToken()">התחברות עם Google</button>
     </div>
 
     <div id="main-ui" style="display:none">
-        <div class="card" style="border-top-color: #28a745;">
-            <h3>📂 העלאה לדרייב</h3>
-            <input type="text" id="drive-url" placeholder="קישור לקובץ...">
-            <label><input type="checkbox" id="drive-confirm" checked> שלח מייל אישור</label>
-            <button class="btn-green" onclick="run('file', 'send', 'drive-url', 'st-d')">העבר לדרייב שלי</button>
-            <div id="st-d" class="status"></div>
+        <div class="card" style="border-top-color: var(--s);">
+            <h3>📂 העלאה לתיקיית הורדות</h3>
+            <p style="font-size: 0.8rem; color: #666;">הכנס ID תיקייה (מהכתובת בדרייב):</p>
+            <input type="text" id="f-id" placeholder="למשל: 1AaBbCc... (אופציונלי)">
+            <input type="text" id="d-url" placeholder="הדבק קישור לקובץ (תמונה/PDF)...">
+            <label><input type="checkbox" id="d-mail" checked> שלח מייל עם קישור לקובץ</label>
+            <button class="btn-drive" onclick="run('file', 'send', 'd-url')">העבר לדרייב ושלח לי לינק</button>
+            <div id="st-file" class="status"></div>
         </div>
 
         <div class="card">
-            <h3>📖 ויקיפדיה / 🔍 חיפוש</h3>
-            <input type="text" id="q-in" placeholder="ערך או חיפוש...">
-            <div style="display:flex; gap:10px;">
-                <button class="btn-blue" onclick="run('wiki', 'preview', 'q-in', 'st-q')">ויקיפדיה</button>
-                <button class="btn-blue" style="background:#ffc107; color:black;" onclick="run('google', 'preview', 'q-in', 'st-q')">חיפוש 20</button>
-            </div>
-            <div id="st-q" class="status"></div>
+            <h3>📖 חיפוש מידע</h3>
+            <input type="text" id="q-in" placeholder="מה תרצה לדעת?">
+            <button class="btn-wiki" onclick="run('wiki', 'preview', 'q-in')">חפש בוויקיפדיה</button>
+            <div id="st-search" class="status"></div>
         </div>
     </div>
 
     <div id="modal">
         <div class="modal-box" dir="rtl">
-            <span style="position:absolute; top:10px; left:15px; cursor:pointer; font-size:25px;" onclick="document.getElementById('modal').style.display='none'">×</span>
+            <span style="position:absolute; top:15px; left:20px; cursor:pointer; font-size:30px;" onclick="document.getElementById('modal').style.display='none'">×</span>
             <div id="modal-body"></div>
-            <hr><button id="send-btn" class="btn-blue">שלח למייל</button>
+            <hr style="margin: 20px 0;">
+            <button id="send-btn" class="btn-wiki">שלח תוכן זה למייל</button>
         </div>
     </div>
 
@@ -69,30 +70,35 @@
         });
     }
 
-    async function run(type, mode, inputId, statusId) {
+    async function run(type, mode, inputId) {
         const val = document.getElementById(inputId).value;
-        const status = document.getElementById(statusId);
+        const folder = document.getElementById('f-id').value;
+        const status = document.getElementById(type === 'file' ? 'st-file' : 'st-search');
         if (!val) return;
+
         status.innerHTML = "⏳ בתהליך...";
         try {
             const response = await fetch(WORKER, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ type, value: val, mode, accessToken: access_token, userEmail, sendEmail: document.getElementById('drive-confirm')?.checked })
+                body: JSON.stringify({ 
+                    type, value: val, mode, accessToken: access_token, userEmail, 
+                    folderId: folder, sendEmail: document.getElementById('d-mail')?.checked 
+                })
             });
             const data = await response.json();
             status.innerText = "";
             if (data.success) {
                 if (mode === 'preview') {
                     document.getElementById('modal-body').innerHTML = data.html;
-                    document.getElementById('send-btn').onclick = () => run(type, 'send', inputId, statusId);
+                    document.getElementById('send-btn').onclick = () => run(type, 'send', inputId);
                     document.getElementById('modal').style.display = 'flex';
                 } else {
-                    status.innerHTML = "<span style='color:green'>✅ בוצע בהצלחה!</span>";
+                    status.innerHTML = "<span style='color:green'>✅ בוצע! בדוק את המייל/דרייב</span>";
                     document.getElementById('modal').style.display = 'none';
                 }
-            } else { status.innerHTML = `<span style='color:red'>❌ ${data.error}</span>`; }
-        } catch (e) { status.innerHTML = "❌ שגיאת תקשורת"; }
+            } else { status.innerHTML = "❌ " + data.error; }
+        } catch (e) { status.innerHTML = "❌ תקלה בחיבור"; }
     }
 </script>
 <script src="https://accounts.google.com/gsi/client" onload="init()" async defer></script>
