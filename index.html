@@ -2,41 +2,48 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>מערכת ניהול ענן חכמה</title>
+    <title>מערכת ניהול ענן V28</title>
+    <link rel="icon" href="https://upload.wikimedia.org/wikipedia/commons/d/da/Google_Drive_logo.png">
     <style>
         :root { --p: #007bff; --s: #28a745; --bg: #f4f7f9; --w: #364043; }
-        body { font-family: 'Segoe UI', system-ui; background: var(--bg); display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; flex-direction: column; align-items: center; padding: 20px; }
         .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; width: 100%; max-width: 450px; border-top: 5px solid var(--p); position: relative; }
         input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
         button { width: 100%; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; margin-top: 10px; }
-        .logo { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; margin-bottom: 15px; border: 3px solid var(--p); }
-        #wiki-suggestions { position: absolute; background: white; width: calc(100% - 40px); border: 1px solid #ddd; z-index: 100; display: none; max-height: 150px; overflow-y: auto; }
-        .sugg-item { padding: 10px; cursor: pointer; border-bottom: 1px solid #eee; }
+        .logo-img { width: 80px; margin-bottom: 15px; }
+        #wiki-suggestions { position: absolute; background: white; width: calc(100% - 40px); border: 1px solid #ddd; z-index: 100; display: none; max-height: 150px; overflow-y: auto; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .sugg-item { padding: 10px; cursor: pointer; border-bottom: 1px solid #eee; text-align: right; }
         .sugg-item:hover { background: #f0f0f0; }
+        .user-info { font-size: 0.9rem; margin-bottom: 10px; color: #555; text-align: center; }
     </style>
 </head>
 <body>
-    <img src="https://lh3.googleusercontent.com/a/ACg8ocL_F_qXfM5C58I-v2vC6Q0Q5f8X5-v2vC6Q0Q5f8X5=s288-c-no" class="logo">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/d/da/Google_Drive_logo.png" class="logo-img">
     
     <div id="login-section" class="card">
-        <button onclick="tokenClient.requestAccessToken()" style="background:var(--p);">התחבר למערכת</button>
+        <h3 style="text-align:center;">ברוך הבא</h3>
+        <button onclick="login()" style="background:var(--p);">התחבר לחשבון גוגל</button>
     </div>
 
     <div id="main-ui" style="display:none; width: 100%; max-width: 450px;">
+        <div class="user-info" id="user-display"></div>
+        
         <div class="card" style="border-top-color: var(--w);">
-            <h3>📖 סוכן ויקיפדיה</h3>
+            <h3>📖 סוכן ויקיפדיה (תקציר + תמונה)</h3>
             <input type="text" id="wiki-query" placeholder="חפש ערך..." oninput="getWikiSuggestions(this.value)" autocomplete="off">
             <div id="wiki-suggestions"></div>
-            <button onclick="doWiki()" style="background:var(--w);">שלח ערך למייל</button>
-            <div id="st-wiki" style="text-align:center; margin-top:5px;"></div>
+            <button onclick="doWiki()" style="background:var(--w);">שלח למייל</button>
+            <div id="st-wiki" style="text-align:center; margin-top:5px; font-weight:bold;"></div>
         </div>
 
         <div class="card" style="border-top-color: var(--s);">
             <h3>🔗 הזרמת קישור</h3>
             <input type="text" id="d-url" placeholder="הדבק קישור לקובץ...">
-            <button onclick="doWork('file', 'd-url')" style="background:var(--s);">הזרם לדרייב, למייל ולטלגרם</button>
-            <div id="st-url" style="text-align:center; margin-top:5px;"></div>
+            <button onclick="doWork('file', 'd-url')" style="background:var(--s);">הזרם לדרייב וטלגרם</button>
+            <div id="st-url" style="text-align:center; margin-top:5px; font-weight:bold;"></div>
         </div>
+
+        <button onclick="logout()" style="background:#dc3545; width:auto; padding: 8px 15px; font-size: 0.8rem; margin: auto; display: block;">החלף חשבון / התנתק</button>
     </div>
 
     <script>
@@ -47,14 +54,25 @@
             tokenClient = google.accounts.oauth2.initTokenClient({
                 client_id: '35488533313-r07s467bb6lnd03bb03iqif0eroq6jcl.apps.googleusercontent.com',
                 scope: 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/userinfo.email',
-                callback: async (res) => {
-                    access_token = res.access_token;
-                    const info = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', { headers: { Authorization: `Bearer ${access_token}` } });
-                    const data = await info.json();
-                    userEmail = data.email;
-                    document.getElementById('login-section').style.display = 'none';
-                    document.getElementById('main-ui').style.display = 'block';
-                }
+                callback: (res) => handleAuth(res)
+            });
+        }
+
+        async function handleAuth(res) {
+            access_token = res.access_token;
+            const info = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', { headers: { Authorization: `Bearer ${access_token}` } });
+            const data = await info.json();
+            userEmail = data.email;
+            document.getElementById('user-display').innerText = "מחובר כעת: " + userEmail;
+            document.getElementById('login-section').style.display = 'none';
+            document.getElementById('main-ui').style.display = 'block';
+        }
+
+        function login() { tokenClient.requestAccessToken(); }
+        
+        function logout() {
+            google.accounts.oauth2.revoke(access_token, () => {
+                location.reload();
             });
         }
 
@@ -74,18 +92,20 @@
 
         async function doWiki() {
             const q = document.getElementById('wiki-query').value;
-            document.getElementById('st-wiki').innerText = "⏳ שולח...";
+            const st = document.getElementById('st-wiki');
+            st.innerText = "⏳ מעבד...";
             const res = await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type: 'wikipedia', query: q, accessToken: access_token, userEmail }) });
             const data = await res.json();
-            document.getElementById('st-wiki').innerText = data.success ? "✅ נשלח!" : "❌ שגיאה";
+            st.innerText = data.success ? "✅ המייל נשלח עם תמונה!" : "❌ שגיאה";
         }
 
         async function doWork(type, id) {
             const val = document.getElementById(id).value;
-            document.getElementById('st-url').innerText = "⏳ מזרימים...";
+            const st = document.getElementById('st-url');
+            st.innerText = "⏳ מזרים...";
             const res = await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type, value: val, accessToken: access_token, userEmail }) });
             const data = await res.json();
-            document.getElementById('st-url').innerText = data.success ? "✅ בוצע בהצלחה!" : "❌ שגיאה";
+            st.innerText = data.success ? "✅ בוצע!" : "❌ שגיאה";
         }
     </script>
     <script src="https://accounts.google.com/gsi/client" onload="init()" async defer></script>
