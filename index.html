@@ -2,48 +2,52 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>מערכת ניהול ענן V28</title>
-    <link rel="icon" href="https://upload.wikimedia.org/wikipedia/commons/d/da/Google_Drive_logo.png">
+    <title>מערכת ניהול ענן V31</title>
+    <link rel="icon" type="image/png" href="https://ssl.gstatic.com/docs/doclist/images/drive_2020q4_32dp.png">
     <style>
-        :root { --p: #007bff; --s: #28a745; --bg: #f4f7f9; --w: #364043; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        :root { --p: #007bff; --s: #28a745; --bg: #f4f7f9; --w: #364043; --o: #fd7e14; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); display: flex; flex-direction: column; align-items: center; padding: 20px; color: #333; }
         .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; width: 100%; max-width: 450px; border-top: 5px solid var(--p); position: relative; }
-        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; margin-top: 10px; }
-        .logo-img { width: 80px; margin-bottom: 15px; }
-        #wiki-suggestions { position: absolute; background: white; width: calc(100% - 40px); border: 1px solid #ddd; z-index: 100; display: none; max-height: 150px; overflow-y: auto; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .sugg-item { padding: 10px; cursor: pointer; border-bottom: 1px solid #eee; text-align: right; }
-        .sugg-item:hover { background: #f0f0f0; }
-        .user-info { font-size: 0.9rem; margin-bottom: 10px; color: #555; text-align: center; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 1rem; }
+        button { width: 100%; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; margin-top: 10px; transition: opacity 0.2s; }
+        button:hover { opacity: 0.9; }
+        .status { font-size: 0.85rem; text-align: center; margin-top: 8px; min-height: 1.2em; font-weight: bold; }
+        .logo-img { width: 60px; margin-bottom: 15px; }
     </style>
 </head>
 <body>
-    <img src="https://upload.wikimedia.org/wikipedia/commons/d/da/Google_Drive_logo.png" class="logo-img">
+    <img src="https://ssl.gstatic.com/docs/doclist/images/drive_2020q4_32dp.png" class="logo-img">
     
     <div id="login-section" class="card">
-        <h3 style="text-align:center;">ברוך הבא</h3>
-        <button onclick="login()" style="background:var(--p);">התחבר לחשבון גוגל</button>
+        <h3 style="text-align:center;">מערכת ענן חכמה</h3>
+        <button onclick="tokenClient.requestAccessToken()" style="background:var(--p);">התחבר לחשבון גוגל</button>
     </div>
 
     <div id="main-ui" style="display:none; width: 100%; max-width: 450px;">
-        <div class="user-info" id="user-display"></div>
         
-        <div class="card" style="border-top-color: var(--w);">
-            <h3>📖 סוכן ויקיפדיה (תקציר + תמונה)</h3>
-            <input type="text" id="wiki-query" placeholder="חפש ערך..." oninput="getWikiSuggestions(this.value)" autocomplete="off">
-            <div id="wiki-suggestions"></div>
-            <button onclick="doWiki()" style="background:var(--w);">שלח למייל</button>
-            <div id="st-wiki" style="text-align:center; margin-top:5px; font-weight:bold;"></div>
-        </div>
-
         <div class="card" style="border-top-color: var(--s);">
-            <h3>🔗 הזרמת קישור</h3>
-            <input type="text" id="d-url" placeholder="הדבק קישור לקובץ...">
-            <button onclick="doWork('file', 'd-url')" style="background:var(--s);">הזרם לדרייב וטלגרם</button>
-            <div id="st-url" style="text-align:center; margin-top:5px; font-weight:bold;"></div>
+            <h3>🔗 הזרמה / העתקה / Web2PDF</h3>
+            <p style="font-size:0.8rem; color:#666;">הדבק קישור Drive להעתקה, אתר ל-PDF, או קישור להורדה.</p>
+            <input type="text" id="d-url" placeholder="הדבק קישור כאן...">
+            <button onclick="doWork('file', 'd-url')" style="background:var(--s);">בצע פעולה ושלח לטלגרם</button>
+            <div id="st-url" class="status"></div>
         </div>
 
-        <button onclick="logout()" style="background:#dc3545; width:auto; padding: 8px 15px; font-size: 0.8rem; margin: auto; display: block;">החלף חשבון / התנתק</button>
+        <div class="card" style="border-top-color: var(--o);">
+            <h3>✂️ קיצור קישור אישי</h3>
+            <input type="text" id="short-url" placeholder="הדבק קישור ארוך...">
+            <button onclick="shortenUrl()" style="background:var(--o);">צור קישור מקוצר</button>
+            <div id="st-short" class="status" style="word-break: break-all;"></div>
+        </div>
+
+        <div class="card" style="border-top-color: var(--w);">
+            <h3>📖 סוכן ויקיפדיה</h3>
+            <input type="text" id="wiki-query" placeholder="חפש ערך בוויקיפדיה...">
+            <button onclick="doWiki()" style="background:var(--w);">שלח תקציר למייל</button>
+            <div id="st-wiki" class="status"></div>
+        </div>
+
+        <button onclick="location.reload()" style="background:#6c757d; width:auto; margin:auto; display:block; font-size:0.8rem;">החלף חשבון גוגל</button>
     </div>
 
     <script>
@@ -54,58 +58,47 @@
             tokenClient = google.accounts.oauth2.initTokenClient({
                 client_id: '35488533313-r07s467bb6lnd03bb03iqif0eroq6jcl.apps.googleusercontent.com',
                 scope: 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/userinfo.email',
-                callback: (res) => handleAuth(res)
+                callback: async (res) => {
+                    access_token = res.access_token;
+                    const info = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', { headers: { Authorization: `Bearer ${access_token}` } });
+                    const data = await info.json();
+                    userEmail = data.email;
+                    document.getElementById('login-section').style.display = 'none';
+                    document.getElementById('main-ui').style.display = 'block';
+                }
             });
         }
 
-        async function handleAuth(res) {
-            access_token = res.access_token;
-            const info = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', { headers: { Authorization: `Bearer ${access_token}` } });
-            const data = await info.json();
-            userEmail = data.email;
-            document.getElementById('user-display').innerText = "מחובר כעת: " + userEmail;
-            document.getElementById('login-section').style.display = 'none';
-            document.getElementById('main-ui').style.display = 'block';
-        }
-
-        function login() { tokenClient.requestAccessToken(); }
-        
-        function logout() {
-            google.accounts.oauth2.revoke(access_token, () => {
-                location.reload();
-            });
-        }
-
-        async function getWikiSuggestions(val) {
-            const box = document.getElementById('wiki-suggestions');
-            if (val.length < 2) { box.style.display = 'none'; return; }
-            const r = await fetch(`https://he.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(val)}&limit=5&format=json&origin=*`);
-            const d = await r.json();
-            box.innerHTML = d[1].map(t => `<div class="sugg-item" onclick="selectWiki('${t}')">${t}</div>`).join('');
-            box.style.display = 'block';
-        }
-
-        function selectWiki(t) {
-            document.getElementById('wiki-query').value = t;
-            document.getElementById('wiki-suggestions').style.display = 'none';
+        async function shortenUrl() {
+            const val = document.getElementById('short-url').value;
+            const st = document.getElementById('st-short');
+            if (!val) return;
+            st.innerText = "⏳ יוצר קישור...";
+            try {
+                const res = await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type: 'shorten', value: val }) });
+                const data = await res.json();
+                st.innerHTML = data.success ? `כתובת קצרה: <a href="${data.shortUrl}" target="_blank">${data.shortUrl}</a>` : "❌ שגיאה (בדוק חיבור KV)";
+            } catch (e) { st.innerText = "❌ תקלה בתקשורת"; }
         }
 
         async function doWiki() {
             const q = document.getElementById('wiki-query').value;
             const st = document.getElementById('st-wiki');
-            st.innerText = "⏳ מעבד...";
+            if (!q) return;
+            st.innerText = "⏳ שולח מייל...";
             const res = await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type: 'wikipedia', query: q, accessToken: access_token, userEmail }) });
             const data = await res.json();
-            st.innerText = data.success ? "✅ המייל נשלח עם תמונה!" : "❌ שגיאה";
+            st.innerText = data.success ? "✅ התקציר נשלח בהצלחה!" : "❌ שגיאה בשליחה";
         }
 
         async function doWork(type, id) {
             const val = document.getElementById(id).value;
             const st = document.getElementById('st-url');
-            st.innerText = "⏳ מזרים...";
+            if (!val) return;
+            st.innerText = "⏳ מבצע פעולה בענן...";
             const res = await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type, value: val, accessToken: access_token, userEmail }) });
             const data = await res.json();
-            st.innerText = data.success ? "✅ בוצע!" : "❌ שגיאה";
+            st.innerText = data.success ? "✅ הפעולה הושלמה בהצלחה!" : "❌ שגיאה בביצוע";
         }
     </script>
     <script src="https://accounts.google.com/gsi/client" onload="init()" async defer></script>
