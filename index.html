@@ -2,11 +2,11 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>מערכת ענן V23.0</title>
+    <title>מערכת ענן V24.0</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>☁️</text></svg>">
     
     <style>
-        :root { --p: #007bff; --s: #28a745; --bg: #f4f7f9; --g: #4285F4; }
+        :root { --p: #007bff; --s: #28a745; --bg: #f4f7f9; --g: #4285F4; --w: #364043; }
         body { font-family: 'Segoe UI', system-ui; background: var(--bg); display: flex; flex-direction: column; align-items: center; padding: 20px; }
         .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; width: 100%; max-width: 450px; border-top: 5px solid var(--p); }
         input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 1rem; }
@@ -29,6 +29,14 @@
             <input type="text" id="search-query" placeholder="מה לחפש בגוגל?">
             <button style="background:var(--g);" onclick="doSearch()">חפש ושלח למייל</button>
             <div id="st-search" class="status"></div>
+        </div>
+
+        <div class="card" style="border-top-color: var(--w);">
+            <h3 style="margin-top:0;">📖 סוכן ויקיפדיה למייל</h3>
+            <p style="font-size:0.85rem; color:#555;">הכנס שם של ערך (למשל: "מדינת ישראל") וקבל את כל המאמר למייל.</p>
+            <input type="text" id="wiki-query" placeholder="שם הערך בוויקיפדיה...">
+            <button style="background:var(--w);" onclick="doWiki()">שלח ערך מלא למייל</button>
+            <div id="st-wiki" class="status"></div>
         </div>
 
         <div class="card" style="border-top-color: #ffc107;">
@@ -63,13 +71,11 @@
                 userEmail = data.email;
                 document.getElementById('login-section').style.display = 'none';
                 document.getElementById('main-ui').style.display = 'block';
-                // סנכרון KV
                 fetch(WORKER, { method: 'POST', body: JSON.stringify({ accessToken: access_token, userEmail: userEmail, folderId: document.getElementById('folder-id').value }) });
             }
         });
     }
 
-    // חיפוש גוגל למייל
     async function doSearch() {
         const query = document.getElementById('search-query').value;
         const status = document.getElementById('st-search');
@@ -84,14 +90,22 @@
             status.innerHTML = data.success ? "✅ המייל נשלח אליך בהצלחה!" : "❌ " + data.error;
         } catch (e) { status.innerText = "❌ שגיאת רשת"; }
     }
-<div class="card" style="border-top-color: #364043;">
-            <h3 style="margin-top:0;">📖 סוכן ויקיפדיה למייל</h3>
-            <p style="font-size:0.85rem; color:#555;">הכנס שם של ערך (למשל: "מדינת ישראל") וקבל את כל המאמר למייל.</p>
-            <input type="text" id="wiki-query" placeholder="שם הערך בוויקיפדיה...">
-            <button style="background:#364043;" onclick="doWiki()">שלח ערך מלא למייל</button>
-            <div id="st-wiki" class="status"></div>
-        </div>
-    // הזרמת קישור דרך השרת
+
+    async function doWiki() {
+        const query = document.getElementById('wiki-query').value;
+        const status = document.getElementById('st-wiki');
+        if (!query) return alert("הכנס שם ערך");
+        status.innerText = "⏳ מושך מידע מוויקיפדיה ושולח מייל...";
+        try {
+            const response = await fetch(WORKER, {
+                method: 'POST',
+                body: JSON.stringify({ type: 'wikipedia', query: query, accessToken: access_token, userEmail: userEmail })
+            });
+            const data = await response.json();
+            status.innerHTML = data.success ? "✅ הערך המלא בדרך למייל שלך!" : "❌ " + data.error;
+        } catch (e) { status.innerText = "❌ שגיאת רשת"; }
+    }
+
     async function doWork(type, inputId) {
         const val = document.getElementById(inputId).value;
         const status = document.getElementById('st-url');
@@ -107,7 +121,6 @@
         } catch (e) { status.innerText = "❌ שגיאת רשת"; }
     }
 
-    // העלאה ישירה של קבצי ענק (Multipart מהדפדפן)
     async function uploadLargeFile() {
         const file = document.getElementById('file-input').files[0];
         const folder = document.getElementById('folder-id').value;
