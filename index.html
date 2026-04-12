@@ -84,7 +84,13 @@
             status.innerHTML = data.success ? "✅ המייל נשלח אליך בהצלחה!" : "❌ " + data.error;
         } catch (e) { status.innerText = "❌ שגיאת רשת"; }
     }
-
+<div class="card" style="border-top-color: #364043;">
+            <h3 style="margin-top:0;">📖 סוכן ויקיפדיה למייל</h3>
+            <p style="font-size:0.85rem; color:#555;">הכנס שם של ערך (למשל: "מדינת ישראל") וקבל את כל המאמר למייל.</p>
+            <input type="text" id="wiki-query" placeholder="שם הערך בוויקיפדיה...">
+            <button style="background:#364043;" onclick="doWiki()">שלח ערך מלא למייל</button>
+            <div id="st-wiki" class="status"></div>
+        </div>
     // הזרמת קישור דרך השרת
     async function doWork(type, inputId) {
         const val = document.getElementById(inputId).value;
