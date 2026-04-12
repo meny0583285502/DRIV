@@ -2,44 +2,41 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>Cloud Master Pro V41</title>
+    <title>Cloud Master Pro V42</title>
     <link rel="icon" href="https://upload.wikimedia.org/wikipedia/commons/d/da/Google_Drive_logo.png">
     <style>
-        :root { --p: #1a73e8; --s: #34a853; --o: #f9ab00; --bg: #f8f9fa; --w: #202124; --r: #ea4335; }
+        :root { --p: #1a73e8; --s: #34a853; --bg: #f8f9fa; --w: #202124; --r: #ea4335; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; flex-direction: column; align-items: center; padding: 20px; }
         .card { background: white; padding: 18px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 15px; width: 100%; max-width: 450px; border-top: 5px solid var(--p); position: relative; }
         input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
         button { width: 100%; padding: 11px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; margin-top: 5px; }
-        .logo { width: 70px; margin-bottom: 10px; }
         #wiki-suggestions { position: absolute; background: white; width: calc(100% - 40px); border: 1px solid #ddd; z-index: 100; display: none; }
         .sugg-item { padding: 8px; cursor: pointer; border-bottom: 1px solid #eee; text-align: right; }
         .status { font-size: 0.8rem; text-align: center; font-weight: bold; margin-top: 5px; color: var(--p); }
     </style>
 </head>
 <body>
-    <img src="https://upload.wikimedia.org/wikipedia/commons/d/da/Google_Drive_logo.png" class="logo">
-    
+    <img src="https://upload.wikimedia.org/wikipedia/commons/d/da/Google_Drive_logo.png" width="70">
     <div id="login-section" class="card">
         <button onclick="tokenClient.requestAccessToken()" style="background:var(--p);">התחבר למערכת</button>
     </div>
-
     <div id="main-ui" style="display:none; width:100%; max-width:450px;">
         <div class="card" style="border-top-color: var(--s);">
             <h3>📤 1. שליחת קובץ לדרייב</h3>
-            <input type="text" id="direct-url" placeholder="קישור ישיר לקובץ...">
+            <input type="text" id="direct-url" placeholder="קישור ישיר...">
             <button onclick="doWork('direct_link', 'direct-url')" style="background:var(--s);">שלח לדרייב</button>
             <div id="st-direct-url" class="status"></div>
         </div>
         <div class="card" style="border-top-color: #a142f4;">
-            <h3>📂 2. העתקת קובץ/תיקייה מהדרייב</h3>
-            <input type="text" id="drive-url" placeholder="קישור קובץ או תיקייה...">
+            <h3>📂 2. העתקת קובץ/תיקייה</h3>
+            <input type="text" id="drive-url" placeholder="קישור דרייב...">
             <button onclick="doWork('drive_copy', 'drive-url')" style="background:#a142f4;">צור עותק אישי</button>
             <div id="st-drive-url" class="status"></div>
         </div>
-        <div class="card" style="border-top-color: var(--o);">
+        <div class="card" style="border-top-color: #f9ab00;">
             <h3>📄 3. סורק אתרים ל-PDF</h3>
             <input type="text" id="pdf-url" placeholder="כתובת אתר...">
-            <button onclick="doWork('web_to_pdf', 'pdf-url')" style="background:var(--o);">שמור כ-PDF</button>
+            <button onclick="doWork('web_to_pdf', 'pdf-url')" style="background:#f9ab00;">שמור כ-PDF</button>
             <div id="st-pdf-url" class="status"></div>
         </div>
         <div class="card" style="border-top-color: var(--w);">
@@ -52,15 +49,13 @@
         <div class="card" style="border-top-color: var(--r);">
             <h3>✂️ 5. קיצור קישור אישי</h3>
             <input type="text" id="short-url" placeholder="קישור ארוך...">
-            <button onclick="shortenUrl()" style="background:var(--r);">קצר קישור</button>
+            <button onclick="doShorten()" style="background:var(--r);">קצר קישור</button>
             <div id="st-short" class="status"></div>
         </div>
     </div>
-
     <script>
         let tokenClient, access_token, userEmail;
         const WORKER = 'https://wandering-boat-c837.meny85502.workers.dev/';
-
         function init() {
             tokenClient = google.accounts.oauth2.initTokenClient({
                 client_id: '35488533313-r07s467bb6lnd03bb03iqif0eroq6jcl.apps.googleusercontent.com',
@@ -74,7 +69,6 @@
                 }
             });
         }
-
         async function getWikiSuggestions(val) {
             const box = document.getElementById('wiki-suggestions');
             if (val.length < 2) { box.style.display = 'none'; return; }
@@ -83,7 +77,6 @@
             box.innerHTML = d[1].map(t => `<div class="sugg-item" onclick="document.getElementById('wiki-query').value='${t}';document.getElementById('wiki-suggestions').style.display='none'">${t}</div>`).join('');
             box.style.display = 'block';
         }
-
         async function doWiki() {
             const q = document.getElementById('wiki-query').value;
             const st = document.getElementById('st-wiki');
@@ -91,20 +84,16 @@
             const res = await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type: 'wikipedia', query: q, accessToken: access_token, userEmail }) });
             st.innerText = (await res.json()).success ? "✅ נשלח!" : "❌ שגיאה";
         }
-
-        async function shortenUrl() {
+        async function doShorten() {
             const val = document.getElementById('short-url').value;
-            const st = document.getElementById('st-short');
-            st.innerText = "⏳ מקצר...";
-            const res = await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type: 'shorten', value: val, accessToken: access_token, userEmail }) });
+            const res = await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type: 'shorten', value: val }) });
             const data = await res.json();
-            st.innerHTML = data.success ? `<a href="${data.shortUrl}" target="_blank">${data.shortUrl}</a>` : "❌ שגיאה";
+            document.getElementById('st-short').innerHTML = data.success ? `<a href="${data.shortUrl}" target="_blank">${data.shortUrl}</a>` : "❌ שגיאה";
         }
-
         async function doWork(type, id) {
             const val = document.getElementById(id).value;
             const st = document.getElementById('st-' + id);
-            st.innerText = "⏳ מבצע... תקבל מייל בסיום";
+            st.innerText = "⏳ מבצע...";
             const res = await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type, value: val, accessToken: access_token, userEmail }) });
             st.innerText = (await res.json()).success ? "✅ הושלם!" : "❌ שגיאה";
         }
