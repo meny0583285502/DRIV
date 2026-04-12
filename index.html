@@ -31,11 +31,12 @@
             <div id="st-search" class="status"></div>
         </div>
 
-        <div class="card" style="border-top-color: var(--w);">
+<div class="card" style="border-top-color: #364043; position: relative;">
             <h3 style="margin-top:0;">📖 סוכן ויקיפדיה למייל</h3>
-            <p style="font-size:0.85rem; color:#555;">הכנס שם של ערך (למשל: "מדינת ישראל") וקבל את כל המאמר למייל.</p>
-            <input type="text" id="wiki-query" placeholder="שם הערך בוויקיפדיה...">
-            <button style="background:var(--w);" onclick="doWiki()">שלח ערך מלא למייל</button>
+            <p style="font-size:0.85rem; color:#555;">התחל להקליד ובחר ערך מהרשימה:</p>
+            <input type="text" id="wiki-query" placeholder="חפש ערך..." oninput="getWikiSuggestions(this.value)" autocomplete="off">
+            <div id="wiki-suggestions" style="position: absolute; background: white; width: calc(100% - 40px); border: 1px solid #ddd; border-radius: 0 0 8px 8px; max-height: 200px; overflow-y: auto; display: none; z-index: 100;"></div>
+            <button style="background:#364043;" onclick="doWiki()">שלח ערך מלא למייל</button>
             <div id="st-wiki" class="status"></div>
         </div>
 
