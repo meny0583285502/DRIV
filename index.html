@@ -2,45 +2,44 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>מערכת ענן V26</title>
+    <title>מערכת ניהול ענן חכמה</title>
     <style>
-        body { font-family: sans-serif; background: #f4f7f9; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; width: 100%; max-width: 400px; position: relative; }
+        :root { --p: #007bff; --s: #28a745; --bg: #f4f7f9; --w: #364043; }
+        body { font-family: 'Segoe UI', system-ui; background: var(--bg); display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; width: 100%; max-width: 450px; border-top: 5px solid var(--p); position: relative; }
         input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; background: #364043; color: white; }
-        #wiki-suggestions { 
-            position: absolute; top: 100%; left: 20px; right: 20px; 
-            background: white; border: 1px solid #ccc; border-top: none; 
-            z-index: 9999; display: none; max-height: 150px; overflow-y: auto;
-            box-shadow: 0 4px 5px rgba(0,0,0,0.2);
-        }
-        .sugg-item { padding: 10px; cursor: pointer; border-bottom: 1px solid #eee; text-align: right; }
-        .sugg-item:hover { background: #eee; }
+        button { width: 100%; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; margin-top: 10px; }
+        .logo { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; margin-bottom: 15px; border: 3px solid var(--p); }
+        #wiki-suggestions { position: absolute; background: white; width: calc(100% - 40px); border: 1px solid #ddd; z-index: 100; display: none; max-height: 150px; overflow-y: auto; }
+        .sugg-item { padding: 10px; cursor: pointer; border-bottom: 1px solid #eee; }
+        .sugg-item:hover { background: #f0f0f0; }
     </style>
+</head>
+<body>
+    <img src="https://lh3.googleusercontent.com/a/ACg8ocL_F_qXfM5C58I-v2vC6Q0Q5f8X5-v2vC6Q0Q5f8X5=s288-c-no" class="logo">
     
+    <div id="login-section" class="card">
+        <button onclick="tokenClient.requestAccessToken()" style="background:var(--p);">התחבר למערכת</button>
+    </div>
+
+    <div id="main-ui" style="display:none; width: 100%; max-width: 450px;">
+        <div class="card" style="border-top-color: var(--w);">
+            <h3>📖 סוכן ויקיפדיה</h3>
+            <input type="text" id="wiki-query" placeholder="חפש ערך..." oninput="getWikiSuggestions(this.value)" autocomplete="off">
+            <div id="wiki-suggestions"></div>
+            <button onclick="doWiki()" style="background:var(--w);">שלח ערך למייל</button>
+            <div id="st-wiki" style="text-align:center; margin-top:5px;"></div>
+        </div>
+
+        <div class="card" style="border-top-color: var(--s);">
+            <h3>🔗 הזרמת קישור</h3>
+            <input type="text" id="d-url" placeholder="הדבק קישור לקובץ...">
+            <button onclick="doWork('file', 'd-url')" style="background:var(--s);">הזרם לדרייב, למייל ולטלגרם</button>
+            <div id="st-url" style="text-align:center; margin-top:5px;"></div>
+        </div>
+    </div>
+
     <script>
-        // פונקציות עזר - חייבות להיות למעלה
-        async function getWikiSuggestions(val) {
-            const box = document.getElementById('wiki-suggestions');
-            if (val.length < 2) { box.style.display = 'none'; return; }
-            
-            try {
-                const r = await fetch(`https://he.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(val)}&limit=8&format=json&origin=*`);
-                const d = await r.json();
-                const titles = d[1];
-                
-                if (titles.length > 0) {
-                    box.innerHTML = titles.map(t => `<div class="sugg-item" onclick="selectWiki('${t.replace(/'/g, "\\'")}')">${t}</div>`).join('');
-                    box.style.display = 'block';
-                } else { box.style.display = 'none'; }
-            } catch (e) { console.error(e); }
-        }
-
-        function selectWiki(t) {
-            document.getElementById('wiki-query').value = t;
-            document.getElementById('wiki-suggestions').style.display = 'none';
-        }
-
         let tokenClient, access_token, userEmail;
         const WORKER = 'https://wandering-boat-c837.meny85502.workers.dev/';
 
@@ -59,37 +58,36 @@
             });
         }
 
+        async function getWikiSuggestions(val) {
+            const box = document.getElementById('wiki-suggestions');
+            if (val.length < 2) { box.style.display = 'none'; return; }
+            const r = await fetch(`https://he.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(val)}&limit=5&format=json&origin=*`);
+            const d = await r.json();
+            box.innerHTML = d[1].map(t => `<div class="sugg-item" onclick="selectWiki('${t}')">${t}</div>`).join('');
+            box.style.display = 'block';
+        }
+
+        function selectWiki(t) {
+            document.getElementById('wiki-query').value = t;
+            document.getElementById('wiki-suggestions').style.display = 'none';
+        }
+
         async function doWiki() {
             const q = document.getElementById('wiki-query').value;
-            const st = document.getElementById('st-wiki');
-            if (!q || !access_token) return alert("התחבר ובחר ערך");
-            st.innerText = "⏳ שולח...";
-            try {
-                const res = await fetch(WORKER, {
-                    method: 'POST',
-                    body: JSON.stringify({ type: 'wikipedia', query: q, accessToken: access_token, userEmail: userEmail })
-                });
-                const data = await res.json();
-                st.innerText = data.success ? "✅ נשלח למייל!" : "❌ " + data.error;
-            } catch (e) { st.innerText = "❌ שגיאה"; }
+            document.getElementById('st-wiki').innerText = "⏳ שולח...";
+            const res = await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type: 'wikipedia', query: q, accessToken: access_token, userEmail }) });
+            const data = await res.json();
+            document.getElementById('st-wiki').innerText = data.success ? "✅ נשלח!" : "❌ שגיאה";
+        }
+
+        async function doWork(type, id) {
+            const val = document.getElementById(id).value;
+            document.getElementById('st-url').innerText = "⏳ מזרימים...";
+            const res = await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type, value: val, accessToken: access_token, userEmail }) });
+            const data = await res.json();
+            document.getElementById('st-url').innerText = data.success ? "✅ בוצע בהצלחה!" : "❌ שגיאה";
         }
     </script>
-</head>
-<body>
-    <div id="login-section" class="card">
-        <button onclick="tokenClient.requestAccessToken()" style="background:#007bff;">התחבר למערכת</button>
-    </div>
-
-    <div id="main-ui" style="display:none">
-        <div class="card">
-            <h3>📖 סוכן ויקיפדיה</h3>
-            <input type="text" id="wiki-query" placeholder="הקלד ערך..." oninput="getWikiSuggestions(this.value)" autocomplete="off">
-            <div id="wiki-suggestions"></div>
-            <button onclick="doWiki()">שלח למייל</button>
-            <div id="st-wiki" style="margin-top:10px; font-weight:bold;"></div>
-        </div>
-    </div>
-
     <script src="https://accounts.google.com/gsi/client" onload="init()" async defer></script>
 </body>
 </html>
