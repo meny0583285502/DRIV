@@ -2,122 +2,94 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>מערכת ענן V26.0</title>
+    <title>מערכת ענן V26</title>
     <style>
-        :root { --p: #007bff; --s: #28a745; --bg: #f4f7f9; --g: #4285F4; --w: #364043; }
-        body { font-family: 'Segoe UI', system-ui; background: var(--bg); display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; width: 100%; max-width: 450px; border-top: 5px solid var(--p); position: relative; }
-        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 1rem; }
-        button { width: 100%; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; transition: 0.2s; color: white; font-size: 1rem; }
-        .status { margin-top: 10px; font-size: 0.9rem; text-align: center; font-weight: bold; }
-        #wiki-suggestions { position: absolute; background: white; width: calc(100% - 40px); border: 1px solid #ddd; border-top: none; border-radius: 0 0 8px 8px; max-height: 200px; overflow-y: auto; display: none; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .suggestion-item { padding: 10px; cursor: pointer; border-bottom: 1px solid #eee; text-align: right; }
-        .suggestion-item:hover { background: #f0f0f0; }
+        body { font-family: sans-serif; background: #f4f7f9; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; width: 100%; max-width: 400px; position: relative; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; background: #364043; color: white; }
+        #wiki-suggestions { 
+            position: absolute; top: 100%; left: 20px; right: 20px; 
+            background: white; border: 1px solid #ccc; border-top: none; 
+            z-index: 9999; display: none; max-height: 150px; overflow-y: auto;
+            box-shadow: 0 4px 5px rgba(0,0,0,0.2);
+        }
+        .sugg-item { padding: 10px; cursor: pointer; border-bottom: 1px solid #eee; text-align: right; }
+        .sugg-item:hover { background: #eee; }
     </style>
+    
+    <script>
+        // פונקציות עזר - חייבות להיות למעלה
+        async function getWikiSuggestions(val) {
+            const box = document.getElementById('wiki-suggestions');
+            if (val.length < 2) { box.style.display = 'none'; return; }
+            
+            try {
+                const r = await fetch(`https://he.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(val)}&limit=8&format=json&origin=*`);
+                const d = await r.json();
+                const titles = d[1];
+                
+                if (titles.length > 0) {
+                    box.innerHTML = titles.map(t => `<div class="sugg-item" onclick="selectWiki('${t.replace(/'/g, "\\'")}')">${t}</div>`).join('');
+                    box.style.display = 'block';
+                } else { box.style.display = 'none'; }
+            } catch (e) { console.error(e); }
+        }
+
+        function selectWiki(t) {
+            document.getElementById('wiki-query').value = t;
+            document.getElementById('wiki-suggestions').style.display = 'none';
+        }
+
+        let tokenClient, access_token, userEmail;
+        const WORKER = 'https://wandering-boat-c837.meny85502.workers.dev/';
+
+        function init() {
+            tokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: '35488533313-r07s467bb6lnd03bb03iqif0eroq6jcl.apps.googleusercontent.com',
+                scope: 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/userinfo.email',
+                callback: async (res) => {
+                    access_token = res.access_token;
+                    const info = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', { headers: { Authorization: `Bearer ${access_token}` } });
+                    const data = await info.json();
+                    userEmail = data.email;
+                    document.getElementById('login-section').style.display = 'none';
+                    document.getElementById('main-ui').style.display = 'block';
+                }
+            });
+        }
+
+        async function doWiki() {
+            const q = document.getElementById('wiki-query').value;
+            const st = document.getElementById('st-wiki');
+            if (!q || !access_token) return alert("התחבר ובחר ערך");
+            st.innerText = "⏳ שולח...";
+            try {
+                const res = await fetch(WORKER, {
+                    method: 'POST',
+                    body: JSON.stringify({ type: 'wikipedia', query: q, accessToken: access_token, userEmail: userEmail })
+                });
+                const data = await res.json();
+                st.innerText = data.success ? "✅ נשלח למייל!" : "❌ " + data.error;
+            } catch (e) { st.innerText = "❌ שגיאה"; }
+        }
+    </script>
 </head>
 <body>
     <div id="login-section" class="card">
-        <h2 style="text-align:center; margin-top:0;">כניסה למערכת</h2>
-        <button onclick="tokenClient.requestAccessToken()" style="background:var(--p);">התחבר לגוגל דרייב ומייל</button>
+        <button onclick="tokenClient.requestAccessToken()" style="background:#007bff;">התחבר למערכת</button>
     </div>
 
     <div id="main-ui" style="display:none">
-        <div class="card" style="border-top-color: var(--w);">
-            <h3 style="margin-top:0;">📖 סוכן ויקיפדיה למייל</h3>
-            <p style="font-size:0.85rem; color:#555;">התחל להקליד ובחר ערך מהרשימה:</p>
-            <input type="text" id="wiki-query" placeholder="חפש ערך..." oninput="getWikiSuggestions(this.value)" autocomplete="off">
+        <div class="card">
+            <h3>📖 סוכן ויקיפדיה</h3>
+            <input type="text" id="wiki-query" placeholder="הקלד ערך..." oninput="getWikiSuggestions(this.value)" autocomplete="off">
             <div id="wiki-suggestions"></div>
-            <button style="background:var(--w);" onclick="doWiki()">שלח ערך מלא למייל</button>
-            <div id="st-wiki" class="status"></div>
-        </div>
-
-        <div class="card" style="border-top-color: var(--s);">
-            <h3 style="margin-top:0;">🔗 הזרמה מקישור אינטרנט</h3>
-            <input type="text" id="d-url" placeholder="הדבק קישור ישיר...">
-            <button style="background:var(--s);" onclick="doWork('file', 'd-url')">העבר לדרייב ושלח מייל</button>
-            <div id="st-url" class="status"></div>
+            <button onclick="doWiki()">שלח למייל</button>
+            <div id="st-wiki" style="margin-top:10px; font-weight:bold;"></div>
         </div>
     </div>
 
-<script>
-    let tokenClient, access_token, userEmail;
-    const WORKER = 'https://wandering-boat-c837.meny85502.workers.dev/';
-
-    function init() {
-        tokenClient = google.accounts.oauth2.initTokenClient({
-            client_id: '35488533313-r07s467bb6lnd03bb03iqif0eroq6jcl.apps.googleusercontent.com',
-            scope: 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/userinfo.email',
-            callback: async (res) => {
-                access_token = res.access_token;
-                const info = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', { headers: { Authorization: `Bearer ${access_token}` } });
-                const data = await info.json();
-                userEmail = data.email;
-                document.getElementById('login-section').style.display = 'none';
-                document.getElementById('main-ui').style.display = 'block';
-                fetch(WORKER, { method: 'POST', body: JSON.stringify({ accessToken: access_token, userEmail: userEmail }) });
-            }
-        });
-    }
-
-    // פונקציית ההצעות של ויקיפדיה
-    async function getWikiSuggestions(val) {
-        const suggBox = document.getElementById('wiki-suggestions');
-        if (val.length < 2) {
-            suggBox.style.display = 'none';
-            return;
-        }
-        try {
-            const res = await fetch(`https://he.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(val)}&limit=10&namespace=0&format=json&origin=*`);
-            const data = await res.json();
-            const titles = data[1];
-            if (titles.length > 0) {
-                suggBox.innerHTML = titles.map(t => `<div class="suggestion-item" onclick="selectWiki('${t.replace(/'/g, "\\'")}')">${t}</div>`).join('');
-                suggBox.style.display = 'block';
-            } else {
-                suggBox.style.display = 'none';
-            }
-        } catch (e) { console.error("Error fetching suggestions:", e); }
-    }
-
-    function selectWiki(title) {
-        document.getElementById('wiki-query').value = title;
-        document.getElementById('wiki-suggestions').style.display = 'none';
-    }
-
-    async function doWiki() {
-        const query = document.getElementById('wiki-query').value;
-        const status = document.getElementById('st-wiki');
-        if (!query) return alert("בחר ערך");
-        status.innerText = "⏳ שולח ערך מלא למייל...";
-        try {
-            const response = await fetch(WORKER, {
-                method: 'POST',
-                body: JSON.stringify({ type: 'wikipedia', query: query, accessToken: access_token, userEmail: userEmail })
-            });
-            const data = await response.json();
-            status.innerHTML = data.success ? "✅ המייל נשלח!" : "❌ " + data.error;
-        } catch (e) { status.innerText = "❌ שגיאה"; }
-    }
-
-    async function doWork(type, inputId) {
-        const val = document.getElementById(inputId).value;
-        const status = document.getElementById('st-url');
-        if (!val) return;
-        status.innerText = "⏳ מזרים...";
-        try {
-            const response = await fetch(WORKER, {
-                method: 'POST', body: JSON.stringify({ type, value: val, accessToken: access_token, userEmail })
-            });
-            const data = await response.json();
-            status.innerHTML = data.success ? "✅ בוצע!" : "❌ " + data.error;
-        } catch (e) { status.innerText = "❌ שגיאה"; }
-    }
-
-    // סגירת הצעות בלחיצה בחוץ
-    document.addEventListener('click', (e) => {
-        if (e.target.id !== 'wiki-query') document.getElementById('wiki-suggestions').style.display = 'none';
-    });
-</script>
-<script src="https://accounts.google.com/gsi/client" onload="init()" async defer></script>
+    <script src="https://accounts.google.com/gsi/client" onload="init()" async defer></script>
 </body>
 </html>
