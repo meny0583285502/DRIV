@@ -2,68 +2,54 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>מערכת ניהול ענן VIP</title>
+    <title>Cloud Master V38</title>
     <link rel="icon" href="https://upload.wikimedia.org/wikipedia/commons/d/da/Google_Drive_logo.png">
     <style>
-        :root { --p: #1a73e8; --s: #34a853; --bg: #f8f9fa; --w: #202124; --o: #f9ab00; --r: #ea4335; }
+        :root { --p: #1a73e8; --s: #34a853; --bg: #f8f9fa; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .card { background: white; padding: 18px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.12); margin-bottom: 15px; width: 100%; max-width: 450px; border-top: 5px solid var(--p); position: relative; }
-        input { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #dadce0; border-radius: 8px; box-sizing: border-box; }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 15px; width: 100%; max-width: 450px; border-top: 5px solid var(--p); }
+        input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
         button { width: 100%; padding: 11px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; margin-top: 5px; }
-        .logo-img { width: 70px; margin-bottom: 15px; }
-        #wiki-suggestions { position: absolute; background: white; width: calc(100% - 40px); border: 1px solid #dadce0; z-index: 100; display: none; border-radius: 0 0 8px 8px; }
-        .sugg-item { padding: 10px; cursor: pointer; border-bottom: 1px solid #f1f3f4; text-align: right; }
-        .status { font-size: 0.8rem; text-align: center; font-weight: bold; margin-top: 6px; color: var(--p); }
+        .status { font-size: 0.85rem; text-align: center; margin-top: 5px; min-height: 1.2em; font-weight: bold; }
+        #wiki-suggestions { background: white; border: 1px solid #ddd; display: none; }
+        .sugg-item { padding: 8px; cursor: pointer; border-bottom: 1px solid #eee; }
     </style>
 </head>
 <body>
-    <img src="https://upload.wikimedia.org/wikipedia/commons/d/da/Google_Drive_logo.png" class="logo-img">
-    
+    <img src="https://upload.wikimedia.org/wikipedia/commons/d/da/Google_Drive_logo.png" width="80">
     <div id="login-section" class="card">
-        <h2 style="text-align:center;">כניסה למערכת</h2>
-        <button onclick="tokenClient.requestAccessToken()" style="background:var(--p);">התחבר עם גוגל</button>
+        <button onclick="tokenClient.requestAccessToken()" style="background:var(--p);">התחבר עם Google</button>
     </div>
-
-    <div id="main-ui" style="display:none; width: 100%; max-width: 450px;">
+    <div id="main-ui" style="display:none; width:100%; max-width:450px;">
         <div class="card" style="border-top-color: var(--s);">
-            <h3>📤 1. שליחת קובץ לדרייב</h3>
-            <input type="text" id="direct-url" placeholder="קישור ישיר (APK, PDF, וכו')...">
-            <button onclick="doWork('direct_link', 'direct-url')" style="background:var(--s);">שלח לדרייב</button>
-            <div id="st-direct-url" class="status"></div>
-        </div>
-        <div class="card" style="border-top-color: #a142f4;">
-            <h3>📂 2. יצירת עותק בדרייב</h3>
+            <h3>📂 העתקת קובץ דרייב (חכם)</h3>
             <input type="text" id="drive-url" placeholder="הדבק קישור גוגל דרייב...">
-            <button onclick="doWork('drive_copy', 'drive-url')" style="background:#a142f4;">צור עותק אישי</button>
+            <button onclick="doWork('drive_copy', 'drive-url')" style="background:var(--s);">צור עותק אישי</button>
             <div id="st-drive-url" class="status"></div>
         </div>
-        <div class="card" style="border-top-color: var(--o);">
-            <h3>📄 3. סורק אתרים ל-PDF</h3>
-            <input type="text" id="pdf-url" placeholder="הדבק כתובת אתר...">
-            <button onclick="doWork('web_to_pdf', 'pdf-url')" style="background:var(--o);">שמור כ-PDF</button>
-            <div id="st-pdf-url" class="status"></div>
+        <div class="card" style="border-top-color: #f9ab00;">
+            <h3>📤 הורדת קובץ ישיר</h3>
+            <input type="text" id="direct-url" placeholder="קישור ישיר לקובץ...">
+            <button onclick="doWork('direct_link', 'direct-url')" style="background:#f9ab00;">שמור בדרייב</button>
+            <div id="st-direct-url" class="status"></div>
         </div>
-        <div class="card" style="border-top-color: var(--w);">
-            <h3>📖 4. ויקיפדיה למייל</h3>
-            <input type="text" id="wiki-query" placeholder="הקלד שם ערך..." oninput="getWikiSuggestions(this.value)" autocomplete="off">
+        <div class="card" style="border-top-color: #202124;">
+            <h3>📖 ויקיפדיה למייל</h3>
+            <input type="text" id="wiki-query" placeholder="שם ערך..." oninput="getWikiSuggestions(this.value)">
             <div id="wiki-suggestions"></div>
-            <button onclick="doWiki()" style="background:var(--w);">שלח ערך ותמונה</button>
+            <button onclick="doWiki()" style="background:#202124;">שלח למייל</button>
             <div id="st-wiki" class="status"></div>
         </div>
-        <div class="card" style="border-top-color: var(--r);">
-            <h3>✂️ 5. קיצור קישור אישי</h3>
-            <input type="text" id="short-url" placeholder="הדבק קישור ארוך...">
-            <button onclick="shortenUrl()" style="background:var(--r);">קצר קישור</button>
+        <div class="card" style="border-top-color: #ea4335;">
+            <h3>✂️ קיצור קישור</h3>
+            <input type="text" id="short-url" placeholder="קישור ארוך...">
+            <button onclick="shortenUrl()" style="background:#ea4335;">קצר קישור</button>
             <div id="st-short" class="status"></div>
         </div>
-
-        <button onclick="location.reload()" style="background:#6c757d; width:auto; margin:20px auto; display:block; font-size:0.8rem;">החלף חשבון</button>
     </div>
-
     <script>
         let tokenClient, access_token, userEmail;
         const WORKER = 'https://wandering-boat-c837.meny85502.workers.dev/';
-
         function init() {
             tokenClient = google.accounts.oauth2.initTokenClient({
                 client_id: '35488533313-r07s467bb6lnd03bb03iqif0eroq6jcl.apps.googleusercontent.com',
@@ -71,53 +57,39 @@
                 callback: async (res) => {
                     access_token = res.access_token;
                     const info = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', { headers: { Authorization: `Bearer ${access_token}` } });
-                    const data = await info.json();
-                    userEmail = data.email;
+                    userEmail = (await info.json()).email;
                     document.getElementById('login-section').style.display = 'none';
                     document.getElementById('main-ui').style.display = 'block';
                 }
             });
         }
-
-        async function getWikiSuggestions(val) {
-            const box = document.getElementById('wiki-suggestions');
-            if (val.length < 2) { box.style.display = 'none'; return; }
-            const r = await fetch(`https://he.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(val)}&limit=5&format=json&origin=*`);
-            const d = await r.json();
-            box.innerHTML = d[1].map(t => `<div class="sugg-item" onclick="selectWiki('${t.replace(/'/g, "\\'")}')">${t}</div>`).join('');
-            box.style.display = 'block';
-        }
-
-        function selectWiki(t) {
-            document.getElementById('wiki-query').value = t;
-            document.getElementById('wiki-suggestions').style.display = 'none';
-        }
-
         async function doWiki() {
             const q = document.getElementById('wiki-query').value;
             const st = document.getElementById('st-wiki');
             st.innerText = "⏳ שולח...";
             const res = await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type: 'wikipedia', query: q, accessToken: access_token, userEmail }) });
-            const data = await res.json();
-            st.innerText = data.success ? "✅ נשלח!" : "❌ שגיאה";
+            st.innerText = (await res.json()).success ? "✅ נשלח!" : "❌ שגיאה";
         }
-
         async function shortenUrl() {
             const val = document.getElementById('short-url').value;
-            const st = document.getElementById('st-short');
-            st.innerText = "⏳ מקצר...";
             const res = await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type: 'shorten', value: val }) });
             const data = await res.json();
-            st.innerHTML = data.success ? `קישור: <a href="${data.shortUrl}" target="_blank">${data.shortUrl}</a>` : "❌ שגיאה";
+            document.getElementById('st-short').innerHTML = data.success ? `<a href="${data.shortUrl}" target="_blank">${data.shortUrl}</a>` : "❌ שגיאה";
         }
-
         async function doWork(type, id) {
             const val = document.getElementById(id).value;
             const st = document.getElementById('st-' + id);
-            st.innerText = "⏳ מבצע...";
+            st.innerText = "⏳ מעבד (זה עשוי לקחת רגע)...";
             const res = await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type, value: val, accessToken: access_token, userEmail }) });
-            const data = await res.json();
-            st.innerText = data.success ? "✅ הושלם! בדוק מייל." : "❌ שגיאה";
+            st.innerText = (await res.json()).success ? "✅ בוצע! בדוק מייל." : "❌ שגיאה";
+        }
+        async function getWikiSuggestions(val) {
+            const box = document.getElementById('wiki-suggestions');
+            if (val.length < 2) { box.style.display = 'none'; return; }
+            const r = await fetch(`https://he.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(val)}&limit=5&format=json&origin=*`);
+            const d = await r.json();
+            box.innerHTML = d[1].map(t => `<div class="sugg-item" onclick="document.getElementById('wiki-query').value='${t}';document.getElementById('wiki-suggestions').style.display='none'">${t}</div>`).join('');
+            box.style.display = 'block';
         }
     </script>
     <script src="https://accounts.google.com/gsi/client" onload="init()" async defer></script>
