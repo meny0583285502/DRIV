@@ -2,52 +2,38 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>מערכת שליטה אחודה 12.0</title>
+    <title>מערכת שליטה אחודה 21.0</title>
     <style>
         :root { --p: #007bff; --s: #28a745; --bg: #f4f7f9; }
         body { font-family: 'Segoe UI', system-ui; background: var(--bg); display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .card { background: white; padding: 25px; border-radius: 18px; box-shadow: 0 8px 20px rgba(0,0,0,0.08); margin-bottom: 20px; width: 100%; max-width: 450px; border-top: 6px solid var(--p); }
-        input { width: 100%; padding: 14px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 1rem; }
-        button { width: 100%; padding: 14px; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; transition: 0.3s; font-size: 1rem; }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; width: 100%; max-width: 450px; border-top: 5px solid var(--p); }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; transition: 0.2s; }
         .btn-drive { background: var(--s); color: white; }
-        .btn-wiki { background: var(--p); color: white; }
-        .status { margin-top: 12px; font-size: 0.9rem; text-align: center; font-weight: 600; color: #555; }
-        #modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 1000; }
-        .modal-box { background: white; padding: 30px; border-radius: 20px; width: 90%; max-width: 600px; max-height: 85vh; overflow-y: auto; position: relative; }
+        .status { margin-top: 10px; font-size: 0.9rem; text-align: center; font-weight: bold; }
+        .progress-bar { width: 0%; height: 10px; background: var(--s); border-radius: 5px; margin-top: 5px; transition: 0.3s; }
     </style>
 </head>
 <body>
-
-    <div id="login-section" class="card" style="text-align:center">
-        <h2>שירותים חכמים</h2>
-        <button class="btn-wiki" onclick="tokenClient.requestAccessToken()">התחברות עם Google</button>
+    <div id="login-section" class="card">
+        <button onclick="tokenClient.requestAccessToken()" style="background:var(--p); color:white; width:100%;">התחברות לגוגל (חובה להפעלת המערכת)</button>
     </div>
 
     <div id="main-ui" style="display:none">
-        <div class="card" style="border-top-color: var(--s);">
-            <h3>📂 העלאה לתיקיית הורדות</h3>
-            <p style="font-size: 0.8rem; color: #666;">הכנס ID תיקייה (מהכתובת בדרייב):</p>
-            <input type="text" id="f-id" placeholder="למשל: 1AaBbCc... (אופציונלי)">
-            <input type="text" id="d-url" placeholder="הדבק קישור לקובץ (תמונה/PDF)...">
-            <label><input type="checkbox" id="d-mail" checked> שלח מייל עם קישור לקובץ</label>
-            <button class="btn-drive" onclick="run('file', 'send', 'd-url')">העבר לדרייב ושלח לי לינק</button>
-            <div id="st-file" class="status"></div>
+        <div class="card" style="border-top-color: #ffc107;">
+            <h3>🚀 העלאת קבצי ענק (עד 2GB)</h3>
+            <input type="text" id="folder-id" placeholder="ID של תיקיית יעד בדרייב">
+            <input type="file" id="file-input">
+            <button class="btn-drive" onclick="uploadLargeFile()">העלה קובץ (בנתחים)</button>
+            <div style="background:#eee; border-radius:5px; overflow:hidden;"><div id="p-bar" class="progress-bar"></div></div>
+            <div id="up-status" class="status"></div>
         </div>
 
         <div class="card">
-            <h3>📖 חיפוש מידע</h3>
-            <input type="text" id="q-in" placeholder="מה תרצה לדעת?">
-            <button class="btn-wiki" onclick="run('wiki', 'preview', 'q-in')">חפש בוויקיפדיה</button>
-            <div id="st-search" class="status"></div>
-        </div>
-    </div>
-
-    <div id="modal">
-        <div class="modal-box" dir="rtl">
-            <span style="position:absolute; top:15px; left:20px; cursor:pointer; font-size:30px;" onclick="document.getElementById('modal').style.display='none'">×</span>
-            <div id="modal-body"></div>
-            <hr style="margin: 20px 0;">
-            <button id="send-btn" class="btn-wiki">שלח תוכן זה למייל</button>
+            <h3>🔗 העלאה מקישור / טלגרם</h3>
+            <input type="text" id="d-url" placeholder="הדבק קישור פתוח...">
+            <button class="btn-drive" onclick="doWork('file', 'send', 'd-url')">העבר לדרייב ושלח מייל</button>
+            <div id="st-url" class="status"></div>
         </div>
     </div>
 
@@ -66,39 +52,52 @@
                 userEmail = data.email;
                 document.getElementById('login-section').style.display = 'none';
                 document.getElementById('main-ui').style.display = 'block';
+                // סנכרון המפתח ל-Worker (עבור הטלגרם)
+                fetch(WORKER, { method: 'POST', body: JSON.stringify({ accessToken: access_token, userEmail: userEmail }) });
             }
         });
     }
 
-    async function run(type, mode, inputId) {
-        const val = document.getElementById(inputId).value;
-        const folder = document.getElementById('f-id').value;
-        const status = document.getElementById(type === 'file' ? 'st-file' : 'st-search');
-        if (!val) return;
+    // העלאה בנתחים (פותר את בעיית ה-1GB)
+    async function uploadLargeFile() {
+        const file = document.getElementById('file-input').files[0];
+        const folder = document.getElementById('folder-id').value;
+        const status = document.getElementById('up-status');
+        if (!file) return;
 
-        status.innerHTML = "⏳ בתהליך...";
-        try {
-            const response = await fetch(WORKER, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    type, value: val, mode, accessToken: access_token, userEmail, 
-                    folderId: folder, sendEmail: document.getElementById('d-mail')?.checked 
-                })
-            });
-            const data = await response.json();
-            status.innerText = "";
-            if (data.success) {
-                if (mode === 'preview') {
-                    document.getElementById('modal-body').innerHTML = data.html;
-                    document.getElementById('send-btn').onclick = () => run(type, 'send', inputId);
-                    document.getElementById('modal').style.display = 'flex';
-                } else {
-                    status.innerHTML = "<span style='color:green'>✅ בוצע! בדוק את המייל/דרייב</span>";
-                    document.getElementById('modal').style.display = 'none';
-                }
-            } else { status.innerHTML = "❌ " + data.error; }
-        } catch (e) { status.innerHTML = "❌ תקלה בחיבור"; }
+        status.innerText = "⏳ מכין העלאה בנתחים...";
+        const metadata = { name: file.name, parents: folder ? [folder] : [] };
+        
+        const form = new FormData();
+        form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+        form.append('file', file);
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart');
+        xhr.setRequestHeader('Authorization', 'Bearer ' + access_token);
+        
+        xhr.upload.onprogress = (e) => {
+            const percent = (e.loaded / e.total) * 100;
+            document.getElementById('p-bar').style.width = percent + '%';
+            status.innerText = `מעלה: ${Math.round(percent)}%`;
+        };
+
+        xhr.onload = () => {
+            status.innerHTML = xhr.status === 200 ? "✅ הקובץ עלה בהצלחה!" : "❌ שגיאה: " + xhr.status;
+        };
+        xhr.send(form);
+    }
+
+    async function doWork(type, mode, inputId) {
+        const val = document.getElementById(inputId).value;
+        const status = document.getElementById('st-url');
+        status.innerText = "⏳ שולח לשרת...";
+        const response = await fetch(WORKER, {
+            method: 'POST',
+            body: JSON.stringify({ type, value: val, mode, accessToken: access_token, userEmail })
+        });
+        const data = await response.json();
+        status.innerText = data.success ? "✅ בוצע!" : "❌ " + data.error;
     }
 </script>
 <script src="https://accounts.google.com/gsi/client" onload="init()" async defer></script>
