@@ -2,37 +2,48 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>מערכת שליטה אחודה 21.0</title>
+    <title>מערכת ענן V23.0</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>☁️</text></svg>">
+    
     <style>
-        :root { --p: #007bff; --s: #28a745; --bg: #f4f7f9; }
+        :root { --p: #007bff; --s: #28a745; --bg: #f4f7f9; --g: #4285F4; }
         body { font-family: 'Segoe UI', system-ui; background: var(--bg); display: flex; flex-direction: column; align-items: center; padding: 20px; }
         .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; width: 100%; max-width: 450px; border-top: 5px solid var(--p); }
-        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; transition: 0.2s; }
-        .btn-drive { background: var(--s); color: white; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 1rem; }
+        button { width: 100%; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; transition: 0.2s; color: white; font-size: 1rem; }
         .status { margin-top: 10px; font-size: 0.9rem; text-align: center; font-weight: bold; }
         .progress-bar { width: 0%; height: 10px; background: var(--s); border-radius: 5px; margin-top: 5px; transition: 0.3s; }
     </style>
 </head>
 <body>
     <div id="login-section" class="card">
-        <button onclick="tokenClient.requestAccessToken()" style="background:var(--p); color:white; width:100%;">התחברות לגוגל (חובה להפעלת המערכת)</button>
+        <h2 style="text-align:center; margin-top:0;">כניסה למערכת</h2>
+        <button onclick="tokenClient.requestAccessToken()" style="background:var(--p);">התחבר לגוגל דרייב ומייל</button>
     </div>
 
     <div id="main-ui" style="display:none">
+        
+        <div class="card" style="border-top-color: var(--g);">
+            <h3 style="margin-top:0;">🔍 סוכן חיפוש חכם</h3>
+            <p style="font-size:0.85rem; color:#555;">קבל את 20 התוצאות הראשונות ישר למייל שלך.</p>
+            <input type="text" id="search-query" placeholder="מה לחפש בגוגל?">
+            <button style="background:var(--g);" onclick="doSearch()">חפש ושלח למייל</button>
+            <div id="st-search" class="status"></div>
+        </div>
+
         <div class="card" style="border-top-color: #ffc107;">
-            <h3>🚀 העלאת קבצי ענק (עד 2GB)</h3>
-            <input type="text" id="folder-id" placeholder="ID של תיקיית יעד בדרייב">
+            <h3 style="margin-top:0;">🚀 העלאה ישירה (קבצי ענק)</h3>
+            <input type="text" id="folder-id" placeholder="ID של תיקיית יעד בדרייב (אופציונלי)">
             <input type="file" id="file-input">
-            <button class="btn-drive" onclick="uploadLargeFile()">העלה קובץ (בנתחים)</button>
+            <button style="background:#ffc107; color:#000;" onclick="uploadLargeFile()">העלה קובץ ישירות לדרייב</button>
             <div style="background:#eee; border-radius:5px; overflow:hidden;"><div id="p-bar" class="progress-bar"></div></div>
             <div id="up-status" class="status"></div>
         </div>
 
-        <div class="card">
-            <h3>🔗 העלאה מקישור / טלגרם</h3>
-            <input type="text" id="d-url" placeholder="הדבק קישור פתוח...">
-            <button class="btn-drive" onclick="doWork('file', 'send', 'd-url')">העבר לדרייב ושלח מייל</button>
+        <div class="card" style="border-top-color: var(--s);">
+            <h3 style="margin-top:0;">🔗 הזרמה מקישור אינטרנט</h3>
+            <input type="text" id="d-url" placeholder="הדבק קישור ישיר (PDF/וידאו/וכו')...">
+            <button style="background:var(--s);" onclick="doWork('file', 'd-url')">העבר לדרייב ושלח מייל</button>
             <div id="st-url" class="status"></div>
         </div>
     </div>
@@ -52,24 +63,54 @@
                 userEmail = data.email;
                 document.getElementById('login-section').style.display = 'none';
                 document.getElementById('main-ui').style.display = 'block';
-                // סנכרון המפתח ל-Worker (עבור הטלגרם)
-                fetch(WORKER, { method: 'POST', body: JSON.stringify({ accessToken: access_token, userEmail: userEmail }) });
+                // סנכרון KV
+                fetch(WORKER, { method: 'POST', body: JSON.stringify({ accessToken: access_token, userEmail: userEmail, folderId: document.getElementById('folder-id').value }) });
             }
         });
     }
 
-    // העלאה בנתחים (פותר את בעיית ה-1GB)
+    // חיפוש גוגל למייל
+    async function doSearch() {
+        const query = document.getElementById('search-query').value;
+        const status = document.getElementById('st-search');
+        if (!query) return alert("הכנס מילת חיפוש");
+        status.innerText = "⏳ מחפש בגוגל ומעצב מייל...";
+        try {
+            const response = await fetch(WORKER, {
+                method: 'POST',
+                body: JSON.stringify({ type: 'search', query: query, accessToken: access_token, userEmail: userEmail })
+            });
+            const data = await response.json();
+            status.innerHTML = data.success ? "✅ המייל נשלח אליך בהצלחה!" : "❌ " + data.error;
+        } catch (e) { status.innerText = "❌ שגיאת רשת"; }
+    }
+
+    // הזרמת קישור דרך השרת
+    async function doWork(type, inputId) {
+        const val = document.getElementById(inputId).value;
+        const status = document.getElementById('st-url');
+        const folderId = document.getElementById('folder-id').value;
+        if (!val) return;
+        status.innerText = "⏳ מזרים לדרייב...";
+        try {
+            const response = await fetch(WORKER, {
+                method: 'POST', body: JSON.stringify({ type, value: val, accessToken: access_token, userEmail, folderId })
+            });
+            const data = await response.json();
+            status.innerHTML = data.success ? "✅ בוצע ונשלח מייל!" : "❌ " + data.error;
+        } catch (e) { status.innerText = "❌ שגיאת רשת"; }
+    }
+
+    // העלאה ישירה של קבצי ענק (Multipart מהדפדפן)
     async function uploadLargeFile() {
         const file = document.getElementById('file-input').files[0];
         const folder = document.getElementById('folder-id').value;
         const status = document.getElementById('up-status');
         if (!file) return;
 
-        status.innerText = "⏳ מכין העלאה בנתחים...";
-        const metadata = { name: file.name, parents: folder ? [folder] : [] };
-        
+        status.innerText = "⏳ מתחיל העלאה ישירה...";
         const form = new FormData();
-        form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+        form.append('metadata', new Blob([JSON.stringify({ name: file.name, parents: folder ? [folder] : [] })], { type: 'application/json' }));
         form.append('file', file);
 
         const xhr = new XMLHttpRequest();
@@ -81,23 +122,8 @@
             document.getElementById('p-bar').style.width = percent + '%';
             status.innerText = `מעלה: ${Math.round(percent)}%`;
         };
-
-        xhr.onload = () => {
-            status.innerHTML = xhr.status === 200 ? "✅ הקובץ עלה בהצלחה!" : "❌ שגיאה: " + xhr.status;
-        };
+        xhr.onload = () => { status.innerHTML = xhr.status === 200 ? "✅ הקובץ הענק בדרייב!" : "❌ שגיאה: " + xhr.status; };
         xhr.send(form);
-    }
-
-    async function doWork(type, mode, inputId) {
-        const val = document.getElementById(inputId).value;
-        const status = document.getElementById('st-url');
-        status.innerText = "⏳ שולח לשרת...";
-        const response = await fetch(WORKER, {
-            method: 'POST',
-            body: JSON.stringify({ type, value: val, mode, accessToken: access_token, userEmail })
-        });
-        const data = await response.json();
-        status.innerText = data.success ? "✅ בוצע!" : "❌ " + data.error;
     }
 </script>
 <script src="https://accounts.google.com/gsi/client" onload="init()" async defer></script>
