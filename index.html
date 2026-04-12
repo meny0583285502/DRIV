@@ -2,7 +2,7 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>Cloud Master V38</title>
+    <title>מערכת ניהול V39</title>
     <link rel="icon" href="https://upload.wikimedia.org/wikipedia/commons/d/da/Google_Drive_logo.png">
     <style>
         :root { --p: #1a73e8; --s: #34a853; --bg: #f8f9fa; }
@@ -10,9 +10,7 @@
         .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 15px; width: 100%; max-width: 450px; border-top: 5px solid var(--p); }
         input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
         button { width: 100%; padding: 11px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; margin-top: 5px; }
-        .status { font-size: 0.85rem; text-align: center; margin-top: 5px; min-height: 1.2em; font-weight: bold; }
-        #wiki-suggestions { background: white; border: 1px solid #ddd; display: none; }
-        .sugg-item { padding: 8px; cursor: pointer; border-bottom: 1px solid #eee; }
+        .status { font-size: 0.85rem; text-align: center; margin-top: 5px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -22,29 +20,16 @@
     </div>
     <div id="main-ui" style="display:none; width:100%; max-width:450px;">
         <div class="card" style="border-top-color: var(--s);">
-            <h3>📂 העתקת קובץ דרייב (חכם)</h3>
-            <input type="text" id="drive-url" placeholder="הדבק קישור גוגל דרייב...">
-            <button onclick="doWork('drive_copy', 'drive-url')" style="background:var(--s);">צור עותק אישי</button>
+            <h3>📂 העתקת קובץ או תיקייה מהדרייב</h3>
+            <input type="text" id="drive-url" placeholder="הדבק קישור לקובץ או לתיקייה...">
+            <button onclick="doWork('drive_copy', 'drive-url')" style="background:var(--s);">צור עותק בדרייב שלי</button>
             <div id="st-drive-url" class="status"></div>
-        </div>
-        <div class="card" style="border-top-color: #f9ab00;">
-            <h3>📤 הורדת קובץ ישיר</h3>
-            <input type="text" id="direct-url" placeholder="קישור ישיר לקובץ...">
-            <button onclick="doWork('direct_link', 'direct-url')" style="background:#f9ab00;">שמור בדרייב</button>
-            <div id="st-direct-url" class="status"></div>
         </div>
         <div class="card" style="border-top-color: #202124;">
             <h3>📖 ויקיפדיה למייל</h3>
-            <input type="text" id="wiki-query" placeholder="שם ערך..." oninput="getWikiSuggestions(this.value)">
-            <div id="wiki-suggestions"></div>
+            <input type="text" id="wiki-query" placeholder="שם ערך...">
             <button onclick="doWiki()" style="background:#202124;">שלח למייל</button>
             <div id="st-wiki" class="status"></div>
-        </div>
-        <div class="card" style="border-top-color: #ea4335;">
-            <h3>✂️ קיצור קישור</h3>
-            <input type="text" id="short-url" placeholder="קישור ארוך...">
-            <button onclick="shortenUrl()" style="background:#ea4335;">קצר קישור</button>
-            <div id="st-short" class="status"></div>
         </div>
     </div>
     <script>
@@ -53,7 +38,7 @@
         function init() {
             tokenClient = google.accounts.oauth2.initTokenClient({
                 client_id: '35488533313-r07s467bb6lnd03bb03iqif0eroq6jcl.apps.googleusercontent.com',
-                scope: 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/userinfo.email',
+                scope: 'https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/userinfo.email',
                 callback: async (res) => {
                     access_token = res.access_token;
                     const info = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', { headers: { Authorization: `Bearer ${access_token}` } });
@@ -70,26 +55,12 @@
             const res = await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type: 'wikipedia', query: q, accessToken: access_token, userEmail }) });
             st.innerText = (await res.json()).success ? "✅ נשלח!" : "❌ שגיאה";
         }
-        async function shortenUrl() {
-            const val = document.getElementById('short-url').value;
-            const res = await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type: 'shorten', value: val }) });
-            const data = await res.json();
-            document.getElementById('st-short').innerHTML = data.success ? `<a href="${data.shortUrl}" target="_blank">${data.shortUrl}</a>` : "❌ שגיאה";
-        }
         async function doWork(type, id) {
             const val = document.getElementById(id).value;
             const st = document.getElementById('st-' + id);
-            st.innerText = "⏳ מעבד (זה עשוי לקחת רגע)...";
+            st.innerText = "⏳ מעתיק (זה יכול לקחת זמן לתיקיות)...";
             const res = await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type, value: val, accessToken: access_token, userEmail }) });
-            st.innerText = (await res.json()).success ? "✅ בוצע! בדוק מייל." : "❌ שגיאה";
-        }
-        async function getWikiSuggestions(val) {
-            const box = document.getElementById('wiki-suggestions');
-            if (val.length < 2) { box.style.display = 'none'; return; }
-            const r = await fetch(`https://he.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(val)}&limit=5&format=json&origin=*`);
-            const d = await r.json();
-            box.innerHTML = d[1].map(t => `<div class="sugg-item" onclick="document.getElementById('wiki-query').value='${t}';document.getElementById('wiki-suggestions').style.display='none'">${t}</div>`).join('');
-            box.style.display = 'block';
+            st.innerText = (await res.json()).success ? "✅ ההעתקה הושלמה! חפש תיקיית 'העתקות שלי'" : "❌ שגיאה";
         }
     </script>
     <script src="https://accounts.google.com/gsi/client" onload="init()" async defer></script>
