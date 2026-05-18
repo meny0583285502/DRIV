@@ -20,6 +20,7 @@
     <div id="login-section" class="card">
         <button onclick="tokenClient.requestAccessToken()" style="background:var(--p);">התחבר למערכת</button>
     </div>
+    
     <div id="main-ui" style="display:none; width:100%; max-width:450px;">
         <div class="card" style="border-top-color: var(--s);">
             <h3>📤 1. שליחת קובץ לדרייב</h3>
@@ -27,18 +28,21 @@
             <button onclick="doWork('direct_link', 'direct-url')" style="background:var(--s);">שלח לדרייב</button>
             <div id="st-direct-url" class="status"></div>
         </div>
+        
         <div class="card" style="border-top-color: #a142f4;">
             <h3>📂 2. העתקת קובץ/תיקייה</h3>
             <input type="text" id="drive-url" placeholder="קישור דרייב...">
             <button onclick="doWork('drive_copy', 'drive-url')" style="background:#a142f4;">צור עותק אישי</button>
             <div id="st-drive-url" class="status"></div>
         </div>
+        
         <div class="card" style="border-top-color: #f9ab00;">
             <h3>📄 3. סורק אתרים ל-PDF</h3>
             <input type="text" id="pdf-url" placeholder="כתובת אתר...">
             <button onclick="doWork('web_to_pdf', 'pdf-url')" style="background:#f9ab00;">שמור כ-PDF</button>
             <div id="st-pdf-url" class="status"></div>
         </div>
+        
         <div class="card" style="border-top-color: var(--w);">
             <h3>📖 4. ויקיפדיה למייל</h3>
             <input type="text" id="wiki-query" placeholder="שם ערך..." oninput="getWikiSuggestions(this.value)">
@@ -46,16 +50,28 @@
             <button onclick="doWiki()" style="background:var(--w);">שלח ערך למייל</button>
             <div id="st-wiki" class="status"></div>
         </div>
+        
         <div class="card" style="border-top-color: var(--r);">
             <h3>✂️ 5. קיצור קישור אישי</h3>
             <input type="text" id="short-url" placeholder="קישור ארוך...">
             <button onclick="doShorten()" style="background:var(--r);">קצר קישור</button>
             <div id="st-short" class="status"></div>
         </div>
+        
+        <!-- הכרטיסייה החדשה שנוספה -->
+        <div class="card" style="border-top-color: #00bcd4;">
+            <h3>📥 6. שאיבת מדיה (עוקף חסימות)</h3>
+            <p style="font-size: 0.85rem; color: #555; margin-top: -10px;">מחלץ תמונות מקישורי ג'מיני ואתרים מורכבים</p>
+            <input type="text" id="scrape-url" placeholder="הדבק קישור ג'מיני או אתר...">
+            <button onclick="doWork('smart_scrape', 'scrape-url')" style="background:#00bcd4;">שאב ושמור בדרייב</button>
+            <div id="st-scrape-url" class="status"></div>
+        </div>
     </div>
+
     <script>
         let tokenClient, access_token, userEmail;
         const WORKER = 'https://wandering-boat-c837.meny85502.workers.dev/';
+        
         function init() {
             tokenClient = google.accounts.oauth2.initTokenClient({
                 client_id: '35488533313-r07s467bb6lnd03bb03iqif0eroq6jcl.apps.googleusercontent.com',
@@ -69,6 +85,7 @@
                 }
             });
         }
+        
         async function getWikiSuggestions(val) {
             const box = document.getElementById('wiki-suggestions');
             if (val.length < 2) { box.style.display = 'none'; return; }
@@ -77,6 +94,7 @@
             box.innerHTML = d[1].map(t => `<div class="sugg-item" onclick="document.getElementById('wiki-query').value='${t}';document.getElementById('wiki-suggestions').style.display='none'">${t}</div>`).join('');
             box.style.display = 'block';
         }
+        
         async function doWiki() {
             const q = document.getElementById('wiki-query').value;
             const st = document.getElementById('st-wiki');
@@ -84,12 +102,14 @@
             const res = await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type: 'wikipedia', query: q, accessToken: access_token, userEmail }) });
             st.innerText = (await res.json()).success ? "✅ נשלח!" : "❌ שגיאה";
         }
+        
         async function doShorten() {
             const val = document.getElementById('short-url').value;
             const res = await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type: 'shorten', value: val }) });
             const data = await res.json();
             document.getElementById('st-short').innerHTML = data.success ? `<a href="${data.shortUrl}" target="_blank">${data.shortUrl}</a>` : "❌ שגיאה";
         }
+        
         async function doWork(type, id) {
             const val = document.getElementById(id).value;
             const st = document.getElementById('st-' + id);
@@ -97,13 +117,6 @@
             const res = await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type, value: val, accessToken: access_token, userEmail }) });
             st.innerText = (await res.json()).success ? "✅ הושלם!" : "❌ שגיאה";
         }
-        <div class="card" style="border-top-color: #00bcd4;">
-            <h3>📥 6. שאיבת מדיה (עוקף חסימות)</h3>
-            <p style="font-size: 0.85rem; color: #555; margin-top: -10px;">מחלץ תמונות מקישורי ג'מיני ואתרים מורכבים</p>
-            <input type="text" id="scrape-url" placeholder="הדבק קישור ג'מיני או אתר...">
-            <button onclick="doWork('smart_scrape', 'scrape-url')" style="background:#00bcd4;">שאב ושמור בדרייב</button>
-            <div id="st-scrape-url" class="status"></div>
-        </div>
     </script>
     <script src="https://accounts.google.com/gsi/client" onload="init()" async defer></script>
 </body>
