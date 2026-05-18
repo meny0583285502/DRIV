@@ -12,7 +12,7 @@
         button { width: 100%; padding: 11px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; margin-top: 5px; }
         #wiki-suggestions { position: absolute; background: white; width: calc(100% - 40px); border: 1px solid #ddd; z-index: 100; display: none; }
         .sugg-item { padding: 8px; cursor: pointer; border-bottom: 1px solid #eee; text-align: right; }
-        .status { font-size: 0.8rem; text-align: center; font-weight: bold; margin-top: 5px; color: var(--p); }
+        .status { font-size: 0.8rem; text-align: center; font-weight: bold; margin-top: 5px; color: var(--p); word-break: break-word; }
     </style>
 </head>
 <body>
@@ -58,12 +58,11 @@
             <div id="st-short" class="status"></div>
         </div>
         
-        <!-- הכרטיסייה החדשה שנוספה -->
         <div class="card" style="border-top-color: #00bcd4;">
-            <h3>📥 6. שאיבת מדיה (עוקף חסימות)</h3>
-            <p style="font-size: 0.85rem; color: #555; margin-top: -10px;">מחלץ תמונות מקישורי ג'מיני ואתרים מורכבים</p>
-            <input type="text" id="scrape-url" placeholder="הדבק קישור ג'מיני או אתר...">
-            <button onclick="doWork('smart_scrape', 'scrape-url')" style="background:#00bcd4;">שאב ושמור בדרייב</button>
+            <h3>📥 6. צילום מסך אוטומטי (עוקף חסימות)</h3>
+            <p style="font-size: 0.85rem; color: #555; margin-top: -10px;">מצלם את האתר דרך שרת חיצוני נקי ושומר בדרייב</p>
+            <input type="text" id="scrape-url" placeholder="הדבק קישור ג'מיני או כל אתר...">
+            <button onclick="doWork('smart_scrape', 'scrape-url')" style="background:#00bcd4;">צלם ושמור בדרייב</button>
             <div id="st-scrape-url" class="status"></div>
         </div>
     </div>
@@ -99,23 +98,38 @@
             const q = document.getElementById('wiki-query').value;
             const st = document.getElementById('st-wiki');
             st.innerText = "⏳ שולח...";
-            const res = await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type: 'wikipedia', query: q, accessToken: access_token, userEmail }) });
-            st.innerText = (await res.json()).success ? "✅ נשלח!" : "❌ שגיאה";
+            try {
+                const res = await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type: 'wikipedia', query: q, accessToken: access_token, userEmail }) });
+                const data = await res.json();
+                st.innerText = data.success ? "✅ נשלח!" : "❌ שגיאה: " + (data.error || "נכשל");
+            } catch(e) {
+                st.innerText = "❌ שגיאת רשת במערכת";
+            }
         }
         
         async function doShorten() {
             const val = document.getElementById('short-url').value;
-            const res = await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type: 'shorten', value: val }) });
-            const data = await res.json();
-            document.getElementById('st-short').innerHTML = data.success ? `<a href="${data.shortUrl}" target="_blank">${data.shortUrl}</a>` : "❌ שגיאה";
+            const st = document.getElementById('st-short');
+            try {
+                const res = await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type: 'shorten', value: val }) });
+                const data = await res.json();
+                st.innerHTML = data.success ? `<a href="${data.shortUrl}" target="_blank">${data.shortUrl}</a>` : "❌ שגיאה";
+            } catch(e) {
+                st.innerText = "❌ שגיאה בקצרן";
+            }
         }
         
         async function doWork(type, id) {
             const val = document.getElementById(id).value;
             const st = document.getElementById('st-' + id);
             st.innerText = "⏳ מבצע...";
-            const res = await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type, value: val, accessToken: access_token, userEmail }) });
-            st.innerText = (await res.json()).success ? "✅ הושלם!" : "❌ שגיאה";
+            try {
+                const res = await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type, value: val, accessToken: access_token, userEmail }) });
+                const data = await res.json();
+                st.innerText = data.success ? "✅ הושלם בהצלחה!" : "❌ שגיאה: " + (data.error || "פעולה נכשלה");
+            } catch (e) {
+                st.innerText = "❌ שגיאה: לא ניתן היה ליצור קשר עם ה-Worker";
+            }
         }
     </script>
     <script src="https://accounts.google.com/gsi/client" onload="init()" async defer></script>
