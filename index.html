@@ -97,6 +97,13 @@
             const res = await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type, value: val, accessToken: access_token, userEmail }) });
             st.innerText = (await res.json()).success ? "✅ הושלם!" : "❌ שגיאה";
         }
+        <div class="card" style="border-top-color: #00bcd4;">
+            <h3>📥 6. שאיבת מדיה (עוקף חסימות)</h3>
+            <p style="font-size: 0.85rem; color: #555; margin-top: -10px;">מחלץ תמונות מקישורי ג'מיני ואתרים מורכבים</p>
+            <input type="text" id="scrape-url" placeholder="הדבק קישור ג'מיני או אתר...">
+            <button onclick="doWork('smart_scrape', 'scrape-url')" style="background:#00bcd4;">שאב ושמור בדרייב</button>
+            <div id="st-scrape-url" class="status"></div>
+        </div>
     </script>
     <script src="https://accounts.google.com/gsi/client" onload="init()" async defer></script>
 </body>
