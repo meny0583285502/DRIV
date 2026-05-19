@@ -5,7 +5,7 @@
     <title>Cloud Master Pro V42</title>
     <link rel="icon" href="https://upload.wikimedia.org/wikipedia/commons/d/da/Google_Drive_logo.png">
     <style>
-        :root { --p: #1a73e8; --s: #34a853; --bg: #f8f9fa; --w: #202124; --r: #ea4335; }
+        :root { --p: #1a73e8; --s: #34a853; --bg: #f8f9fa; --w: #202124; --r: #ea4335; --t: #0088cc; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; flex-direction: column; align-items: center; padding: 20px; }
         .card { background: white; padding: 18px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 15px; width: 100%; max-width: 450px; border-top: 5px solid var(--p); position: relative; }
         input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
@@ -13,6 +13,11 @@
         #wiki-suggestions { position: absolute; background: white; width: calc(100% - 40px); border: 1px solid #ddd; z-index: 100; display: none; }
         .sugg-item { padding: 8px; cursor: pointer; border-bottom: 1px solid #eee; text-align: right; }
         .status { font-size: 0.8rem; text-align: center; font-weight: bold; margin-top: 5px; color: var(--p); word-break: break-word; }
+        
+        /* עיצוב ייעודי עבור רשימת הודעות הטלגרם */
+        .telegram-feed-container { max-height: 300px; overflow-y: auto; margin-top: 10px; padding-left: 5px; }
+        .telegram-msg { background: #f1f5f9; padding: 10px; border-radius: 8px; margin-bottom: 8px; font-size: 0.9rem; line-height: 1.4; color: #333; white-space: pre-wrap; border-right: 3px solid var(--t); }
+        .telegram-empty { text-align: center; color: #666; font-style: italic; font-size: 0.85rem; }
     </style>
 </head>
 <body>
@@ -65,10 +70,21 @@
             <button onclick="doWork('smart_scrape', 'scrape-url')" style="background:#00bcd4;">צלם ושמור בדרייב</button>
             <div id="st-scrape-url" class="status"></div>
         </div>
+
+        <!-- כרטיס מספר 7 החדש: ניסוי ערוץ טלגרם משה פרגוד -->
+        <div class="card" style="border-top-color: var(--t);">
+            <h3>📢 7. מבזקי חדשות - Moshepargod</h3>
+            <p style="font-size: 0.85rem; color: #555; margin-top: -10px;">עדכונים אחרונים מתוך ערוץ הטלגרם הציבורי</p>
+            <div id="telegram-feed" class="telegram-feed-container">
+                <div class="telegram-empty">טוען הודעות אחרונות...</div>
+            </div>
+            <div id="st-telegram" class="status"></div>
+        </div>
     </div>
 
     <script>
         let tokenClient, access_token, userEmail;
+        // משתמש במשתנה ה-WORKER הקיים שלך מהקוד הציבורי
         const WORKER = 'https://wandering-boat-c837.meny85502.workers.dev/';
         
         function init() {
@@ -81,8 +97,37 @@
                     userEmail = (await info.json()).email;
                     document.getElementById('login-section').style.display = 'none';
                     document.getElementById('main-ui').style.display = 'block';
+                    
+                    // הפעלת טעינת ההודעות מהערוץ מיד לאחר שהמשתמש מתחבר למערכת
+                    loadTelegramFeed();
                 }
             });
+        }
+        
+        // פונקציה חדשה שמביאה ומציגה את ההודעות מהערוץ
+        async function loadTelegramFeed() {
+            const feedDiv = document.getElementById('telegram-feed');
+            const st = document.getElementById('st-telegram');
+            try {
+                // קריאה לוורקר עם הפרמטר הייעודי שהוספנו לקוד
+                const res = await fetch(`${WORKER}?action=telegram_feed`);
+                const messages = await res.json();
+                
+                if (!messages || messages.length === 0) {
+                    feedDiv.innerHTML = '<div class="telegram-empty">לא נמצאו הודעות חדשות בערוץ.</div>';
+                    return;
+                }
+                
+                feedDiv.innerHTML = ''; // מנקה את הודעת הטעינה
+                messages.forEach(msg => {
+                    const msgEl = document.createElement('div');
+                    msgEl.className = 'telegram-msg';
+                    msgEl.textContent = msg.text;
+                    feedDiv.appendChild(msgEl);
+                });
+            } catch (e) {
+                feedDiv.innerHTML = '<div class="telegram-empty" style="color:var(--r);">שגיאה בטעינת הפיד מהשרת.</div>';
+            }
         }
         
         async function getWikiSuggestions(val) {
