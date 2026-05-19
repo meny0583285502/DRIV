@@ -6,100 +6,111 @@
     <link rel="icon" href="https://upload.wikimedia.org/wikipedia/commons/d/da/Google_Drive_logo.png">
     <style>
         :root { --p: #1a73e8; --s: #34a853; --bg: #f8f9fa; --w: #202124; --r: #ea4335; --t: #0088cc; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .card { background: white; padding: 18px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 15px; width: 100%; max-width: 450px; border-top: 5px solid var(--p); position: relative; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; }
+        
+        /* התאמה למסך מלא ורחב */
+        .wrapper { width: 100%; max-width: 1200px; display: flex; flex-direction: column; align-items: center; }
+        .card { background: white; padding: 18px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 15px; width: 100%; border-top: 5px solid var(--p); position: relative; box-sizing: border-box; }
+        
+        /* חלוקת אזור הדרייב לרשת (Grid) כדי לנצל את רוחב המסך המלא */
+        .grid-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 15px; width: 100%; }
+        
         input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
         button { width: 100%; padding: 11px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; margin-top: 5px; }
         #wiki-suggestions { position: absolute; background: white; width: calc(100% - 40px); border: 1px solid #ddd; z-index: 100; display: none; }
         .sugg-item { padding: 8px; cursor: pointer; border-bottom: 1px solid #eee; text-align: right; }
         .status { font-size: 0.8rem; text-align: center; font-weight: bold; margin-top: 5px; color: var(--p); word-break: break-word; }
         
-        /* עיצוב רשימת ההודעות */
-        .telegram-feed-container { max-height: 320px; overflow-y: auto; margin-top: 10px; padding-left: 5px; }
-        .telegram-msg { background: #f1f5f9; padding: 12px; border-radius: 8px; margin-bottom: 8px; font-size: 0.9rem; line-height: 1.4; color: #333; white-space: pre-wrap; border-right: 3px solid var(--t); cursor: pointer; transition: background 0.2s; position: relative; }
+        /* עיצוב רשימת הודעות טלגרם */
+        .telegram-feed-container { max-height: 400px; overflow-y: auto; margin-top: 10px; padding-left: 5px; }
+        .telegram-msg { background: #f1f5f9; padding: 14px; border-radius: 8px; margin-bottom: 8px; font-size: 0.95rem; line-height: 1.5; color: #333; white-space: pre-wrap; border-right: 4px solid var(--t); cursor: pointer; transition: background 0.2s; }
         .telegram-msg:hover { background: #e2e8f0; }
-        .msg-time { display: block; font-size: 0.75rem; color: #777; margin-bottom: 4px; font-weight: bold; }
-        .telegram-empty { text-align: center; color: #666; font-style: italic; font-size: 0.85rem; padding: 10px; }
+        .msg-time { display: block; font-size: 0.8rem; color: var(--t); margin-bottom: 6px; font-weight: bold; }
+        .telegram-empty { text-align: center; color: #666; font-style: italic; font-size: 0.9rem; padding: 15px; }
 
-        /* חלון מודאלי מובנה לפתיחה באותו דומיין */
+        /* חלון מודאלי מובנה באותו דומיין */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 1000; justify-content: center; align-items: center; padding: 15px; box-sizing: border-box; }
-        .modal-content { background: white; padding: 20px; border-radius: 12px; max-width: 500px; width: 100%; max-height: 80vh; overflow-y: auto; border-top: 5px solid var(--t); box-shadow: 0 4px 20px rgba(0,0,0,0.2); position: relative; }
-        .modal-time { font-size: 0.8rem; color: #666; font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
-        .modal-text { font-size: 1rem; line-height: 1.6; color: #222; white-space: pre-wrap; }
-        .modal-close { display: block; margin-top: 15px; background: #555; font-size: 0.9rem; text-align: center; }
+        .modal-content { background: white; padding: 25px; border-radius: 12px; max-width: 650px; width: 100%; max-height: 85vh; overflow-y: auto; border-top: 6px solid var(--t); box-shadow: 0 4px 25px rgba(0,0,0,0.2); position: relative; }
+        .modal-time { font-size: 0.85rem; color: #555; font-weight: bold; margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 6px; }
+        .modal-text { font-size: 1.05rem; line-height: 1.6; color: #111; white-space: pre-wrap; }
+        .modal-close { display: block; margin-top: 20px; background: #444; font-size: 0.95rem; text-align: center; }
     </style>
 </head>
 <body>
-    <img src="https://upload.wikimedia.org/wikipedia/commons/d/da/Google_Drive_logo.png" width="70">
-    
-    <!-- כרטיס טלגרם - מוצג תמיד מיד בכניסה ללא תלות בחיבור לגוגל -->
-    <div class="card" style="border-top-color: var(--t); margin-top: 15px;">
-        <h3>📢 מבזקי חדשות - Moshepargod</h3>
-        <p style="font-size: 0.85rem; color: #555; margin-top: -10px;">לחץ על הודעה להרחבה באותו דומיין. מתעדכן אוטומטית.</p>
-        <div id="telegram-feed" class="telegram-feed-container">
-            <div class="telegram-empty">טוען הודעות אחרונות...</div>
+    <div class="wrapper">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/d/da/Google_Drive_logo.png" width="70" style="margin-bottom: 10px;">
+        
+        <!-- כרטיס טלגרם רחב - נטען אוטומטית ובאופן עצמאי -->
+        <div class="card" style="border-top-color: var(--t);">
+            <h3>📢 מבזקי חדשות בזמן אמת - Moshepargod</h3>
+            <p style="font-size: 0.85rem; color: #555; margin-top: -10px;">לחץ על הודעה לפתיחה מלאה כאן בעמוד. המערכת מעדכנת את הפיד ברקע כל 2 דקות.</p>
+            <div id="telegram-feed" class="telegram-feed-container">
+                <div class="telegram-empty">טוען הודעות אחרונות...</div>
+            </div>
+            <div id="st-telegram" class="status"></div>
         </div>
-        <div id="st-telegram" class="status"></div>
+
+        <!-- כרטיס התחברות לגוגל -->
+        <div id="login-section" class="card">
+            <button onclick="tokenClient.requestAccessToken()" style="background:var(--p); font-size: 1rem;">התחבר לשירותי הענן והדרייב (Google Auth)</button>
+        </div>
+        
+        <!-- ממשק שירותי הענן - נפתח בפריסת גריד רחבה לאחר חיבור -->
+        <div id="main-ui" style="display:none; width:100%;">
+            <div class="grid-container">
+                <div class="card" style="border-top-color: var(--s);">
+                    <h3>📤 1. שליחת קובץ לדרייב</h3>
+                    <input type="text" id="direct-url" placeholder="קישור ישיר...">
+                    <button onclick="doWork('direct_link', 'direct-url')" style="background:var(--s);">שלח לדרייב</button>
+                    <div id="st-direct-url" class="status"></div>
+                </div>
+                
+                <div class="card" style="border-top-color: #a142f4;">
+                    <h3>📂 2. העתקת קובץ/תיקייה</h3>
+                    <input type="text" id="drive-url" placeholder="קישור דרייב...">
+                    <button onclick="doWork('drive_copy', 'drive-url')" style="background:#a142f4;">צור עותק אישי</button>
+                    <div id="st-drive-url" class="status"></div>
+                </div>
+                
+                <div class="card" style="border-top-color: #f9ab00;">
+                    <h3>📄 3. סורק אתרים ל-PDF</h3>
+                    <input type="text" id="pdf-url" placeholder="כתובת אתר...">
+                    <button onclick="doWork('web_to_pdf', 'pdf-url')" style="background:#f9ab00;">שמור כ-PDF</button>
+                    <div id="st-pdf-url" class="status"></div>
+                </div>
+                
+                <div class="card" style="border-top-color: var(--w);">
+                    <h3>📖 4. ויקיפדיה למייל</h3>
+                    <input type="text" id="wiki-query" placeholder="שם ערך..." oninput="getWikiSuggestions(this.value)">
+                    <div id="wiki-suggestions"></div>
+                    <button onclick="doWiki()" style="background:var(--w);">שלח ערך למייל</button>
+                    <div id="st-wiki" class="status"></div>
+                </div>
+                
+                <div class="card" style="border-top-color: var(--r);">
+                    <h3>✂️ 5. קיצור קישור אישי</h3>
+                    <input type="text" id="short-url" placeholder="קישור ארוך...">
+                    <button onclick="doShorten()" style="background:var(--r);">קצר קישור</button>
+                    <div id="st-short" class="status"></div>
+                </div>
+                
+                <div class="card" style="border-top-color: #00bcd4;">
+                    <h3>📥 6. צילום מסך אוטומטי (עוקף חסימות)</h3>
+                    <p style="font-size: 0.85rem; color: #555; margin-top: -10px;">מצלם את האתר דרך שרת חיצוני נקי ושומר בדרייב</p>
+                    <input type="text" id="scrape-url" placeholder="הדבק קישור ג'מיני או כל אתר...">
+                    <button onclick="doWork('smart_scrape', 'scrape-url')" style="background:#00bcd4;">צלם ושמור בדרייב</button>
+                    <div id="st-scrape-url" class="status"></div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- כרטיס החיבור של גוגל -->
-    <div id="login-section" class="card">
-        <button onclick="tokenClient.requestAccessToken()" style="background:var(--p);">התחבר לשאר שירותי המערכת (Google)</button>
-    </div>
-    
-    <!-- שאר ממשק המשתמש של גוגל דרייב -->
-    <div id="main-ui" style="display:none; width:100%; max-width:450px;">
-        <div class="card" style="border-top-color: var(--s);">
-            <h3>📤 1. שליחת קובץ לדרייב</h3>
-            <input type="text" id="direct-url" placeholder="קישור ישיר...">
-            <button onclick="doWork('direct_link', 'direct-url')" style="background:var(--s);">שלח לדרייב</button>
-            <div id="st-direct-url" class="status"></div>
-        </div>
-        
-        <div class="card" style="border-top-color: #a142f4;">
-            <h3>📂 2. העתקת קובץ/תיקייה</h3>
-            <input type="text" id="drive-url" placeholder="קישור דרייב...">
-            <button onclick="doWork('drive_copy', 'drive-url')" style="background:#a142f4;">צור עותק אישי</button>
-            <div id="st-drive-url" class="status"></div>
-        </div>
-        
-        <div class="card" style="border-top-color: #f9ab00;">
-            <h3>📄 3. סורק אתרים ל-PDF</h3>
-            <input type="text" id="pdf-url" placeholder="כתובת אתר...">
-            <button onclick="doWork('web_to_pdf', 'pdf-url')" style="background:#f9ab00;">שמור כ-PDF</button>
-            <div id="st-pdf-url" class="status"></div>
-        </div>
-        
-        <div class="card" style="border-top-color: var(--w);">
-            <h3>📖 4. ויקיפדיה למייל</h3>
-            <input type="text" id="wiki-query" placeholder="שם ערך..." oninput="getWikiSuggestions(this.value)">
-            <div id="wiki-suggestions"></div>
-            <button onclick="doWiki()" style="background:var(--w);">שלח ערך למייל</button>
-            <div id="st-wiki" class="status"></div>
-        </div>
-        
-        <div class="card" style="border-top-color: var(--r);">
-            <h3>✂️ 5. קיצור קישור אישי</h3>
-            <input type="text" id="short-url" placeholder="קישור ארוך...">
-            <button onclick="doShorten()" style="background:var(--r);">קצר קישור</button>
-            <div id="st-short" class="status"></div>
-        </div>
-        
-        <div class="card" style="border-top-color: #00bcd4;">
-            <h3>📥 6. צילום מסך אוטומטי (עוקף חסימות)</h3>
-            <p style="font-size: 0.85rem; color: #555; margin-top: -10px;">מצלם את האתר דרך שרת חיצוני נקי ושומר בדרייב</p>
-            <input type="text" id="scrape-url" placeholder="הדבק קישור ג'מיני או כל אתר...">
-            <button onclick="doWork('smart_scrape', 'scrape-url')" style="background:#00bcd4;">צלם ושמור בדרייב</button>
-            <div id="st-scrape-url" class="status"></div>
-        </div>
-    </div>
-
-    <!-- תיבת תצוגה מורחבת (Modal) מובנית באותו הדומיין -->
+    <!-- חלון פנימי מודאלי להצגת הודעה מלאה באותו הדומיין -->
     <div id="msgModal" class="modal" onclick="closeModal()">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div id="modalTime" class="modal-time"></div>
             <div id="modalText" class="modal-text"></div>
-            <button class="modal-close" onclick="closeModal()">סגור תצוגה</button>
+            <button class="modal-close" onclick="closeModal()">סגור חלונית</button>
         </div>
     </div>
 
@@ -107,11 +118,10 @@
         let tokenClient, access_token, userEmail;
         const WORKER = 'https://wandering-boat-c837.meny85502.workers.dev/';
         
-        // פונקציית האתחול הכללית
         function init() {
-            // טעינת הטלגרם מיידית עם עליית העמוד, ללא תלות בחיבור גוגל
+            // טעינה אוטומטית של הפיד מיד עם עליית הדף
             loadTelegramFeed();
-            // הגדרת רענון אוטומטי של הטלגרם כל 2 דקות (120,000 מילישניות)
+            // רענון אוטומטי כל 2 דקות
             setInterval(loadTelegramFeed, 120000);
 
             tokenClient = google.accounts.oauth2.initTokenClient({
@@ -127,7 +137,6 @@
             });
         }
         
-        // טעינת ההודעות מהערוץ
         async function loadTelegramFeed() {
             const feedDiv = document.getElementById('telegram-feed');
             try {
@@ -143,33 +152,25 @@
                 messages.forEach(msg => {
                     const msgEl = document.createElement('div');
                     msgEl.className = 'telegram-msg';
-                    
-                    // הוספת זמן השליחה והטקסט הפנימי
                     msgEl.innerHTML = `<span class="msg-time">🕒 שעה: ${msg.time}</span>${escapeHTML(msg.text)}`;
-                    
-                    // אירוע לחיצה לפתיחה מורחבת בתוך אותו דומיין
                     msgEl.onclick = () => openModal(msg.time, msg.text);
-                    
                     feedDiv.appendChild(msgEl);
                 });
             } catch (e) {
-                feedDiv.innerHTML = '<div class="telegram-empty" style="color:var(--r);">שגיאה בטעינת הפיד האוטומטי מהשרת.</div>';
+                feedDiv.innerHTML = '<div class="telegram-empty" style="color:var(--r);">שגיאה בתקשורת האוטומטית עם השרת.</div>';
             }
         }
 
-        // פתיחת החלון המורחב הפנימי
         function openModal(time, text) {
-            document.getElementById('modalTime').innerText = `🕒 שעת פרסום מקורית: ${time}`;
+            document.getElementById('modalTime').innerText = `🕒 זמן פרסום: ${time}`;
             document.getElementById('modalText').innerText = text;
             document.getElementById('msgModal').style.display = 'flex';
         }
 
-        // סגירת החלון המורחב
         function closeModal() {
             document.getElementById('msgModal').style.display = 'none';
         }
 
-        // פונקציית עזר להגנה על הטקסט המוצג ב-HTML
         function escapeHTML(str) {
             return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
         }
