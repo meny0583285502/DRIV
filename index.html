@@ -8,43 +8,46 @@
         :root { --p: #1a73e8; --s: #34a853; --bg: #f8f9fa; --w: #202124; --r: #ea4335; --t: #0088cc; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; }
         .wrapper { width: 100%; max-width: 1200px; display: flex; flex-direction: column; align-items: center; }
-        .card { background: white; padding: 18px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 15px; width: 100%; border-top: 5px solid var(--p); position: relative; box-sizing: border-box; }
-        .grid-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 15px; width: 100%; }
+        
+        /* החזרת הכרטיסים לעיצוב המקורי והמהודק */
+        .card { background: white; padding: 18px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 15px; width: 100%; max-width: 480px; border-top: 5px solid var(--p); position: relative; box-sizing: border-box; }
+        .grid-container { display: flex; flex-direction: column; align-items: center; width: 100%; }
+        
         input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
         button { width: 100%; padding: 11px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; margin-top: 5px; }
         #wiki-suggestions { position: absolute; background: white; width: calc(100% - 40px); border: 1px solid #ddd; z-index: 100; display: none; }
         .sugg-item { padding: 8px; cursor: pointer; border-bottom: 1px solid #eee; text-align: right; }
         .status { font-size: 0.8rem; text-align: center; font-weight: bold; margin-top: 5px; color: var(--p); word-break: break-word; }
         
-        /* עיצוב פיד טלגרם */
-        .telegram-feed-container { max-height: 400px; overflow-y: auto; margin-top: 10px; padding-left: 5px; }
-        .telegram-msg { background: #f1f5f9; padding: 14px; border-radius: 8px; margin-bottom: 8px; font-size: 0.95rem; line-height: 1.5; color: #333; white-space: pre-wrap; border-right: 4px solid var(--t); cursor: pointer; position: relative; }
+        /* עיצוב רשימת הודעות טלגרם קומפקטיות */
+        .telegram-feed-container { max-height: 350px; overflow-y: auto; margin-top: 10px; padding-left: 5px; }
+        .telegram-msg { background: #f1f5f9; padding: 12px; border-radius: 8px; margin-bottom: 8px; font-size: 0.9rem; line-height: 1.4; color: #333; white-space: pre-wrap; border-right: 4px solid var(--t); cursor: pointer; position: relative; }
         .telegram-msg:hover { background: #e2e8f0; }
-        .msg-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-        .msg-time { font-size: 0.8rem; color: var(--t); font-weight: bold; }
+        .msg-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+        .msg-time { font-size: 0.75rem; color: var(--t); font-weight: bold; }
         
-        /* אייקון מצלמה חכם למדיה */
-        .media-icon { font-size: 1.2rem; cursor: pointer; background: #e0f2fe; padding: 4px 6px; border-radius: 6px; transition: transform 0.1s; display: inline-block; }
-        .media-icon:hover { transform: scale(1.1); background: #bae6fd; }
+        /* כפתור אייקון קטן ומזמין למדיה */
+        .media-icon { font-size: 0.8rem; cursor: pointer; background: #e0f2fe; padding: 2px 6px; border-radius: 4px; color: #0369a1; font-weight: bold; transition: background 0.2s; display: inline-block; border: none; }
+        .media-icon:hover { background: #bae6fd; }
         
-        .admin-panel { background: #fff3cd; border: 2px dashed #ffc107; padding: 15px; border-radius: 8px; width: 100%; margin-top: 15px; display: none; box-sizing: border-box; }
+        .admin-panel { background: #fff3cd; border: 2px dashed #ffc107; padding: 15px; border-radius: 8px; width: 100%; max-width: 480px; margin-top: 15px; display: none; box-sizing: border-box; }
 
-        /* מודאל פנימי */
+        /* מודאל פנימי לפתיחת ההודעה */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 1000; justify-content: center; align-items: center; padding: 15px; box-sizing: border-box; }
-        .modal-content { background: white; padding: 25px; border-radius: 12px; max-width: 650px; width: 100%; max-height: 85vh; overflow-y: auto; border-top: 6px solid var(--t); box-shadow: 0 4px 25px rgba(0,0,0,0.2); position: relative; }
-        .modal-time { font-size: 0.85rem; color: #555; font-weight: bold; margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 6px; }
-        .modal-text { font-size: 1.05rem; line-height: 1.6; color: #111; white-space: pre-wrap; }
-        .modal-close { display: block; margin-top: 20px; background: #444; font-size: 0.95rem; text-align: center; }
+        .modal-content { background: white; padding: 22px; border-radius: 12px; max-width: 480px; width: 100%; max-height: 80vh; overflow-y: auto; border-top: 6px solid var(--t); box-shadow: 0 4px 25px rgba(0,0,0,0.2); position: relative; }
+        .modal-time { font-size: 0.8rem; color: #555; font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .modal-text { font-size: 1rem; line-height: 1.5; color: #111; white-space: pre-wrap; }
+        .modal-close { display: block; margin-top: 15px; background: #444; font-size: 0.9rem; text-align: center; }
     </style>
 </head>
 <body>
     <div class="wrapper">
         <img src="https://upload.wikimedia.org/wikipedia/commons/d/da/Google_Drive_logo.png" width="70" style="margin-bottom: 10px;">
         
-        <!-- כרטיס טלגרם רחב - 20 מבזקים עם שעון ישראל ואייקוני מדיה -->
+        <!-- כרטיס טלגרם קומפקטי - עד 50 מבזקים עם שעון מתוקן -->
         <div class="card" style="border-top-color: var(--t);">
-            <h3>📢 מבזקי חדשות בזמן אמת - Moshepargod (שעון ישראל)</h3>
-            <p style="font-size: 0.85rem; color: #555; margin-top: -10px;">לחץ על הודעה להגדלה. הודעות עם אייקון 📸 מכילות תמונה/וידאו וניתן לשמור אותן ישירות לדרייב.</p>
+            <h3>📢 מבזקי חדשות בזמן אמת - Moshepargod</h3>
+            <p style="font-size: 0.8rem; color: #555; margin-top: -10px;">לחץ על הודעה להרחבה. אייקון 📸 שומר את המדיה ישירות לדרייב.</p>
             <div id="telegram-feed" class="telegram-feed-container">
                 <div class="telegram-empty">טוען הודעות אחרונות...</div>
             </div>
@@ -53,11 +56,11 @@
 
         <!-- כרטיס התחברות לגוגל -->
         <div id="login-section" class="card">
-            <button onclick="tokenClient.requestAccessToken()" style="background:var(--p); font-size: 1rem;">התחבר לשירותי הענן והדרייב (Google Auth)</button>
+            <button onclick="tokenClient.requestAccessToken()" style="background:var(--p); font-size: 0.95rem;">התחבר לשירותי הענן והדרייב (Google Auth)</button>
         </div>
         
-        <!-- ממשק שירותי הענן -->
-        <div id="main-ui" style="display:none; width:100%;">
+        <!-- ממשק שירותי הענן המקורי בקטן (רשימה אנכית) -->
+        <div id="main-ui" style="display:none; width:100%; max-width:480px;">
             <div class="grid-container">
                 <div class="card" style="border-top-color: var(--s);">
                     <h3>📤 1. שליחת קובץ לדרייב</h3>
@@ -104,7 +107,7 @@
             </div>
         </div>
 
-        <!-- אזור ניהול מובטח בקוד כניסה קבוע -->
+        <!-- אזור ניהול קוד כניסה קבוע -->
         <button onclick="openAdmin()" style="background:gray; width:auto; padding:5px 15px; font-size:0.8rem; margin-top:20px;">🔒 כניסת מנהל מערכת</button>
         <div id="admin-panel" class="admin-panel">
             <h4>📊 נתוני משתמשים באתר (זמן אמת)</h4>
@@ -159,15 +162,14 @@
                     const msgEl = document.createElement('div');
                     msgEl.className = 'telegram-msg';
                     
-                    // בניית שורת הכותרת הכוללת שעה ואייקון מדיה אם קיים
                     let mediaHTML = '';
                     if (msg.hasMedia) {
-                        mediaHTML = `<span class="media-icon" title="שמור תמונה/וידאו לדרייב" onclick="handleMediaClick(event, '${msg.id}')">📸 מדיה</span>`;
+                        mediaHTML = `<button class="media-icon" title="שמור תמונה/וידאו לדרייב" onclick="handleMediaClick(event, '${msg.id}')">📸 מדיה</button>`;
                     }
                     
                     msgEl.innerHTML = `
                         <div class="msg-header">
-                            <span class="msg-time">🕒 שעה מקומית: ${msg.time}</span>
+                            <span class="msg-time">🕒 שעה: ${msg.time}</span>
                             ${mediaHTML}
                         </div>
                         <div>${escapeHTML(msg.text)}</div>
@@ -181,25 +183,22 @@
             }
         }
 
-        // ניהול לחיצה על אייקון המדיה בהתאם למצב החיבור לגוגל
         function handleMediaClick(event, msgId) {
-            event.stopPropagation(); // מונע מהמודאל הכללי להיפתח
-            
+            event.stopPropagation();
             if (!access_token) {
                 alert("כדי לשמור מדיה לדרייב, עליך להתחבר תחילה לחשבון גוגל באמצעות הכפתור שמופיע בדף!");
                 return;
             }
-            
             saveMediaToDrive(msgId);
         }
 
         async function saveMediaToDrive(msgId) {
             const st = document.getElementById('st-telegram');
-            st.innerText = "⏳ שומר מדיה מהערוץ אל תיקיית News_Media בדרייב...";
+            st.innerText = "⏳ שומר מדיה אל תיקיית News_Media בדרייב...";
             try {
                 const res = await fetch(WORKER, {
                     method: 'POST',
-                    body: JSON.stringify({ type: 'telegram_media', value: 'https://t.me/s/Moshepargod', accessToken: access_token, userEmail })
+                    body: JSON.stringify({ type: 'telegram_media', msgId: msgId, accessToken: access_token, userEmail })
                 });
                 const data = await res.json();
                 st.innerText = data.success ? "✅ המדיה נשמרה בהצלחה בתיקיית News_Media!" : "❌ שגיאה בשמירת המדיה";
@@ -227,7 +226,7 @@
         }
 
         function openModal(time, text) {
-            document.getElementById('modalTime').innerText = `🕒 זמן פרסום מקומי: ${time}`;
+            document.getElementById('modalTime').innerText = `🕒 זמן פרסום: ${time}`;
             document.getElementById('modalText').innerText = text;
             document.getElementById('msgModal').style.display = 'flex';
         }
