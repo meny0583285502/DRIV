@@ -20,13 +20,16 @@
         .telegram-feed-container { max-height: 400px; overflow-y: auto; margin-top: 10px; padding-left: 5px; }
         .telegram-msg { background: #f1f5f9; padding: 14px; border-radius: 8px; margin-bottom: 8px; font-size: 0.95rem; line-height: 1.5; color: #333; white-space: pre-wrap; border-right: 4px solid var(--t); cursor: pointer; position: relative; }
         .telegram-msg:hover { background: #e2e8f0; }
-        .msg-time { display: block; font-size: 0.8rem; color: var(--t); margin-bottom: 6px; font-weight: bold; }
-        .save-drive-btn { display: inline-block; background: var(--s); color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; margin-top: 8px; font-weight: bold; cursor: pointer; border: none; }
+        .msg-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .msg-time { font-size: 0.8rem; color: var(--t); font-weight: bold; }
         
-        /* אזור ניהול פנימי */
+        /* אייקון מצלמה חכם למדיה */
+        .media-icon { font-size: 1.2rem; cursor: pointer; background: #e0f2fe; padding: 4px 6px; border-radius: 6px; transition: transform 0.1s; display: inline-block; }
+        .media-icon:hover { transform: scale(1.1); background: #bae6fd; }
+        
         .admin-panel { background: #fff3cd; border: 2px dashed #ffc107; padding: 15px; border-radius: 8px; width: 100%; margin-top: 15px; display: none; box-sizing: border-box; }
 
-        /* מודאל */
+        /* מודאל פנימי */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 1000; justify-content: center; align-items: center; padding: 15px; box-sizing: border-box; }
         .modal-content { background: white; padding: 25px; border-radius: 12px; max-width: 650px; width: 100%; max-height: 85vh; overflow-y: auto; border-top: 6px solid var(--t); box-shadow: 0 4px 25px rgba(0,0,0,0.2); position: relative; }
         .modal-time { font-size: 0.85rem; color: #555; font-weight: bold; margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 6px; }
@@ -38,10 +41,10 @@
     <div class="wrapper">
         <img src="https://upload.wikimedia.org/wikipedia/commons/d/da/Google_Drive_logo.png" width="70" style="margin-bottom: 10px;">
         
-        <!-- כרטיס טלגרם רחב - מוגבל ל-20 מבזקים עם תיקון שעות -->
+        <!-- כרטיס טלגרם רחב - 20 מבזקים עם שעון ישראל ואייקוני מדיה -->
         <div class="card" style="border-top-color: var(--t);">
             <h3>📢 מבזקי חדשות בזמן אמת - Moshepargod (שעון ישראל)</h3>
-            <p style="font-size: 0.85rem; color: #555; margin-top: -10px;">לחץ על הודעה לפתיחה מלאה. אם יש תמונה והנך מחובר, תוכל לשמור אותה ישירות לדרייב.</p>
+            <p style="font-size: 0.85rem; color: #555; margin-top: -10px;">לחץ על הודעה להגדלה. הודעות עם אייקון 📸 מכילות תמונה/וידאו וניתן לשמור אותן ישירות לדרייב.</p>
             <div id="telegram-feed" class="telegram-feed-container">
                 <div class="telegram-empty">טוען הודעות אחרונות...</div>
             </div>
@@ -135,7 +138,7 @@
                     userEmail = (await info.json()).email;
                     document.getElementById('login-section').style.display = 'none';
                     document.getElementById('main-ui').style.display = 'block';
-                    loadTelegramFeed(); // טעינה מחדש להצגת כפתורי דרייב אם קיימת מדיה
+                    loadTelegramFeed();
                 }
             });
         }
@@ -156,14 +159,20 @@
                     const msgEl = document.createElement('div');
                     msgEl.className = 'telegram-msg';
                     
-                    let contentHTML = `<span class="msg-time">🕒 שעה מקומית: ${msg.time}</span>${escapeHTML(msg.text)}`;
-                    
-                    // במידה ויש תמונה בפוסט והיוזר מחובר לגוגל - נציע לו כפתור שמירה ייעודי לדרייב לתיקיית החדשות
-                    if (msg.hasImage && access_token) {
-                        contentHTML += `<br><button class="save-drive-btn" onclick="event.stopPropagation(); saveMediaToDrive('${msg.id}')">💾 נמצאה תמונה - שמור לתיקיית חדשות בדרייב</button>`;
+                    // בניית שורת הכותרת הכוללת שעה ואייקון מדיה אם קיים
+                    let mediaHTML = '';
+                    if (msg.hasMedia) {
+                        mediaHTML = `<span class="media-icon" title="שמור תמונה/וידאו לדרייב" onclick="handleMediaClick(event, '${msg.id}')">📸 מדיה</span>`;
                     }
                     
-                    msgEl.innerHTML = contentHTML;
+                    msgEl.innerHTML = `
+                        <div class="msg-header">
+                            <span class="msg-time">🕒 שעה מקומית: ${msg.time}</span>
+                            ${mediaHTML}
+                        </div>
+                        <div>${escapeHTML(msg.text)}</div>
+                    `;
+                    
                     msgEl.onclick = () => openModal(msg.time, msg.text);
                     feedDiv.appendChild(msgEl);
                 });
@@ -172,17 +181,28 @@
             }
         }
 
+        // ניהול לחיצה על אייקון המדיה בהתאם למצב החיבור לגוגל
+        function handleMediaClick(event, msgId) {
+            event.stopPropagation(); // מונע מהמודאל הכללי להיפתח
+            
+            if (!access_token) {
+                alert("כדי לשמור מדיה לדרייב, עליך להתחבר תחילה לחשבון גוגל באמצעות הכפתור שמופיע בדף!");
+                return;
+            }
+            
+            saveMediaToDrive(msgId);
+        }
+
         async function saveMediaToDrive(msgId) {
             const st = document.getElementById('st-telegram');
             st.innerText = "⏳ שומר מדיה מהערוץ אל תיקיית News_Media בדרייב...";
             try {
-                // שאיבת התמונה באופן מאובטח באמצעות הוורקר ושמירתה ישירות לענן
                 const res = await fetch(WORKER, {
                     method: 'POST',
                     body: JSON.stringify({ type: 'telegram_media', value: 'https://t.me/s/Moshepargod', accessToken: access_token, userEmail })
                 });
                 const data = await res.json();
-                st.innerText = data.success ? "✅ התמונה נשמרה בהצלחה בתיקיית News_Media!" : "❌ שגיאה בשמירת התמונה";
+                st.innerText = data.success ? "✅ המדיה נשמרה בהצלחה בתיקיית News_Media!" : "❌ שגיאה בשמירת המדיה";
             } catch (e) {
                 st.innerText = "❌ שגיאה בשמירה לדרייב";
             }
