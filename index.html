@@ -5,41 +5,65 @@
     <title>Cloud Master Pro V42</title>
     <style>
         :root { --p: #1a73e8; --t: #0088cc; --bg: #f8f9fa; }
-        body { font-family: sans-serif; background: var(--bg); margin: 0; padding: 20px; }
-        .wrapper { max-width: 1400px; margin: auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; }
+        body { font-family: sans-serif; background: var(--bg); padding: 20px; }
+        .wrapper { max-width: 1200px; margin: auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
         .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border-top: 5px solid var(--p); }
         .full-width { grid-column: 1 / -1; }
-        input, button { width: 100%; padding: 10px; margin: 5px 0; border-radius: 8px; border: 1px solid #ddd; }
-        .msg { background: #efeae2; padding: 10px; border-radius: 8px; margin-bottom: 10px; position: relative; }
-        .media-btn { background: var(--t); color: white; border: none; padding: 5px; cursor: pointer; font-size: 0.7rem; }
+        input, button { width: 100%; padding: 12px; margin: 5px 0; border-radius: 8px; border: 1px solid #ddd; cursor: pointer; }
+        .msg { background: #fff; padding: 10px; border-bottom: 1px solid #eee; margin-bottom: 5px; }
+        .admin-panel { display: none; background: #fff3cd; padding: 10px; margin-top: 10px; }
     </style>
 </head>
 <body>
 <div class="wrapper">
     <div class="card full-width">
-        <h2>📢 חדשות - Moshepargod & כנסת</h2>
-        <div style="display:flex; gap:20px;">
-            <div id="telegram-feed" style="flex:1; height:400px; overflow-y:auto;"></div>
-            <div id="knesset-feed" style="flex:1; height:400px; overflow-y:auto;"></div>
-        </div>
+        <h2 id="feed-title">📢 מבזקי טלגרם</h2>
+        <div id="telegram-feed" class="msg-list"></div>
+        <div id="knesset-feed" class="msg-list" style="display:none;"></div>
+        <button onclick="toggleFeed()" style="background:var(--t);">עבור לחדשות הכנסת</button>
     </div>
-    
-    <div class="card"><h3>📤 שליחה לדרייב</h3><input id="d-url"><button onclick="doWork('direct_link','d-url')">שלח</button></div>
+
+    <div class="card"><h3>📤 שליחת קובץ</h3><input id="d-url"><button onclick="doWork('direct_link', 'd-url')">שלח</button></div>
+    <div class="card"><h3>📂 העתקת קובץ</h3><input id="dr-url"><button onclick="doWork('drive_copy', 'dr-url')">העתק</button></div>
+    <div class="card"><h3>📄 PDF</h3><input id="p-url"><button onclick="doWork('web_to_pdf', 'p-url')">שמור</button></div>
     <div class="card"><h3>📖 ויקיפדיה</h3><input id="w-q"><button onclick="doWiki()">שלח למייל</button></div>
-    </div>
+    <div class="card"><h3>✂️ קצר קישור</h3><input id="s-url"><button onclick="doShorten()">קצר</button></div>
+    <div class="card"><h3>📥 צילום מסך</h3><input id="sc-url"><button onclick="doWork('smart_scrape', 'sc-url')">צלם</button></div>
+
+    <button onclick="openAdmin()" style="background:gray; width:200px;">🔒 ניהול</button>
+    <div id="admin-panel" class="admin-panel">👥 משתמשים אונליין: <span id="admin-online">0</span></div>
+</div>
 
 <script>
     const WORKER = 'https://wandering-boat-c837.meny85502.workers.dev/';
-    async function loadTelegramFeed() {
+    let access_token, currentFeed = 'telegram';
+
+    async function loadTelegram() {
         const res = await (await fetch(`${WORKER}?action=telegram_feed`)).json();
-        document.getElementById('telegram-feed').innerHTML = res.map(m => `<div class="msg">${m.text} <br> ${m.mediaUrl ? `<button class="media-btn" onclick="saveMedia('${m.mediaUrl}')">📸 שמור</button>` : ''} <div style="font-size:0.6rem">${m.time}</div></div>`).join('');
+        document.getElementById('telegram-feed').innerHTML = res.map(m => `<div class="msg">${m.text} ${m.mediaUrl ? `<button onclick="saveMedia('${m.mediaUrl}')">📸 שמור</button>` : ''}</div>`).join('');
     }
+
     async function loadKnesset() {
         const res = await (await fetch(`${WORKER}?action=knesset_news`)).json();
-        document.getElementById('knesset-feed').innerHTML = res.map(i => `<div><a href="${i.link}" target="_blank">${i.title}</a></div>`).join('');
+        document.getElementById('knesset-feed').innerHTML = res.map(i => `<div class="msg"><a href="${i.link}" target="_blank">${i.title}</a></div>`).join('');
     }
-    // פונקציות הדרייב וה-init המקורי שלך...
-    window.onload = () => { loadTelegramFeed(); loadKnesset(); };
+
+    function toggleFeed() {
+        currentFeed = currentFeed === 'telegram' ? 'knesset' : 'telegram';
+        document.getElementById('telegram-feed').style.display = currentFeed === 'telegram' ? 'block' : 'none';
+        document.getElementById('knesset-feed').style.display = currentFeed === 'knesset' ? 'block' : 'none';
+        document.getElementById('feed-title').innerText = currentFeed === 'telegram' ? '📢 מבזקי טלגרם' : '🏛️ חדשות הכנסת';
+        if (currentFeed === 'knesset') loadKnesset();
+    }
+
+    async function saveMedia(url) {
+        if(!access_token) return alert("התחבר לגוגל!");
+        const res = await (await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type: 'telegram_media', value: url, accessToken: access_token }) })).json();
+        alert(res.success ? "נשמר!" : "שגיאה");
+    }
+
+    // [כאן להוסיף את שאר הפונקציות המקוריות: doWiki, doShorten, doWork, init, openAdmin...]
+    window.onload = loadTelegram;
 </script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 </body>
