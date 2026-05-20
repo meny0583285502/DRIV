@@ -76,16 +76,12 @@
             <p id="feed-desc" style="font-size: 0.9rem; color: #555; margin-top: -10px;">מערכת מטמון חכמה. לחץ על הודעה לקריאה. אייקונים מאפשרים הורדת מדיה (📸/🎥) ישירות לדרייב.</p>
             
             <div id="telegram-feed" class="feed-container">
-                <div style="text-align:center; color:#666;">טוען הודעות טלגרם אחרונות...</div>
-            </div>
-            
-            <div id="knesset-feed" class="feed-container" style="display:none;">
-                <div style="text-align:center; color:#666;">טוען חדשות מהכנסת...</div>
+                <div style="text-align:center; color:#666;">טוען הודעות אחרונות...</div>
             </div>
             
             <div id="st-feed" class="status"></div>
             
-            <button id="toggle-btn" onclick="toggleFeeds()" style="background:var(--t); width: 250px; display: block; margin: 15px auto 0;">🏛️ עבור לחדשות הכנסת</button>
+            <button id="toggle-btn" onclick="toggleFeeds()" style="background:var(--t); width: 250px; display: block; margin: 15px auto 0;">🏛️ עבור לעדכוני הכנסת</button>
         </div>
 
         <div id="login-section" class="card" style="max-width: 500px;">
@@ -158,15 +154,15 @@
     <script>
         let tokenClient, access_token, userEmail;
         const WORKER = 'https://wandering-boat-c837.meny85502.workers.dev/';
-        let currentActiveFeed = 'telegram';
+        let currentActiveChannel = 'Moshepargod';
         
+        // הפעלה מיידית ועצמאית כדי למנוע תקיעות
         window.onload = function() {
             loadTelegramFeed();
-            setInterval(() => {
-                if(currentActiveFeed === 'telegram') loadTelegramFeed();
-            }, 60000); 
+            setInterval(() => loadTelegramFeed(), 60000); 
         };
 
+        // אתחול גוגל בסבלנות
         function initGoogle() {
             try {
                 tokenClient = google.accounts.oauth2.initTokenClient({
@@ -191,37 +187,34 @@
             tokenClient.requestAccessToken();
         }
 
+        // החלפה חכמה של ערוצים דרך הוורקר!
         function toggleFeeds() {
-            currentActiveFeed = currentActiveFeed === 'telegram' ? 'knesset' : 'telegram';
-            
-            const tFeed = document.getElementById('telegram-feed');
-            const kFeed = document.getElementById('knesset-feed');
             const btn = document.getElementById('toggle-btn');
             const title = document.getElementById('feed-title');
             const desc = document.getElementById('feed-desc');
             
-            if (currentActiveFeed === 'knesset') {
-                tFeed.style.display = 'none';
-                kFeed.style.display = 'flex';
-                title.innerText = '🏛️ חדשות ועדות הכנסת';
-                desc.innerText = 'כתבות מלאות מהימים האחרונים. לחץ על הלינק לקריאה באתר הכנסת.';
+            if (currentActiveChannel === 'Moshepargod') {
+                currentActiveChannel = 'knessettv';
+                title.innerText = '🏛️ עדכוני ערוץ ודוברות הכנסת';
+                desc.innerText = 'מבזקים ישירים מהכנסת. לחץ 📸 לשמירת מדיה ועדכונים ישירות לדרייב.';
                 btn.innerText = '📢 חזור למבזקי טלגרם';
-                if (kFeed.innerHTML.includes('טוען חדשות מהכנסת')) {
-                    loadKnessetFeed();
-                }
             } else {
-                kFeed.style.display = 'none';
-                tFeed.style.display = 'flex';
+                currentActiveChannel = 'Moshepargod';
                 title.innerText = '📢 מבזקי טלגרם (שעון ישראל)';
-                desc.innerText = 'מערכת מטמון חכמה. לחץ על הודעה לקריאה. אייקונים מאפשרים הורדת מדיה (📸/🎥) ישירות לדרייב.';
-                btn.innerText = '🏛️ עבור לחדשות הכנסת';
+                desc.innerText = 'מערכת מטמון חכמה. לחץ על הודעה לקריאה. אייקונים מאפשרים הורדת מדיה (📸/🎥).';
+                btn.innerText = '🏛️ עבור לעדכוני הכנסת';
             }
+            
+            // מרוקן את הפיד וטוען את הערוץ החדש
+            document.getElementById('telegram-feed').innerHTML = '<div style="text-align:center; color:#666;">טוען עדכונים...</div>';
+            loadTelegramFeed();
         }
         
         async function loadTelegramFeed() {
             const feedDiv = document.getElementById('telegram-feed');
             try {
-                const res = await fetch(`${WORKER}?action=telegram_feed`);
+                // קריאה חכמה לוורקר עם שם הערוץ המבוקש
+                const res = await fetch(`${WORKER}?action=telegram_feed&channel=${currentActiveChannel}`);
                 const messages = await res.json();
                 
                 feedDiv.innerHTML = ''; 
@@ -250,26 +243,6 @@
             } catch (e) { feedDiv.innerHTML = '<div style="text-align:center; color:red;">שגיאה בטעינת התוכן.</div>'; }
         }
 
-        async function loadKnessetFeed() {
-            const feedDiv = document.getElementById('knesset-feed');
-            try {
-                const res = await fetch(`${WORKER}?action=knesset_news`);
-                const news = await res.json();
-                
-                feedDiv.innerHTML = ''; 
-                news.forEach(item => {
-                    const msgEl = document.createElement('div');
-                    msgEl.className = 'chat-bubble';
-                    
-                    msgEl.innerHTML = `
-                        <div class="msg-text" style="font-weight:bold;">${escapeHTML(item.title)}</div>
-                        <a href="${item.link}" target="_blank" style="color:var(--p); text-decoration:none; font-weight:bold; font-size:0.9rem;">👈 קרא כתבה מלאה באתר הכנסת</a>
-                    `;
-                    feedDiv.appendChild(msgEl);
-                });
-            } catch (e) { feedDiv.innerHTML = '<div style="text-align:center; color:red;">שגיאה בטעינת הכנסת.</div>'; }
-        }
-
         function handleMediaClick(event, directMediaUrl) {
             event.stopPropagation();
             if (!access_token) {
@@ -291,7 +264,7 @@
                 st.innerText = data.success ? "✅ הקובץ נשמר בהצלחה!" : "❌ שגיאה בשמירה";
                 setTimeout(() => st.innerText = "", 3000);
             } catch (e) {
-                st.innerText = "❌ שגיאה: החיבור התנתק בגלל גודל הסרטון.";
+                st.innerText = "❌ שגיאה: החיבור התנתק בגלל גודל הקובץ.";
                 setTimeout(() => st.innerText = "", 3000);
             }
         }
