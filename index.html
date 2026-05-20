@@ -17,7 +17,7 @@
         button:hover { opacity: 0.9; }
         .status { font-size: 0.85rem; text-align: center; font-weight: bold; margin-top: 8px; color: var(--p); word-break: break-word; }
         
-        /* --- עיצוב וואטסאפ מטורף --- */
+        /* --- עיצוב וואטסאפ מטורף לטלגרם --- */
         .feed-container { 
             background: #efeae2; 
             border-radius: 12px;
@@ -79,13 +79,13 @@
                 <div style="text-align:center; color:#666;">טוען הודעות טלגרם אחרונות...</div>
             </div>
             
-            <div id="knesset-feed" class="feed-container" style="display:none;">
-                <div style="text-align:center; color:#666;">טוען חדשות מהכנסת...</div>
+            <div id="knesset-live" class="feed-container" style="display:none; padding:0; overflow:hidden;">
+                <iframe src="https://www.youtube.com/embed/live_stream?channel=UCpjNXONNE-JUz7QACB1Cgcw&autoplay=1&mute=1" style="width:100%; height:100%; border:none; border-radius:12px;" allowfullscreen allow="autoplay"></iframe>
             </div>
             
             <div id="st-feed" class="status"></div>
             
-            <button id="toggle-btn" onclick="toggleFeeds()" style="background:var(--t); width: 250px; display: block; margin: 15px auto 0;">🏛️ עבור לחדשות הכנסת</button>
+            <button id="toggle-btn" onclick="toggleFeeds()" style="background:var(--t); width: 250px; display: block; margin: 15px auto 0;">📺 עבור לשידור חי מהכנסת</button>
         </div>
 
         <div id="login-section" class="card" style="max-width: 500px;">
@@ -160,7 +160,7 @@
         const WORKER = 'https://wandering-boat-c837.meny85502.workers.dev/';
         let currentActiveFeed = 'telegram';
         
-        // הפעלת החדשות מיד, ללא קשר לגוגל!
+        // הפעלה מיידית ועצמאית של החדשות כדי למנוע תקיעות
         window.onload = function() {
             loadTelegramFeed();
             setInterval(() => {
@@ -168,7 +168,7 @@
             }, 60000); 
         };
 
-        // אתחול גוגל נפרד לחלוטין (מופעל ע"י תגית הסקריפט למטה)
+        // אתחול מערכת גוגל לחוד
         function initGoogle() {
             try {
                 tokenClient = google.accounts.oauth2.initTokenClient({
@@ -182,42 +182,39 @@
                         document.getElementById('main-ui').style.display = 'block';
                     }
                 });
-            } catch(e) { console.log("Google init blocked or failed."); }
+            } catch(e) { console.log("Google init blocked."); }
         }
 
-        // כפתור התחברות חכם 
         function loginGoogle() {
             if (!tokenClient) {
-                alert("המערכת לא הצליחה לטעון את שירותי גוגל. ייתכן וקיימת חסימת רשת (נטפרי/אדבלוק).");
+                alert("המערכת לא הצליחה לטעון את שירותי גוגל. ייתכן וקיימת חסימת רשת.");
                 return;
             }
             tokenClient.requestAccessToken();
         }
 
+        // החלפה בין טלגרם לשידור חי
         function toggleFeeds() {
-            currentActiveFeed = currentActiveFeed === 'telegram' ? 'knesset' : 'telegram';
+            currentActiveFeed = currentActiveFeed === 'telegram' ? 'knesset_live' : 'telegram';
             
             const tFeed = document.getElementById('telegram-feed');
-            const kFeed = document.getElementById('knesset-feed');
+            const kLive = document.getElementById('knesset-live');
             const btn = document.getElementById('toggle-btn');
             const title = document.getElementById('feed-title');
             const desc = document.getElementById('feed-desc');
             
-            if (currentActiveFeed === 'knesset') {
+            if (currentActiveFeed === 'knesset_live') {
                 tFeed.style.display = 'none';
-                kFeed.style.display = 'flex';
-                title.innerText = '🏛️ חדשות ועדות הכנסת';
-                desc.innerText = 'כתבות מלאות מהימים האחרונים. לחץ על הלינק לקריאה באתר הכנסת.';
+                kLive.style.display = 'block';
+                title.innerText = '📺 שידור חי - ערוץ הכנסת';
+                desc.innerText = 'שידורים חיים מהמליאה ומוועדות הכנסת (מופעל דרך YouTube).';
                 btn.innerText = '📢 חזור למבזקי טלגרם';
-                if (kFeed.innerHTML.includes('טוען חדשות מהכנסת')) {
-                    loadKnessetFeed();
-                }
             } else {
-                kFeed.style.display = 'none';
+                kLive.style.display = 'none';
                 tFeed.style.display = 'flex';
                 title.innerText = '📢 מבזקי טלגרם (שעון ישראל)';
                 desc.innerText = 'מערכת מטמון חכמה. לחץ על הודעה לקריאה. אייקונים מאפשרים הורדת מדיה (📸/🎥) ישירות לדרייב.';
-                btn.innerText = '🏛️ עבור לחדשות הכנסת';
+                btn.innerText = '📺 עבור לשידור חי מהכנסת';
             }
         }
         
@@ -251,26 +248,6 @@
                     feedDiv.appendChild(msgEl);
                 });
             } catch (e) { feedDiv.innerHTML = '<div style="text-align:center; color:red;">שגיאה בטעינת התוכן.</div>'; }
-        }
-
-        async function loadKnessetFeed() {
-            const feedDiv = document.getElementById('knesset-feed');
-            try {
-                const res = await fetch(`${WORKER}?action=knesset_news`);
-                const news = await res.json();
-                
-                feedDiv.innerHTML = ''; 
-                news.forEach(item => {
-                    const msgEl = document.createElement('div');
-                    msgEl.className = 'chat-bubble';
-                    
-                    msgEl.innerHTML = `
-                        <div class="msg-text" style="font-weight:bold;">${escapeHTML(item.title)}</div>
-                        <a href="${item.link}" target="_blank" style="color:var(--p); text-decoration:none; font-weight:bold; font-size:0.9rem;">👈 קרא כתבה מלאה באתר הכנסת</a>
-                    `;
-                    feedDiv.appendChild(msgEl);
-                });
-            } catch (e) { feedDiv.innerHTML = '<div style="text-align:center; color:red;">שגיאה בטעינת הכנסת.</div>'; }
         }
 
         function handleMediaClick(event, directMediaUrl) {
