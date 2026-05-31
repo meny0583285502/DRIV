@@ -17,15 +17,14 @@
         button:hover { opacity: 0.9; }
         .status { font-size: 0.85rem; text-align: center; font-weight: bold; margin-top: 8px; color: var(--p); word-break: break-word; }
         
-        /* --- עיצוב הבועות תוקן פה --- */
+        /* --- עיצוב וואטסאפ חכם ותקין --- */
         .feed-container { 
-            background: #efeae2; 
+            background: #e5ddd5; /* צבע רקע וואטסאפ קלאסי */
             border-radius: 12px;
             padding: 20px;
             display: flex; 
             flex-direction: column; 
-            /* הפתרון למניעת מתיחה: */
-            align-items: flex-start;
+            align-items: flex-start; /* מצמיד את כל הבועות לימין */
             gap: 12px; 
             height: 60vh; 
             overflow-y: auto; 
@@ -33,29 +32,28 @@
         }
         
         .chat-bubble { 
-            background: #ffffff; 
-            padding: 12px 16px; 
+            background: #dcf8c6; /* ירוק בהיר של וואטסאפ */
+            padding: 10px 14px; 
             border-radius: 12px; 
-            border-top-right-radius: 0; 
-            /* מבטיח שהבועה לא תשתלט על כל המסך */
-            max-width: 75%; 
-            width: fit-content; 
-            box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+            border-top-right-radius: 0; /* שפיץ בצד ימין */
+            max-width: 70%; /* הבועה לא יכולה להיות רחבה יותר מזה */
+            min-width: 150px; /* אבל גם לא קטנה מדי */
+            box-shadow: 0 1px 1px rgba(0,0,0,0.15);
             cursor: pointer;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 5px;
         }
-        .chat-bubble:hover { background: #fafafa; }
-        .msg-time { font-size: 0.8rem; color: #888; font-weight: bold; align-self: flex-end; margin-top: 2px; }
-        .msg-text { font-size: 1rem; line-height: 1.5; color: #222; white-space: pre-wrap; word-wrap: break-word; }
+        .chat-bubble:hover { filter: brightness(0.95); }
+        .msg-time { font-size: 0.75rem; color: #666; align-self: flex-end; margin-top: 2px; }
+        .msg-text { font-size: 1rem; line-height: 1.4; color: #111; white-space: pre-wrap; word-wrap: break-word; }
         
         .media-icon { 
-            background: #e8f0fe; color: #1a73e8; border: 1px solid #d2e3fc; 
-            padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; 
-            cursor: pointer; font-weight: bold; display: inline-flex; align-items: center; width: fit-content; margin-top: 5px;
+            background: #ffffff; color: #1a73e8; border: 1px solid #c6e3fa; 
+            padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; 
+            cursor: pointer; font-weight: bold; display: inline-flex; align-items: center; width: fit-content; 
         }
-        .media-icon.video { background: #fce8e8; color: #d93025; border-color: #fad2d2; }
+        .media-icon.video { background: #fff0f0; color: #d93025; border-color: #fad2d2; }
         .media-icon:hover { opacity: 0.8; }
 
         .admin-panel { background: #fff3cd; border: 2px dashed #ffc107; padding: 15px; border-radius: 8px; width: 100%; max-width: 500px; margin-top: 15px; display: none; box-sizing: border-box; }
@@ -275,7 +273,7 @@
                 st.innerText = data.success ? "✅ הקובץ נשמר בהצלחה!" : "❌ שגיאה בשמירה";
                 setTimeout(() => st.innerText = "", 3000);
             } catch (e) {
-                st.innerText = "❌ שגיאה: החיבור התנתק.";
+                st.innerText = "❌ שגיאה: החיבור התנתק בגלל גודל הקובץ.";
                 setTimeout(() => st.innerText = "", 3000);
             }
         }
