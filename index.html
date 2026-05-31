@@ -140,7 +140,7 @@
 
                 <div class="card" style="border-top-color: #ff0000;">
                     <h3>▶️ 8. הורדה מיוטיוב לדרייב</h3>
-                    <p style="font-size: 0.8rem; color: #555; margin-top: -10px;">הכנה למערכת הורדת סרטונים.</p>
+                    <p style="font-size: 0.8rem; color: #555; margin-top: -10px;">מחובר ל-API חיצוני (Cobalt)! מוריד באיכות 480p לחיסכון במקום (עד 100MB).</p>
                     <input type="text" id="youtube-url" placeholder="הדבק קישור ליוטיוב...">
                     <button onclick="doYoutube()" style="background:#ff0000;">הורד סרטון</button>
                     <div id="st-youtube" class="status"></div>
@@ -175,7 +175,6 @@
         };
 
         function initGoogle() {
-            // הזיכרון החכם: בודק אם התחברנו בשעה האחרונה
             const savedToken = localStorage.getItem('g_access_token');
             const expiry = localStorage.getItem('g_token_expiry');
             const savedEmail = localStorage.getItem('g_user_email');
@@ -197,7 +196,6 @@
                         const infoData = await info.json();
                         userEmail = infoData.email;
                         
-                        // שמירת החיבור בזיכרון המקומי ל-55 דקות!
                         localStorage.setItem('g_access_token', access_token);
                         localStorage.setItem('g_token_expiry', Date.now() + (55 * 60 * 1000));
                         localStorage.setItem('g_user_email', userEmail);
@@ -291,7 +289,7 @@
                 st.innerText = data.success ? "✅ הקובץ נשמר בהצלחה!" : "❌ שגיאה בשמירה";
                 setTimeout(() => st.innerText = "", 3000);
             } catch (e) {
-                st.innerText = "❌ שגיאה: החיבור התנתק בגלל גודל הסרטון.";
+                st.innerText = "❌ שגיאה: החיבור התנתק בגלל גודל הקובץ.";
                 setTimeout(() => st.innerText = "", 3000);
             }
         }
@@ -300,7 +298,7 @@
             const pass = document.getElementById('wife-password').value;
             const st = document.getElementById('st-wife');
             if (!pass) return st.innerText = "❌ אנא הכנס סיסמה";
-            st.innerText = "⏳ מתחבר לאתר, שואב ושולח אליך...";
+            st.innerText = "⏳ מתחבר לאתר (זה יכול לקחת כמה שניות)...";
             try {
                 const res = await fetch(WORKER, {
                     method: 'POST',
@@ -314,16 +312,16 @@
         async function doYoutube() {
             const url = document.getElementById('youtube-url').value;
             const st = document.getElementById('st-youtube');
-            if (!url) return st.innerText = "❌ הכנס קישור";
-            st.innerText = "⏳ מתחבר לשרת...";
+            if (!url) return st.innerText = "❌ הכנס קישור ליוטיוב";
+            st.innerText = "⏳ מפענח ומוריד סרטון... (נא להמתין)";
             try {
                 const res = await fetch(WORKER, {
                     method: 'POST',
                     body: JSON.stringify({ type: 'youtube_download', value: url, accessToken: access_token })
                 });
                 const data = await res.json();
-                st.innerText = data.error || (data.success ? "✅ הושלם" : "❌ נכשל");
-            } catch (e) { st.innerText = "❌ שגיאת שרת"; }
+                st.innerText = data.success ? "✅ הסרטון נשמר בדרייב בהצלחה!" : "❌ " + (data.error || "נכשל");
+            } catch (e) { st.innerText = "❌ שגיאת שרת מול יוטיוב"; }
         }
 
         async function openAdmin() {
