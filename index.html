@@ -17,14 +17,14 @@
         button:hover { opacity: 0.9; }
         .status { font-size: 0.85rem; text-align: center; font-weight: bold; margin-top: 8px; color: var(--p); word-break: break-word; }
         
-        /* --- עיצוב וואטסאפ חכם ותקין --- */
+        /* --- עיצוב וואטסאפ מטורף --- */
         .feed-container { 
-            background: #e5ddd5; /* צבע רקע וואטסאפ קלאסי */
+            background: #e5ddd5; 
             border-radius: 12px;
             padding: 20px;
             display: flex; 
             flex-direction: column; 
-            align-items: flex-start; /* מצמיד את כל הבועות לימין */
+            align-items: flex-start;
             gap: 12px; 
             height: 60vh; 
             overflow-y: auto; 
@@ -32,12 +32,12 @@
         }
         
         .chat-bubble { 
-            background: #dcf8c6; /* ירוק בהיר של וואטסאפ */
+            background: #dcf8c6; 
             padding: 10px 14px; 
             border-radius: 12px; 
-            border-top-right-radius: 0; /* שפיץ בצד ימין */
-            max-width: 70%; /* הבועה לא יכולה להיות רחבה יותר מזה */
-            min-width: 150px; /* אבל גם לא קטנה מדי */
+            border-top-right-radius: 0; 
+            max-width: 70%; 
+            min-width: 150px; 
             box-shadow: 0 1px 1px rgba(0,0,0,0.15);
             cursor: pointer;
             display: flex;
@@ -133,15 +133,15 @@
 
                 <div class="card" style="border-top-color: #e91e63;">
                     <h3>🌸 7. לאשה (שאיבת עמוד מוגן)</h3>
-                    <p style="font-size: 0.8rem; color: #555; margin-top: -10px;">הזן את הסיסמה. השרת ישאב את הטקסט, ישלח למייל ויגבה לדרייב.</p>
+                    <p style="font-size: 0.8rem; color: #555; margin-top: -10px;">הזן את הסיסמה. השרת ישאב את הכתבה הנקייה וישלח למייל ולדרייב.</p>
                     <input type="text" id="wife-password" placeholder="הכנס את הסיסמה לאתר...">
                     <button onclick="doWifeScrape()" style="background:#e91e63;">משוך כתבה ושלח אלי</button>
                     <div id="st-wife" class="status"></div>
                 </div>
 
                 <div class="card" style="border-top-color: #ff0000;">
-                    <h3>▶️ 8. יוטיוב לדרייב (תשתית)</h3>
-                    <p style="font-size: 0.8rem; color: #555; margin-top: -10px;">הכנה למערכת הורדת סרטונים. המערכת דורשת חיבור עתידי ל-API.</p>
+                    <h3>▶️ 8. הורדה מיוטיוב לדרייב</h3>
+                    <p style="font-size: 0.8rem; color: #555; margin-top: -10px;">מחובר ל-API חיצוני! הדבק קישור (עד 100MB) ושמור לדרייב.</p>
                     <input type="text" id="youtube-url" placeholder="הדבק קישור ליוטיוב...">
                     <button onclick="doYoutube()" style="background:#ff0000;">הורד סרטון</button>
                     <div id="st-youtube" class="status"></div>
@@ -282,30 +282,30 @@
             const pass = document.getElementById('wife-password').value;
             const st = document.getElementById('st-wife');
             if (!pass) return st.innerText = "❌ אנא הכנס סיסמה";
-            st.innerText = "⏳ מתחבר לאתר, שואב ושולח אליך...";
+            st.innerText = "⏳ מתחבר לאתר (זה יכול לקחת כמה שניות)...";
             try {
                 const res = await fetch(WORKER, {
                     method: 'POST',
                     body: JSON.stringify({ type: 'wife_scrape', password: pass, accessToken: access_token, userEmail })
                 });
                 const data = await res.json();
-                st.innerText = data.success ? "✅ התוכן נשמר בדרייב ונשלח למייל!" : "❌ שגיאה: " + (data.error || "נכשל");
+                st.innerText = data.success ? "✅ התוכן נשמר בדרייב ונשלח למייל!" : "❌ " + (data.error || "נכשל");
             } catch (e) { st.innerText = "❌ שגיאת רשת"; }
         }
 
         async function doYoutube() {
             const url = document.getElementById('youtube-url').value;
             const st = document.getElementById('st-youtube');
-            if (!url) return st.innerText = "❌ הכנס קישור";
-            st.innerText = "⏳ מתחבר לשרת...";
+            if (!url) return st.innerText = "❌ הכנס קישור ליוטיוב";
+            st.innerText = "⏳ מפענח ומוריד סרטון... (נא להמתין)";
             try {
                 const res = await fetch(WORKER, {
                     method: 'POST',
                     body: JSON.stringify({ type: 'youtube_download', value: url, accessToken: access_token })
                 });
                 const data = await res.json();
-                st.innerText = data.error || (data.success ? "✅ הושלם" : "❌ נכשל");
-            } catch (e) { st.innerText = "❌ שגיאת שרת"; }
+                st.innerText = data.success ? "✅ הסרטון נשמר בדרייב בהצלחה!" : "❌ " + (data.error || "נכשל");
+            } catch (e) { st.innerText = "❌ שגיאת שרת מול יוטיוב"; }
         }
 
         async function openAdmin() {
