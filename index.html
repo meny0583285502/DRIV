@@ -17,13 +17,15 @@
         button:hover { opacity: 0.9; }
         .status { font-size: 0.85rem; text-align: center; font-weight: bold; margin-top: 8px; color: var(--p); word-break: break-word; }
         
-        /* --- עיצוב וואטסאפ מטורף --- */
+        /* --- עיצוב הבועות תוקן פה --- */
         .feed-container { 
             background: #efeae2; 
             border-radius: 12px;
             padding: 20px;
             display: flex; 
             flex-direction: column; 
+            /* הפתרון למניעת מתיחה: */
+            align-items: flex-start;
             gap: 12px; 
             height: 60vh; 
             overflow-y: auto; 
@@ -35,20 +37,19 @@
             padding: 12px 16px; 
             border-radius: 12px; 
             border-top-right-radius: 0; 
-            max-width: 65%; 
+            /* מבטיח שהבועה לא תשתלט על כל המסך */
+            max-width: 75%; 
             width: fit-content; 
             box-shadow: 0 1px 2px rgba(0,0,0,0.15);
-            align-self: flex-start; 
             cursor: pointer;
             display: flex;
             flex-direction: column;
             gap: 8px;
         }
         .chat-bubble:hover { background: #fafafa; }
-        .msg-time { font-size: 0.8rem; color: #888; font-weight: bold; align-self: flex-end; }
-        .msg-text { font-size: 1rem; line-height: 1.5; color: #222; white-space: pre-wrap; }
+        .msg-time { font-size: 0.8rem; color: #888; font-weight: bold; align-self: flex-end; margin-top: 2px; }
+        .msg-text { font-size: 1rem; line-height: 1.5; color: #222; white-space: pre-wrap; word-wrap: break-word; }
         
-        /* אייקונים חכמים */
         .media-icon { 
             background: #e8f0fe; color: #1a73e8; border: 1px solid #d2e3fc; 
             padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; 
@@ -59,7 +60,6 @@
 
         .admin-panel { background: #fff3cd; border: 2px dashed #ffc107; padding: 15px; border-radius: 8px; width: 100%; max-width: 500px; margin-top: 15px; display: none; box-sizing: border-box; }
         
-        /* מודאל */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; padding: 15px; box-sizing: border-box; }
         .modal-content { background: white; padding: 25px; border-radius: 12px; max-width: 500px; width: 100%; max-height: 80vh; overflow-y: auto; border-top: 6px solid var(--t); position: relative; }
         .modal-time { font-size: 0.85rem; color: #555; font-weight: bold; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 8px; }
@@ -76,7 +76,7 @@
             <p id="feed-desc" style="font-size: 0.9rem; color: #555; margin-top: -10px;">מערכת מטמון חכמה. לחץ על הודעה לקריאה. אייקונים מאפשרים הורדת מדיה (📸/🎥) ישירות לדרייב.</p>
             
             <div id="telegram-feed" class="feed-container">
-                <div style="text-align:center; color:#666;">טוען הודעות אחרונות...</div>
+                <div style="text-align:center; color:#666; width:100%;">טוען הודעות אחרונות...</div>
             </div>
             
             <div id="st-feed" class="status"></div>
@@ -218,7 +218,7 @@
                 btn.innerText = '🏛️ עבור לעדכוני הכנסת';
             }
             
-            document.getElementById('telegram-feed').innerHTML = '<div style="text-align:center; color:#666;">טוען עדכונים...</div>';
+            document.getElementById('telegram-feed').innerHTML = '<div style="text-align:center; color:#666; width:100%;">טוען עדכונים...</div>';
             loadTelegramFeed();
         }
         
@@ -251,13 +251,13 @@
                     msgEl.onclick = () => openModal(msg.time, msg.text);
                     feedDiv.appendChild(msgEl);
                 });
-            } catch (e) { feedDiv.innerHTML = '<div style="text-align:center; color:red;">שגיאה בטעינת התוכן.</div>'; }
+            } catch (e) { feedDiv.innerHTML = '<div style="text-align:center; color:red; width:100%;">שגיאה בטעינת התוכן.</div>'; }
         }
 
         function handleMediaClick(event, directMediaUrl) {
             event.stopPropagation();
             if (!access_token) {
-                alert("כדי לשמור את המדיה לדרייב, עליך להתחבר תחילה לחשבון גוגל!");
+                alert("כדי לשמור את המדיה לדרייב, עליך להתחבר תחילה לחשבון גוגל (הכפתור הכחול למטה)!");
                 return;
             }
             saveMediaToDrive(directMediaUrl);
@@ -275,12 +275,11 @@
                 st.innerText = data.success ? "✅ הקובץ נשמר בהצלחה!" : "❌ שגיאה בשמירה";
                 setTimeout(() => st.innerText = "", 3000);
             } catch (e) {
-                st.innerText = "❌ שגיאה: החיבור התנתק בגלל גודל הקובץ.";
+                st.innerText = "❌ שגיאה: החיבור התנתק.";
                 setTimeout(() => st.innerText = "", 3000);
             }
         }
 
-        // --- פונקציות חדשות: לאשה ויוטיוב ---
         async function doWifeScrape() {
             const pass = document.getElementById('wife-password').value;
             const st = document.getElementById('st-wife');
