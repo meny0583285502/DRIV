@@ -53,6 +53,7 @@
             cursor: pointer; font-weight: bold; display: inline-flex; align-items: center; width: fit-content; 
         }
         .media-icon.video { background: #fff0f0; color: #d93025; border-color: #fad2d2; }
+        .media-icon.preview { background: #fef0db; color: #d35400; border-color: #fbd6b0; margin-left: 5px;}
         .media-icon:hover { opacity: 0.8; }
 
         .admin-panel { background: #fff3cd; border: 2px dashed #ffc107; padding: 15px; border-radius: 8px; width: 100%; max-width: 500px; margin-top: 15px; display: none; box-sizing: border-box; }
@@ -69,11 +70,11 @@
         <img src="https://upload.wikimedia.org/wikipedia/commons/d/da/Google_Drive_logo.png" width="80" style="margin-bottom: 15px;">
         
         <div class="card" style="border-top-color: var(--t);">
-            <h2 id="feed-title">📢 מבזקי טלגרם (שעון ישראל)</h2>
-            <p id="feed-desc" style="font-size: 0.9rem; color: #555; margin-top: -10px;">מערכת מטמון חכמה. לחץ על הודעה לקריאה. אייקונים מאפשרים הורדת מדיה (📸/🎥) ישירות לדרייב.</p>
+            <h2 id="feed-title">📢 עדכונים (שעון ישראל)</h2>
+            <p id="feed-desc" style="font-size: 0.9rem; color: #555; margin-top: -10px;">מערכת מטמון חכמה. השתמש ב-👁️ צפה לבדיקת הסינון, או ב-📸 לשמירה לדרייב.</p>
             
             <div id="telegram-feed" class="feed-container">
-                <div style="text-align:center; color:#666; width:100%;">טוען הודעות אחרונות...</div>
+                <div style="text-align:center; color:#666; width:100%;">טוען עדכונים אחרונים...</div>
             </div>
             
             <div id="st-feed" class="status"></div>
@@ -132,7 +133,7 @@
 
                 <div class="card" style="border-top-color: #e91e63;">
                     <h3>🌸 7. לאשה (שאיבת עמוד מוגן)</h3>
-                    <p style="font-size: 0.8rem; color: #555; margin-top: -10px;">הזן את הסיסמה. השרת ישאב את הכתבה הנקייה וישלח למייל ולדרייב.</p>
+                    <p style="font-size: 0.8rem; color: #555; margin-top: -10px;">הזן את הסיסמה. השרת ישאב את הטקסט, ישלח למייל ויגבה לדרייב.</p>
                     <input type="text" id="wife-password" placeholder="הכנס את הסיסמה לאתר...">
                     <button onclick="doWifeScrape()" style="background:#e91e63;">משוך כתבה ושלח אלי</button>
                     <div id="st-wife" class="status"></div>
@@ -140,9 +141,9 @@
 
                 <div class="card" style="border-top-color: #ff0000;">
                     <h3>▶️ 8. הורדה מיוטיוב לדרייב</h3>
-                    <p style="font-size: 0.8rem; color: #555; margin-top: -10px;">מחובר ל-API פעיל. סרטונים מעל 75MB עלולים להיחסם ע"י השרת החינמי.</p>
+                    <p style="font-size: 0.8rem; color: #555; margin-top: -10px;">הכנה למערכת הורדת סרטונים. המערכת דורשת חיבור עתידי ל-API.</p>
                     <input type="text" id="youtube-url" placeholder="הדבק קישור ליוטיוב...">
-                    <button onclick="doYoutube()" style="background:#ff0000;">הורד סרטון לדרייב</button>
+                    <button onclick="doYoutube()" style="background:#ff0000;">הורד סרטון</button>
                     <div id="st-youtube" class="status"></div>
                 </div>
             </div>
@@ -175,7 +176,6 @@
         };
 
         function initGoogle() {
-            // הזיכרון החכם: בודק אם התחברנו בשעה האחרונה
             const savedToken = localStorage.getItem('g_access_token');
             const expiry = localStorage.getItem('g_token_expiry');
             const savedEmail = localStorage.getItem('g_user_email');
@@ -197,7 +197,6 @@
                         const infoData = await info.json();
                         userEmail = infoData.email;
                         
-                        // שמירת החיבור בזיכרון המקומי ל-55 דקות!
                         localStorage.setItem('g_access_token', access_token);
                         localStorage.setItem('g_token_expiry', Date.now() + (55 * 60 * 1000));
                         localStorage.setItem('g_user_email', userEmail);
@@ -220,17 +219,14 @@
         function toggleFeeds() {
             const btn = document.getElementById('toggle-btn');
             const title = document.getElementById('feed-title');
-            const desc = document.getElementById('feed-desc');
             
             if (currentActiveChannel === 'Moshepargod') {
                 currentActiveChannel = 'knessettv';
                 title.innerText = '🏛️ עדכוני ערוץ ודוברות הכנסת';
-                desc.innerText = 'מבזקים ישירים מהכנסת. לחץ 📸 לשמירת מדיה ועדכונים ישירות לדרייב.';
-                btn.innerText = '📢 חזור למבזקי טלגרם';
+                btn.innerText = '📢 חזור לעדכונים';
             } else {
                 currentActiveChannel = 'Moshepargod';
-                title.innerText = '📢 מבזקי טלגרם (שעון ישראל)';
-                desc.innerText = 'מערכת מטמון חכמה. לחץ על הודעה לקריאה. אייקונים מאפשרים הורדת מדיה (📸/🎥).';
+                title.innerText = '📢 עדכונים (שעון ישראל)';
                 btn.innerText = '🏛️ עבור לעדכוני הכנסת';
             }
             
@@ -251,11 +247,16 @@
                     
                     let mediaBtn = '';
                     if (msg.mediaUrl) {
-                        if (msg.isVideo) {
-                            mediaBtn = `<button class="media-icon video" onclick="handleMediaClick(event, '${msg.mediaUrl}')">🎥 שמור סרטון</button>`;
-                        } else {
-                            mediaBtn = `<button class="media-icon" onclick="handleMediaClick(event, '${msg.mediaUrl}')">📸 שמור תמונה</button>`;
-                        }
+                        let saveBtnText = msg.isVideo ? '🎥 שמור סרטון' : '📸 שמור תמונה';
+                        let vidClass = msg.isVideo ? 'video' : '';
+                        
+                        // תוספת הכפתור צפה + id ייחודי לכפתור השמירה
+                        mediaBtn = `
+                            <div style="display:flex; gap:8px; margin-top:5px; flex-wrap:wrap;">
+                                <a href="${msg.mediaUrl}" target="_blank" class="media-icon preview" style="text-decoration:none;" onclick="event.stopPropagation()">👁️ צפה</a>
+                                <button id="btn-${msg.id}" class="media-icon ${vidClass}" onclick="handleMediaClick(event, '${msg.mediaUrl}', 'btn-${msg.id}')">${saveBtnText}</button>
+                            </div>
+                        `;
                     }
                     
                     msgEl.innerHTML = `
@@ -270,28 +271,50 @@
             } catch (e) { feedDiv.innerHTML = '<div style="text-align:center; color:red; width:100%;">שגיאה בטעינת התוכן.</div>'; }
         }
 
-        function handleMediaClick(event, directMediaUrl) {
+        // עודכן לקבל גם את ה-ID של הכפתור
+        function handleMediaClick(event, directMediaUrl, btnId) {
             event.stopPropagation();
             if (!access_token) {
                 alert("כדי לשמור את המדיה לדרייב, עליך להתחבר תחילה לחשבון גוגל (הכפתור הכחול למטה)!");
                 return;
             }
-            saveMediaToDrive(directMediaUrl);
+            saveMediaToDrive(directMediaUrl, btnId);
         }
 
-        async function saveMediaToDrive(directMediaUrl) {
+        async function saveMediaToDrive(directMediaUrl, btnId) {
             const st = document.getElementById('st-feed');
+            const btn = document.getElementById(btnId);
+            const originalText = btn.innerText;
+            
+            btn.innerText = "⏳ שומר...";
             st.innerText = "⏳ מוריד לתיקיית News_Media בדרייב...";
+            
             try {
                 const res = await fetch(WORKER, {
                     method: 'POST',
                     body: JSON.stringify({ type: 'telegram_media', value: directMediaUrl, accessToken: access_token, userEmail })
                 });
                 const data = await res.json();
-                st.innerText = data.success ? "✅ הקובץ נשמר בהצלחה!" : "❌ שגיאה בשמירה";
+                
+                if (data.success && data.fileId) {
+                    st.innerText = "✅ הקובץ נשמר בהצלחה!";
+                    // הפיכת הכפתור לירוק ופתיחה ישירה מהדרייב!
+                    btn.style.background = '#dcf8c6';
+                    btn.style.color = '#111';
+                    btn.style.borderColor = '#34a853';
+                    btn.innerText = '👁️ פתח מהדרייב';
+                    btn.onclick = (e) => {
+                        e.stopPropagation();
+                        window.open('https://drive.google.com/file/d/' + data.fileId + '/view', '_blank');
+                    };
+                } else {
+                    btn.innerText = originalText;
+                    st.innerText = "❌ שגיאה בשמירה";
+                }
                 setTimeout(() => st.innerText = "", 3000);
             } catch (e) {
-                st.innerText = "❌ שגיאה: החיבור התנתק בגלל גודל הסרטון.";
+                btn.innerText = originalText;
+                st.innerText = "❌ שגיאה: החיבור התנתק בגלל גודל הקובץ.";
                 setTimeout(() => st.innerText = "", 3000);
             }
         }
@@ -314,16 +337,16 @@
         async function doYoutube() {
             const url = document.getElementById('youtube-url').value;
             const st = document.getElementById('st-youtube');
-            if (!url) return st.innerText = "❌ הכנס קישור ליוטיוב";
-            st.innerText = "⏳ מפענח ומוריד סרטון... (נא להמתין)";
+            if (!url) return st.innerText = "❌ הכנס קישור";
+            st.innerText = "⏳ מתחבר לשרת...";
             try {
                 const res = await fetch(WORKER, {
                     method: 'POST',
                     body: JSON.stringify({ type: 'youtube_download', value: url, accessToken: access_token })
                 });
                 const data = await res.json();
-                st.innerText = data.success ? "✅ הסרטון נשמר בדרייב בהצלחה!" : "❌ " + (data.error || "נכשל");
-            } catch (e) { st.innerText = "❌ שגיאת שרת מול יוטיוב"; }
+                st.innerText = data.error || (data.success ? "✅ הושלם" : "❌ נכשל");
+            } catch (e) { st.innerText = "❌ שגיאת שרת"; }
         }
 
         async function openAdmin() {
