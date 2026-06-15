@@ -2,30 +2,21 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>Cloud Master Pro V45</title>
+    <title>Cloud Master Pro V46</title>
     <link rel="icon" href="https://upload.wikimedia.org/wikipedia/commons/d/da/Google_Drive_logo.png">
     <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         :root { 
-            --primary: #2563eb; 
-            --secondary: #10b981; 
-            --bg-color: #f1f5f9; 
-            --card-bg: rgba(255, 255, 255, 0.95);
-            --text-main: #1e293b;
-            --text-muted: #64748b;
+            --primary: #2563eb; --secondary: #10b981; --bg-color: #f1f5f9; 
+            --card-bg: rgba(255, 255, 255, 0.95); --text-main: #1e293b; --text-muted: #64748b;
         }
-        
         body { 
-            font-family: 'Rubik', sans-serif; 
-            background: linear-gradient(135deg, #e2e8f0 0%, #f8fafc 100%);
-            color: var(--text-main);
-            display: flex; flex-direction: column; align-items: center; 
+            font-family: 'Rubik', sans-serif; background: linear-gradient(135deg, #e2e8f0 0%, #f8fafc 100%);
+            color: var(--text-main); display: flex; flex-direction: column; align-items: center; 
             padding: 30px 20px; margin: 0; min-height: 100vh;
         }
-        
         .wrapper { width: 100%; max-width: 1300px; display: flex; flex-direction: column; align-items: center; gap: 20px; }
         
-        /* User Profile Badge */
         .user-profile {
             display: none; background: white; padding: 8px 20px; border-radius: 30px; 
             font-size: 0.9rem; color: var(--text-main); box-shadow: 0 4px 6px rgba(0,0,0,0.05);
@@ -38,37 +29,27 @@
         .logout-btn:hover { background: #fecaca; }
 
         .card { 
-            background: var(--card-bg); 
-            padding: 24px; 
-            border-radius: 20px; 
+            background: var(--card-bg); padding: 24px; border-radius: 20px; 
             box-shadow: 0 10px 30px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.02); 
-            width: 100%; 
-            box-sizing: border-box; 
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.8);
-            transition: transform 0.2s ease;
+            width: 100%; box-sizing: border-box; backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.8); transition: transform 0.2s ease;
         }
         .card:hover { transform: translateY(-2px); box-shadow: 0 15px 35px rgba(0,0,0,0.06); }
-        
         .card h3 { margin-top: 0; font-size: 1.15rem; display: flex; align-items: center; gap: 8px; color: #334155; }
         
         .grid-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; width: 100%; }
         
         input { 
-            width: 100%; padding: 14px 16px; margin: 10px 0; 
-            border: 1px solid #cbd5e1; border-radius: 12px; 
-            box-sizing: border-box; font-family: inherit; font-size: 0.95rem;
-            background: #f8fafc; transition: all 0.2s;
+            width: 100%; padding: 14px 16px; margin: 10px 0; border: 1px solid #cbd5e1; border-radius: 12px; 
+            box-sizing: border-box; font-family: inherit; font-size: 0.95rem; background: #f8fafc; transition: all 0.2s;
         }
         input:focus { outline: none; border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
         
         button { 
-            width: 100%; padding: 14px; border: none; border-radius: 12px; 
-            cursor: pointer; font-weight: 600; font-family: inherit; font-size: 1rem;
-            color: white; margin-top: 8px; transition: all 0.2s;
+            width: 100%; padding: 14px; border: none; border-radius: 12px; cursor: pointer; font-weight: 600; 
+            font-family: inherit; font-size: 1rem; color: white; margin-top: 8px; transition: all 0.2s;
         }
         button:hover { filter: brightness(1.1); transform: scale(0.99); }
-        button:active { transform: scale(0.97); }
         
         .status { font-size: 0.85rem; text-align: center; font-weight: 500; margin-top: 12px; color: var(--primary); min-height: 18px; word-break: break-word;}
         
@@ -89,15 +70,12 @@
         
         .media-icon { background: #eff6ff; color: var(--primary); border: 1px solid #bfdbfe; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; cursor: pointer; font-weight: 500; display: inline-flex; align-items: center; width: fit-content; text-decoration: none; }
         .media-icon.video { background: #fef2f2; color: #ef4444; border-color: #fecaca; }
-        .media-icon:hover { opacity: 0.8; }
-        
         .admin-panel { background: #fffbeb; border: 1px solid #fde68a; padding: 20px; border-radius: 16px; width: 100%; max-width: 500px; display: none; box-sizing: border-box; }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.6); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
         .modal-content { background: white; padding: 30px; border-radius: 24px; max-width: 500px; width: 100%; max-height: 80vh; overflow-y: auto; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
         .modal-time { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; margin-bottom: 15px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; }
         .modal-text { font-size: 1.05rem; line-height: 1.6; color: var(--text-main); white-space: pre-wrap; }
         .modal-close { display: block; margin-top: 25px; background: #cbd5e1; color: #334155; font-size: 1rem; text-align: center; }
-        .modal-close:hover { background: #94a3b8; color: white; }
     </style>
 </head>
 <body>
@@ -111,9 +89,7 @@
 
         <div class="card">
             <h2 id="feed-title" style="color:var(--text-main); margin-top:0;">📢 פיד עדכונים</h2>
-            <div id="telegram-feed" class="feed-container">
-                <div style="text-align:center; color:var(--text-muted); width:100%; margin-top: 20px;">טוען עדכונים...</div>
-            </div>
+            <div id="telegram-feed" class="feed-container"><div style="text-align:center; color:var(--text-muted); width:100%; margin-top: 20px;">טוען עדכונים...</div></div>
             <div id="st-feed" class="status"></div>
             <button id="toggle-btn" onclick="toggleFeeds()" style="background:#475569; width: 250px; display: block; margin: 20px auto 0; border-radius: 30px;">🏛️ עבור לעדכוני הכנסת</button>
         </div>
@@ -131,21 +107,18 @@
                     <button onclick="doWork('direct_link', 'direct-url')" class="btn-drive">שמור בחשבון שלי</button>
                     <div id="st-direct-url" class="status"></div>
                 </div>
-                
                 <div class="card">
                     <h3>📂 2. העתקת קובץ</h3>
                     <input type="text" id="drive-url" placeholder="קישור לדרייב של מישהו אחר...">
                     <button onclick="doWork('drive_copy', 'drive-url')" class="btn-copy">צור עותק אישי</button>
                     <div id="st-drive-url" class="status"></div>
                 </div>
-                
                 <div class="card">
                     <h3>📄 3. סורק אתרים ל-PDF</h3>
                     <input type="text" id="pdf-url" placeholder="כתובת אתר (URL)...">
                     <button onclick="doWork('web_to_pdf', 'pdf-url')" class="btn-pdf">המר ושמור כ-PDF</button>
                     <div id="st-pdf-url" class="status"></div>
                 </div>
-                
                 <div class="card">
                     <h3>📖 4. ויקיפדיה למייל</h3>
                     <input type="text" id="wiki-query" placeholder="שם ערך בויקיפדיה..." oninput="getWikiSuggestions(this.value)">
@@ -153,41 +126,35 @@
                     <button onclick="doWiki()" class="btn-wiki">שלח את הערך למייל</button>
                     <div id="st-wiki" class="status"></div>
                 </div>
-                
                 <div class="card">
                     <h3>✂️ 5. קיצור קישורים</h3>
                     <input type="text" id="short-url" placeholder="הדבק קישור ארוך...">
                     <button onclick="doShorten()" class="btn-short">יצר קישור מקוצר</button>
                     <div id="st-short" class="status"></div>
                 </div>
-                
                 <div class="card">
                     <h3>📥 6. צילום מסך אוטומטי</h3>
                     <input type="text" id="scrape-url" placeholder="הדבק קישור לאתר...">
                     <button onclick="doWork('smart_scrape', 'scrape-url')" class="btn-scrape">צלם מסך ושמור</button>
                     <div id="st-scrape-url" class="status"></div>
                 </div>
-
                 <div class="card">
                     <h3>🌸 7. לאשה (עמוד מוגן)</h3>
                     <input type="text" id="wife-password" placeholder="הכנס סיסמת אתר...">
                     <button onclick="doWifeScrape()" class="btn-wife">משוך כתבה למייל ולדרייב</button>
                     <div id="st-wife" class="status"></div>
                 </div>
-
                 <div class="card">
                     <h3>▶️ 8. הורדה מיוטיוב</h3>
                     <input type="text" id="youtube-url" placeholder="הדבק קישור לסרטון...">
                     <button onclick="doYoutube()" class="btn-yt">הזרם ישירות לדרייב</button>
                     <div id="st-youtube" class="status"></div>
                 </div>
-
                 <div class="card">
                     <h3>📚 9. ספריא (הורדת ספרים)</h3>
-                    <input type="text" id="sefaria-book" placeholder="ספר או פרק (למשל: בראשית א)...">
+                    <input type="text" id="sefaria-book" placeholder="ספר (למשל: שמירת הלשון)...">
                     <label style="font-size: 0.9rem; display: flex; align-items: center; gap: 8px; margin: 10px 0; color: var(--text-muted);">
-                        <input type="checkbox" id="sefaria-tags" checked style="width: 18px; height: 18px; margin: 0; cursor: pointer;"> 
-                        כלול ניקוד וטעמים
+                        <input type="checkbox" id="sefaria-tags" checked style="width: 18px; height: 18px; margin: 0; cursor: pointer;"> כלול ניקוד וטעמים
                     </label>
                     <button onclick="doSefaria()" class="btn-sefaria">הורד מספריא לדרייב</button>
                     <div id="st-sefaria" class="status"></div>
@@ -205,8 +172,7 @@
 
     <div id="msgModal" class="modal" onclick="closeModal()">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <div id="modalTime" class="modal-time"></div>
-            <div id="modalText" class="modal-text"></div>
+            <div id="modalTime" class="modal-time"></div><div id="modalText" class="modal-text"></div>
             <button class="modal-close" onclick="closeModal()">סגור</button>
         </div>
     </div>
@@ -216,10 +182,7 @@
         const WORKER = 'https://wandering-boat-c837.meny85502.workers.dev/';
         let currentActiveChannel = 'Moshepargod';
         
-        window.onload = function() {
-            loadTelegramFeed();
-            setInterval(() => loadTelegramFeed(), 60000); 
-        };
+        window.onload = function() { loadTelegramFeed(); setInterval(() => loadTelegramFeed(), 60000); };
 
         function initUIForLoggedInUser() {
             document.getElementById('login-section').style.display = 'none';
@@ -232,173 +195,114 @@
             const savedToken = localStorage.getItem('g_access_token');
             const expiry = localStorage.getItem('g_token_expiry');
             const savedEmail = localStorage.getItem('g_user_email');
-
-            if (savedToken && expiry && Date.now() < parseInt(expiry)) {
-                access_token = savedToken;
-                userEmail = savedEmail;
-                initUIForLoggedInUser();
-            }
-
+            if (savedToken && expiry && Date.now() < parseInt(expiry)) { access_token = savedToken; userEmail = savedEmail; initUIForLoggedInUser(); }
             try {
                 tokenClient = google.accounts.oauth2.initTokenClient({
                     client_id: '35488533313-r07s467bb6lnd03bb03iqif0eroq6jcl.apps.googleusercontent.com',
                     scope: 'https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/userinfo.email',
                     callback: async (res) => {
                         access_token = res.access_token;
-                        const info = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', { headers: { Authorization: `Bearer ${access_token}` } });
-                        const infoData = await info.json();
+                        const infoData = await (await fetch('https://www.googleapis.com/oauth2/v3/userinfo', { headers: { Authorization: `Bearer ${access_token}` } })).json();
                         userEmail = infoData.email;
-                        
-                        localStorage.setItem('g_access_token', access_token);
-                        localStorage.setItem('g_token_expiry', Date.now() + (55 * 60 * 1000));
-                        localStorage.setItem('g_user_email', userEmail);
-
+                        localStorage.setItem('g_access_token', access_token); localStorage.setItem('g_token_expiry', Date.now() + (55 * 60 * 1000)); localStorage.setItem('g_user_email', userEmail);
                         initUIForLoggedInUser();
                     }
                 });
-            } catch(e) { console.log("Google init blocked."); }
+            } catch(e) {}
         }
 
-        function loginGoogle() {
-            if (!tokenClient) { alert("המערכת לא הצליחה לטעון את שירותי גוגל."); return; }
-            tokenClient.requestAccessToken();
-        }
-
+        function loginGoogle() { if (!tokenClient) { alert("המערכת לא הצליחה לטעון את שירותי גוגל."); return; } tokenClient.requestAccessToken(); }
         function logoutGoogle() {
             if(confirm("להתנתק מחשבון גוגל ולנקות הרשאות?")) {
-                localStorage.removeItem('g_access_token'); localStorage.removeItem('g_token_expiry'); localStorage.removeItem('g_user_email');
-                window.location.reload(); 
+                localStorage.removeItem('g_access_token'); localStorage.removeItem('g_token_expiry'); localStorage.removeItem('g_user_email'); window.location.reload(); 
             }
         }
 
         function toggleFeeds() {
-            const btn = document.getElementById('toggle-btn');
-            const title = document.getElementById('feed-title');
-            if (currentActiveChannel === 'Moshepargod') {
-                currentActiveChannel = 'knessettv'; title.innerText = '🏛️ עדכוני הכנסת'; btn.innerText = '📢 חזור לעדכונים כלליים';
-            } else {
-                currentActiveChannel = 'Moshepargod'; title.innerText = '📢 פיד עדכונים'; btn.innerText = '🏛️ עבור לעדכוני הכנסת';
-            }
-            document.getElementById('telegram-feed').innerHTML = '<div style="text-align:center; color:#64748b; width:100%; margin-top:20px;">טוען...</div>';
-            loadTelegramFeed();
+            const btn = document.getElementById('toggle-btn'); const title = document.getElementById('feed-title');
+            if (currentActiveChannel === 'Moshepargod') { currentActiveChannel = 'knessettv'; title.innerText = '🏛️ עדכוני הכנסת'; btn.innerText = '📢 חזור לעדכונים כלליים'; } else { currentActiveChannel = 'Moshepargod'; title.innerText = '📢 פיד עדכונים'; btn.innerText = '🏛️ עבור לעדכוני הכנסת'; }
+            document.getElementById('telegram-feed').innerHTML = '<div style="text-align:center; color:#64748b; width:100%; margin-top:20px;">טוען...</div>'; loadTelegramFeed();
         }
         
         async function loadTelegramFeed() {
             const feedDiv = document.getElementById('telegram-feed');
             try {
-                const res = await fetch(`${WORKER}?action=telegram_feed&channel=${currentActiveChannel}`);
-                const messages = await res.json();
+                const messages = await (await fetch(`${WORKER}?action=telegram_feed&channel=${currentActiveChannel}`)).json();
                 feedDiv.innerHTML = ''; 
                 messages.forEach(msg => {
-                    const msgEl = document.createElement('div');
-                    msgEl.className = 'chat-bubble';
+                    const msgEl = document.createElement('div'); msgEl.className = 'chat-bubble';
                     let mediaBtn = '';
                     if (msg.mediaUrl) {
                         let saveBtnText = msg.isVideo ? '🎥 שמור לדרייב' : '📸 שמור לדרייב';
                         let vidClass = msg.isVideo ? 'video' : '';
-                        mediaBtn = `
-                            <div style="display:flex; gap:10px; margin-top:8px; flex-wrap:wrap;">
-                                <a href="${msg.mediaUrl}" target="_blank" class="media-icon preview" onclick="event.stopPropagation()">👁️ צפייה ברשת</a>
-                                <div id="btn-${msg.id}" class="media-icon ${vidClass}" onclick="handleMediaClick(event, '${msg.mediaUrl}', 'btn-${msg.id}')">${saveBtnText}</div>
-                            </div>`;
+                        mediaBtn = `<div style="display:flex; gap:10px; margin-top:8px; flex-wrap:wrap;"><a href="${msg.mediaUrl}" target="_blank" class="media-icon preview" onclick="event.stopPropagation()">👁️ צפייה ברשת</a><div id="btn-${msg.id}" class="media-icon ${vidClass}" onclick="handleMediaClick(event, '${msg.mediaUrl}', 'btn-${msg.id}')">${saveBtnText}</div></div>`;
                     }
                     msgEl.innerHTML = `<div class="msg-text">${escapeHTML(msg.text)}</div>${mediaBtn}<div class="msg-time">${msg.time}</div>`;
-                    msgEl.onclick = () => openModal(msg.time, msg.text);
-                    feedDiv.appendChild(msgEl);
+                    msgEl.onclick = () => openModal(msg.time, msg.text); feedDiv.appendChild(msgEl);
                 });
             } catch (e) { feedDiv.innerHTML = '<div style="text-align:center; color:red; width:100%;">שגיאה בטעינת הפיד.</div>'; }
         }
 
-        function handleMediaClick(event, directMediaUrl, btnId) {
-            event.stopPropagation();
-            if (!access_token) { alert("עליך להתחבר תחילה לגוגל!"); return; }
-            saveMediaToDrive(directMediaUrl, btnId);
-        }
+        function handleMediaClick(event, directMediaUrl, btnId) { event.stopPropagation(); if (!access_token) { alert("עליך להתחבר תחילה לגוגל!"); return; } saveMediaToDrive(directMediaUrl, btnId); }
 
         async function saveMediaToDrive(directMediaUrl, btnId) {
-            const st = document.getElementById('st-feed');
-            const btn = document.getElementById(btnId);
-            const originalText = btn.innerText;
-            btn.innerText = "⏳ שומר...";
-            st.innerText = "⏳ מוריד לדרייב (נא להמתין 5-15 שניות)...";
-            
+            const st = document.getElementById('st-feed'); const btn = document.getElementById(btnId); const originalText = btn.innerText;
+            btn.innerText = "⏳ שומר..."; st.innerText = "⏳ מוריד לדרייב (נא להמתין 5-15 שניות)...";
             try {
-                const res = await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type: 'telegram_media', value: directMediaUrl, accessToken: access_token, userEmail }) });
-                const data = await res.json();
+                const data = await (await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type: 'telegram_media', value: directMediaUrl, accessToken: access_token, userEmail }) })).json();
                 if (data.success && data.fileId) {
-                    st.innerText = "✅ נשמר בהצלחה!";
-                    btn.style.background = '#dcf8c6'; btn.style.color = '#111'; btn.style.borderColor = '#34a853';
-                    btn.innerHTML = '<a href="https://drive.google.com/file/d/' + data.fileId + '/view?usp=sharing" target="_blank" style="text-decoration:none; color:inherit;">👁️ פתח מדרייב</a>';
-                } else {
-                    btn.innerText = originalText; st.innerText = "❌ שגיאה: " + (data.error || "נכשל");
-                }
+                    st.innerText = "✅ נשמר בהצלחה!"; btn.style.background = '#dcf8c6'; btn.style.color = '#111'; btn.style.borderColor = '#34a853';
+                    btn.innerHTML = `<a href="https://drive.google.com/file/d/${data.fileId}/view?usp=sharing" target="_blank" style="text-decoration:none; color:inherit;">👁️ פתח מדרייב</a>`;
+                } else { btn.innerText = originalText; st.innerText = "❌ שגיאה: " + (data.error || "נכשל"); }
                 setTimeout(() => st.innerText = "", 4000);
             } catch (e) { btn.innerText = originalText; st.innerText = "❌ שגיאת רשת."; setTimeout(() => st.innerText = "", 3000); }
         }
 
         async function doYoutube() {
-            const url = document.getElementById('youtube-url').value;
-            const st = document.getElementById('st-youtube');
+            const url = document.getElementById('youtube-url').value; const st = document.getElementById('st-youtube');
             if (!url) return st.innerText = "❌ אנא הדבק קישור";
-            st.innerHTML = "⏳ השרת מבצע שאיבה והזרמה לדרייב (ייתכן שייקח חצי דקה)...";
+            st.innerHTML = "⏳ השרת שואב מיוטיוב... (ייתכן שייקח דקה, סבלנות)";
             try {
-                const res = await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type: 'youtube_download', value: url, accessToken: access_token }) });
-                const data = await res.json();
+                const data = await (await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type: 'youtube_download', value: url, accessToken: access_token }) })).json();
                 if (data.success && data.fileId) {
-                    st.innerHTML = `✅ הסרטון נשמר! <br><a href="https://drive.google.com/file/d/${data.fileId}/view?usp=sharing" target="_blank" style="color:var(--primary); font-weight:bold;">לפתיחה בדרייב לחץ כאן</a>`;
-                } else {
-                    st.innerText = "❌ שגיאה: " + (data.error || "השירות דחה את הבקשה");
-                }
+                    st.innerHTML = `✅ הסרטון נשמר! <br><a href="https://drive.google.com/file/d/${data.fileId}/view?usp=sharing" target="_blank" style="color:var(--primary); font-weight:bold;">לצפייה בדרייב לחץ כאן</a>`;
+                } else { st.innerText = "❌ שגיאה: " + (data.error || "השירות דחה את הבקשה"); }
             } catch (e) { st.innerText = "❌ שגיאת רשת מול ה-Worker"; }
         }
 
         async function doWifeScrape() {
-            const pass = document.getElementById('wife-password').value;
-            const st = document.getElementById('st-wife');
-            if (!pass) return st.innerText = "❌ הכנס סיסמה";
-            st.innerText = "⏳ מתחבר ומושך כתבה (כמה שניות)...";
+            const pass = document.getElementById('wife-password').value; const st = document.getElementById('st-wife');
+            if (!pass) return st.innerText = "❌ הכנס סיסמה"; st.innerText = "⏳ מתחבר ומושך כתבה (כמה שניות)...";
             try {
-                const res = await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type: 'wife_scrape', password: pass, accessToken: access_token, userEmail }) });
-                const data = await res.json();
+                const data = await (await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type: 'wife_scrape', password: pass, accessToken: access_token, userEmail }) })).json();
                 st.innerText = data.success ? "✅ התוכן נשמר אצלך במייל ובדרייב!" : "❌ " + (data.error || "שגיאה במשיכה");
             } catch (e) { st.innerText = "❌ שגיאת רשת"; }
         }
 
         async function doSefaria() {
-            const book = document.getElementById('sefaria-book').value;
-            const tags = document.getElementById('sefaria-tags').checked;
-            const st = document.getElementById('st-sefaria');
-            if (!book) return st.innerText = "❌ הכנס שם ספר/פרק";
-            st.innerText = "⏳ שואב את הספר השלם מספריא לדרייב (נא להמתין)...";
+            const book = document.getElementById('sefaria-book').value; const tags = document.getElementById('sefaria-tags').checked; const st = document.getElementById('st-sefaria');
+            if (!book) return st.innerText = "❌ הכנס שם ספר"; st.innerText = "⏳ מאתר את הספר השלם ומוריד לדרייב...";
             try {
-                const res = await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type: 'sefaria', book: book, tags: tags, accessToken: access_token }) });
-                const data = await res.json();
+                const data = await (await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type: 'sefaria', book: book, tags: tags, accessToken: access_token }) })).json();
                 if (data.success && data.fileId) {
-                    st.innerHTML = `✅ נשמר בדרייב בהצלחה! <br><a href="https://drive.google.com/file/d/${data.fileId}/view?usp=sharing" target="_blank" style="color:var(--primary); font-weight:bold;">לפתיחת הספר לחץ כאן</a>`;
-                } else {
-                    st.innerText = "❌ שגיאה: " + (data.error || "הספר לא נמצא");
-                }
+                    st.innerHTML = `✅ נשמר בהצלחה! <br><a href="https://drive.google.com/file/d/${data.fileId}/view?usp=sharing" target="_blank" style="color:var(--primary); font-weight:bold;">לפתיחת הספר לחץ כאן</a>`;
+                } else { st.innerText = "❌ שגיאה: " + (data.error || "הספר לא נמצא"); }
             } catch (e) { st.innerText = "❌ שגיאת רשת"; }
         }
 
         async function doWiki() {
-            const q = document.getElementById('wiki-query').value;
-            const st = document.getElementById('st-wiki');
-            if(!q) return st.innerText = "❌ הזן ערך";
-            st.innerText = "⏳ מנסה לשלוח את כל הערך למייל...";
+            const q = document.getElementById('wiki-query').value; const st = document.getElementById('st-wiki');
+            if(!q) return st.innerText = "❌ הזן ערך"; st.innerText = "⏳ מנסה לשלוח את כל הערך למייל...";
             try {
-                const res = await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type: 'wikipedia', query: q, accessToken: access_token, userEmail }) });
-                const data = await res.json();
+                const data = await (await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type: 'wikipedia', query: q, accessToken: access_token, userEmail }) })).json();
                 st.innerText = data.success ? "✅ הערך המלא נשלח למייל!" : "❌ " + (data.error || "תקלה בשליחה");
             } catch(e) { st.innerText = "❌ שגיאת רשת. נסה שוב."; }
         }
 
         async function getWikiSuggestions(val) {
-            const box = document.getElementById('wiki-suggestions');
-            if (val.length < 2) { box.style.display = 'none'; return; }
+            const box = document.getElementById('wiki-suggestions'); if (val.length < 2) { box.style.display = 'none'; return; }
             try {
-                const r = await fetch(`https://he.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(val)}&limit=5&format=json&origin=*`);
-                const d = await r.json();
+                const d = await (await fetch(`https://he.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(val)}&limit=5&format=json&origin=*`)).json();
                 if(d[1] && d[1].length > 0) {
                     box.innerHTML = d[1].map(t => `<div style="padding:10px; border-bottom:1px solid #eee; cursor:pointer;" onclick="document.getElementById('wiki-query').value='${t}';document.getElementById('wiki-suggestions').style.display='none'">${t}</div>`).join('');
                     box.style.display = 'block';
@@ -407,30 +311,21 @@
         }
         
         async function doShorten() {
-            const val = document.getElementById('short-url').value;
-            const st = document.getElementById('st-short');
+            const val = document.getElementById('short-url').value; const st = document.getElementById('st-short');
             try {
-                const res = await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type: 'shorten', value: val }) });
-                const data = await res.json();
+                const data = await (await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type: 'shorten', value: val }) })).json();
                 st.innerHTML = data.success ? `<a href="${data.shortUrl}" target="_blank" style="font-weight:bold;">${data.shortUrl}</a>` : "❌ שגיאה בקיצור";
             } catch(e) { st.innerText = "❌ תקלת רשת"; }
         }
         
         async function doWork(type, id) {
-            const val = document.getElementById(id).value;
-            const st = document.getElementById('st-' + id);
-            if(!val) return st.innerText = "❌ מלא את השדה";
-            st.innerText = "⏳ השרת עובד, זה יכול לקחת עד חצי דקה...";
+            const val = document.getElementById(id).value; const st = document.getElementById('st-' + id);
+            if(!val) return st.innerText = "❌ מלא את השדה"; st.innerText = "⏳ השרת עובד, זה יכול לקחת עד חצי דקה...";
             try {
-                const res = await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type, value: val, accessToken: access_token, userEmail }) });
-                const data = await res.json();
+                const data = await (await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type, value: val, accessToken: access_token, userEmail }) })).json();
                 if (data.success && data.fileId) {
                     st.innerHTML = `✅ בוצע! <br><a href="https://drive.google.com/file/d/${data.fileId}/view?usp=sharing" target="_blank" style="color:var(--primary); font-weight:bold;">פתח קובץ</a>`;
-                } else if (data.success) {
-                    st.innerText = "✅ הושלם בהצלחה!";
-                } else {
-                    st.innerText = "❌ " + (data.error || "פעולה נכשלה");
-                }
+                } else if (data.success) { st.innerText = "✅ הושלם בהצלחה!"; } else { st.innerText = "❌ " + (data.error || "פעולה נכשלה"); }
             } catch (e) { st.innerText = "❌ השרת לא מגיב כרגע"; }
         }
 
@@ -439,19 +334,13 @@
             if (pass === "5502") {
                 document.getElementById('admin-panel').style.display = 'block';
                 try {
-                    const res = await fetch(`${WORKER}?action=admin_stats`);
-                    const data = await res.json();
-                    document.getElementById('admin-online').innerText = data.onlineUsers;
-                    document.getElementById('admin-locs').innerText = data.locations.join(', ');
+                    const data = await (await fetch(`${WORKER}?action=admin_stats`)).json();
+                    document.getElementById('admin-online').innerText = data.onlineUsers; document.getElementById('admin-locs').innerText = data.locations.join(', ');
                 } catch(e) { document.getElementById('admin-online').innerText = "1"; document.getElementById('admin-locs').innerText = "מרכז"; }
             } else if (pass !== null) alert("קוד שגוי");
         }
 
-        function openModal(time, text) {
-            document.getElementById('modalTime').innerText = `🕒 עדכון משעה: ${time}`;
-            document.getElementById('modalText').innerText = text;
-            document.getElementById('msgModal').style.display = 'flex';
-        }
+        function openModal(time, text) { document.getElementById('modalTime').innerText = `🕒 עדכון משעה: ${time}`; document.getElementById('modalText').innerText = text; document.getElementById('msgModal').style.display = 'flex'; }
         function closeModal() { document.getElementById('msgModal').style.display = 'none'; }
         function escapeHTML(str) { return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
     </script>
