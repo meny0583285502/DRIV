@@ -2,7 +2,7 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>Cloud Master Pro V44</title>
+    <title>Cloud Master Pro V45</title>
     <link rel="icon" href="https://upload.wikimedia.org/wikipedia/commons/d/da/Google_Drive_logo.png">
     <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
@@ -260,37 +260,25 @@
         }
 
         function loginGoogle() {
-            if (!tokenClient) {
-                alert("המערכת לא הצליחה לטעון את שירותי גוגל. ייתכן ויש חסימה בדפדפן.");
-                return;
-            }
+            if (!tokenClient) { alert("המערכת לא הצליחה לטעון את שירותי גוגל."); return; }
             tokenClient.requestAccessToken();
         }
 
-        // פונקציית התנתקות
         function logoutGoogle() {
             if(confirm("להתנתק מחשבון גוגל ולנקות הרשאות?")) {
-                localStorage.removeItem('g_access_token');
-                localStorage.removeItem('g_token_expiry');
-                localStorage.removeItem('g_user_email');
-                window.location.reload(); // רענון הדף יחזיר את המסך למצב התחלתי
+                localStorage.removeItem('g_access_token'); localStorage.removeItem('g_token_expiry'); localStorage.removeItem('g_user_email');
+                window.location.reload(); 
             }
         }
 
         function toggleFeeds() {
             const btn = document.getElementById('toggle-btn');
             const title = document.getElementById('feed-title');
-            
             if (currentActiveChannel === 'Moshepargod') {
-                currentActiveChannel = 'knessettv';
-                title.innerText = '🏛️ עדכוני הכנסת';
-                btn.innerText = '📢 חזור לעדכונים כלליים';
+                currentActiveChannel = 'knessettv'; title.innerText = '🏛️ עדכוני הכנסת'; btn.innerText = '📢 חזור לעדכונים כלליים';
             } else {
-                currentActiveChannel = 'Moshepargod';
-                title.innerText = '📢 פיד עדכונים';
-                btn.innerText = '🏛️ עבור לעדכוני הכנסת';
+                currentActiveChannel = 'Moshepargod'; title.innerText = '📢 פיד עדכונים'; btn.innerText = '🏛️ עבור לעדכוני הכנסת';
             }
-            
             document.getElementById('telegram-feed').innerHTML = '<div style="text-align:center; color:#64748b; width:100%; margin-top:20px;">טוען...</div>';
             loadTelegramFeed();
         }
@@ -300,31 +288,21 @@
             try {
                 const res = await fetch(`${WORKER}?action=telegram_feed&channel=${currentActiveChannel}`);
                 const messages = await res.json();
-                
                 feedDiv.innerHTML = ''; 
                 messages.forEach(msg => {
                     const msgEl = document.createElement('div');
                     msgEl.className = 'chat-bubble';
-                    
                     let mediaBtn = '';
                     if (msg.mediaUrl) {
                         let saveBtnText = msg.isVideo ? '🎥 שמור לדרייב' : '📸 שמור לדרייב';
                         let vidClass = msg.isVideo ? 'video' : '';
-                        
                         mediaBtn = `
                             <div style="display:flex; gap:10px; margin-top:8px; flex-wrap:wrap;">
                                 <a href="${msg.mediaUrl}" target="_blank" class="media-icon preview" onclick="event.stopPropagation()">👁️ צפייה ברשת</a>
                                 <div id="btn-${msg.id}" class="media-icon ${vidClass}" onclick="handleMediaClick(event, '${msg.mediaUrl}', 'btn-${msg.id}')">${saveBtnText}</div>
-                            </div>
-                        `;
+                            </div>`;
                     }
-                    
-                    msgEl.innerHTML = `
-                        <div class="msg-text">${escapeHTML(msg.text)}</div>
-                        ${mediaBtn}
-                        <div class="msg-time">${msg.time}</div>
-                    `;
-                    
+                    msgEl.innerHTML = `<div class="msg-text">${escapeHTML(msg.text)}</div>${mediaBtn}<div class="msg-time">${msg.time}</div>`;
                     msgEl.onclick = () => openModal(msg.time, msg.text);
                     feedDiv.appendChild(msgEl);
                 });
@@ -333,10 +311,7 @@
 
         function handleMediaClick(event, directMediaUrl, btnId) {
             event.stopPropagation();
-            if (!access_token) {
-                alert("עליך להתחבר תחילה לגוגל!");
-                return;
-            }
+            if (!access_token) { alert("עליך להתחבר תחילה לגוגל!"); return; }
             saveMediaToDrive(directMediaUrl, btnId);
         }
 
@@ -344,45 +319,30 @@
             const st = document.getElementById('st-feed');
             const btn = document.getElementById(btnId);
             const originalText = btn.innerText;
-            
             btn.innerText = "⏳ שומר...";
-            st.innerText = "⏳ מוריד לחשבון שלך...";
+            st.innerText = "⏳ מוריד לדרייב (נא להמתין 5-15 שניות)...";
             
             try {
-                const res = await fetch(WORKER, {
-                    method: 'POST',
-                    body: JSON.stringify({ type: 'telegram_media', value: directMediaUrl, accessToken: access_token, userEmail })
-                });
+                const res = await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type: 'telegram_media', value: directMediaUrl, accessToken: access_token, userEmail }) });
                 const data = await res.json();
-                
                 if (data.success && data.fileId) {
                     st.innerText = "✅ נשמר בהצלחה!";
-                    btn.style.background = '#dcf8c6';
-                    btn.style.color = '#111';
-                    btn.style.borderColor = '#34a853';
+                    btn.style.background = '#dcf8c6'; btn.style.color = '#111'; btn.style.borderColor = '#34a853';
                     btn.innerHTML = '<a href="https://drive.google.com/file/d/' + data.fileId + '/view?usp=sharing" target="_blank" style="text-decoration:none; color:inherit;">👁️ פתח מדרייב</a>';
                 } else {
-                    btn.innerText = originalText;
-                    st.innerText = "❌ שגיאה: " + (data.error || "נכשל");
+                    btn.innerText = originalText; st.innerText = "❌ שגיאה: " + (data.error || "נכשל");
                 }
-                setTimeout(() => st.innerText = "", 3000);
-            } catch (e) {
-                btn.innerText = originalText;
-                st.innerText = "❌ שגיאה בחיבור.";
-                setTimeout(() => st.innerText = "", 3000);
-            }
+                setTimeout(() => st.innerText = "", 4000);
+            } catch (e) { btn.innerText = originalText; st.innerText = "❌ שגיאת רשת."; setTimeout(() => st.innerText = "", 3000); }
         }
 
         async function doYoutube() {
             const url = document.getElementById('youtube-url').value;
             const st = document.getElementById('st-youtube');
             if (!url) return st.innerText = "❌ אנא הדבק קישור";
-            st.innerHTML = "⏳ השרת מבצע שאיבה והזרמה (זה ייקח זמן)...";
+            st.innerHTML = "⏳ השרת מבצע שאיבה והזרמה לדרייב (ייתכן שייקח חצי דקה)...";
             try {
-                const res = await fetch(WORKER, {
-                    method: 'POST',
-                    body: JSON.stringify({ type: 'youtube_download', value: url, accessToken: access_token })
-                });
+                const res = await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type: 'youtube_download', value: url, accessToken: access_token }) });
                 const data = await res.json();
                 if (data.success && data.fileId) {
                     st.innerHTML = `✅ הסרטון נשמר! <br><a href="https://drive.google.com/file/d/${data.fileId}/view?usp=sharing" target="_blank" style="color:var(--primary); font-weight:bold;">לפתיחה בדרייב לחץ כאן</a>`;
@@ -396,7 +356,7 @@
             const pass = document.getElementById('wife-password').value;
             const st = document.getElementById('st-wife');
             if (!pass) return st.innerText = "❌ הכנס סיסמה";
-            st.innerText = "⏳ מתחבר מאחורי הקלעים...";
+            st.innerText = "⏳ מתחבר ומושך כתבה (כמה שניות)...";
             try {
                 const res = await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type: 'wife_scrape', password: pass, accessToken: access_token, userEmail }) });
                 const data = await res.json();
@@ -409,12 +369,12 @@
             const tags = document.getElementById('sefaria-tags').checked;
             const st = document.getElementById('st-sefaria');
             if (!book) return st.innerText = "❌ הכנס שם ספר/פרק";
-            st.innerText = "⏳ מתקשר עם ספריא...";
+            st.innerText = "⏳ שואב את הספר השלם מספריא לדרייב (נא להמתין)...";
             try {
                 const res = await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type: 'sefaria', book: book, tags: tags, accessToken: access_token }) });
                 const data = await res.json();
                 if (data.success && data.fileId) {
-                    st.innerHTML = `✅ נשמר בדרייב! <br><a href="https://drive.google.com/file/d/${data.fileId}/view?usp=sharing" target="_blank" style="color:var(--primary); font-weight:bold;">לפתיחת הספר לחץ כאן</a>`;
+                    st.innerHTML = `✅ נשמר בדרייב בהצלחה! <br><a href="https://drive.google.com/file/d/${data.fileId}/view?usp=sharing" target="_blank" style="color:var(--primary); font-weight:bold;">לפתיחת הספר לחץ כאן</a>`;
                 } else {
                     st.innerText = "❌ שגיאה: " + (data.error || "הספר לא נמצא");
                 }
@@ -425,11 +385,11 @@
             const q = document.getElementById('wiki-query').value;
             const st = document.getElementById('st-wiki');
             if(!q) return st.innerText = "❌ הזן ערך";
-            st.innerText = "⏳ מנסה לשלוח...";
+            st.innerText = "⏳ מנסה לשלוח את כל הערך למייל...";
             try {
                 const res = await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type: 'wikipedia', query: q, accessToken: access_token, userEmail }) });
                 const data = await res.json();
-                st.innerText = data.success ? "✅ הערך נשלח למייל!" : "❌ " + (data.error || "תקלה בשליחה");
+                st.innerText = data.success ? "✅ הערך המלא נשלח למייל!" : "❌ " + (data.error || "תקלה בשליחה");
             } catch(e) { st.innerText = "❌ שגיאת רשת. נסה שוב."; }
         }
 
@@ -460,7 +420,7 @@
             const val = document.getElementById(id).value;
             const st = document.getElementById('st-' + id);
             if(!val) return st.innerText = "❌ מלא את השדה";
-            st.innerText = "⏳ השרת עובד...";
+            st.innerText = "⏳ השרת עובד, זה יכול לקחת עד חצי דקה...";
             try {
                 const res = await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type, value: val, accessToken: access_token, userEmail }) });
                 const data = await res.json();
@@ -483,10 +443,7 @@
                     const data = await res.json();
                     document.getElementById('admin-online').innerText = data.onlineUsers;
                     document.getElementById('admin-locs').innerText = data.locations.join(', ');
-                } catch(e) {
-                    document.getElementById('admin-online').innerText = "1";
-                    document.getElementById('admin-locs').innerText = "מרכז";
-                }
+                } catch(e) { document.getElementById('admin-online').innerText = "1"; document.getElementById('admin-locs').innerText = "מרכז"; }
             } else if (pass !== null) alert("קוד שגוי");
         }
 
