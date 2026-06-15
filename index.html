@@ -2,7 +2,7 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>Cloud Master Pro V43</title>
+    <title>Cloud Master Pro V44</title>
     <link rel="icon" href="https://upload.wikimedia.org/wikipedia/commons/d/da/Google_Drive_logo.png">
     <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
@@ -23,8 +23,20 @@
             padding: 30px 20px; margin: 0; min-height: 100vh;
         }
         
-        .wrapper { width: 100%; max-width: 1300px; display: flex; flex-direction: column; align-items: center; gap: 25px; }
+        .wrapper { width: 100%; max-width: 1300px; display: flex; flex-direction: column; align-items: center; gap: 20px; }
         
+        /* User Profile Badge */
+        .user-profile {
+            display: none; background: white; padding: 8px 20px; border-radius: 30px; 
+            font-size: 0.9rem; color: var(--text-main); box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 15px;
+        }
+        .logout-btn {
+            background: #fee2e2; color: #ef4444; border: none; padding: 4px 12px;
+            border-radius: 20px; font-weight: 600; cursor: pointer; transition: 0.2s; font-family: inherit;
+        }
+        .logout-btn:hover { background: #fecaca; }
+
         .card { 
             background: var(--card-bg); 
             padding: 24px; 
@@ -70,29 +82,16 @@
         .btn-yt { background: linear-gradient(135deg, #f43f5e, #e11d48); }
         .btn-sefaria { background: linear-gradient(135deg, #14b8a6, #0d9488); }
 
-        .feed-container { 
-            background: #f8fafc; border-radius: 16px; padding: 20px; 
-            display: flex; flex-direction: column; align-items: flex-start; gap: 16px; 
-            height: 50vh; overflow-y: auto; border: 1px solid #e2e8f0;
-        }
-        .chat-bubble { 
-            background: #fff; padding: 14px 18px; border-radius: 16px; border-top-right-radius: 4px; 
-            max-width: 75%; box-shadow: 0 2px 8px rgba(0,0,0,0.05); cursor: pointer;
-            border: 1px solid #f1f5f9; display: flex; flex-direction: column; gap: 8px;
-        }
+        .feed-container { background: #f8fafc; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; align-items: flex-start; gap: 16px; height: 50vh; overflow-y: auto; border: 1px solid #e2e8f0; }
+        .chat-bubble { background: #fff; padding: 14px 18px; border-radius: 16px; border-top-right-radius: 4px; max-width: 75%; box-shadow: 0 2px 8px rgba(0,0,0,0.05); cursor: pointer; border: 1px solid #f1f5f9; display: flex; flex-direction: column; gap: 8px; }
         .msg-time { font-size: 0.75rem; color: var(--text-muted); align-self: flex-end; }
         .msg-text { font-size: 1rem; line-height: 1.5; color: var(--text-main); white-space: pre-wrap; word-wrap: break-word; }
         
-        .media-icon { 
-            background: #eff6ff; color: var(--primary); border: 1px solid #bfdbfe; 
-            padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; 
-            cursor: pointer; font-weight: 500; display: inline-flex; align-items: center; width: fit-content; text-decoration: none;
-        }
+        .media-icon { background: #eff6ff; color: var(--primary); border: 1px solid #bfdbfe; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; cursor: pointer; font-weight: 500; display: inline-flex; align-items: center; width: fit-content; text-decoration: none; }
         .media-icon.video { background: #fef2f2; color: #ef4444; border-color: #fecaca; }
         .media-icon:hover { opacity: 0.8; }
         
         .admin-panel { background: #fffbeb; border: 1px solid #fde68a; padding: 20px; border-radius: 16px; width: 100%; max-width: 500px; display: none; box-sizing: border-box; }
-        
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.6); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
         .modal-content { background: white; padding: 30px; border-radius: 24px; max-width: 500px; width: 100%; max-height: 80vh; overflow-y: auto; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
         .modal-time { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; margin-bottom: 15px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; }
@@ -103,8 +102,13 @@
 </head>
 <body>
     <div class="wrapper">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/d/da/Google_Drive_logo.png" width="70" style="margin-bottom: 5px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/d/da/Google_Drive_logo.png" width="70" style="margin-bottom: -5px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));">
         
+        <div id="user-profile-container" class="user-profile" style="display: none;">
+            <span>מחובר: <strong id="user-email-display"></strong></span>
+            <button onclick="logoutGoogle()" class="logout-btn">התנתק 🚪</button>
+        </div>
+
         <div class="card">
             <h2 id="feed-title" style="color:var(--text-main); margin-top:0;">📢 פיד עדכונים</h2>
             <div id="telegram-feed" class="feed-container">
@@ -217,6 +221,13 @@
             setInterval(() => loadTelegramFeed(), 60000); 
         };
 
+        function initUIForLoggedInUser() {
+            document.getElementById('login-section').style.display = 'none';
+            document.getElementById('main-ui').style.display = 'block';
+            document.getElementById('user-profile-container').style.display = 'flex';
+            document.getElementById('user-email-display').innerText = userEmail;
+        }
+
         function initGoogle() {
             const savedToken = localStorage.getItem('g_access_token');
             const expiry = localStorage.getItem('g_token_expiry');
@@ -225,8 +236,7 @@
             if (savedToken && expiry && Date.now() < parseInt(expiry)) {
                 access_token = savedToken;
                 userEmail = savedEmail;
-                document.getElementById('login-section').style.display = 'none';
-                document.getElementById('main-ui').style.display = 'block';
+                initUIForLoggedInUser();
             }
 
             try {
@@ -243,8 +253,7 @@
                         localStorage.setItem('g_token_expiry', Date.now() + (55 * 60 * 1000));
                         localStorage.setItem('g_user_email', userEmail);
 
-                        document.getElementById('login-section').style.display = 'none';
-                        document.getElementById('main-ui').style.display = 'block';
+                        initUIForLoggedInUser();
                     }
                 });
             } catch(e) { console.log("Google init blocked."); }
@@ -252,10 +261,20 @@
 
         function loginGoogle() {
             if (!tokenClient) {
-                alert("המערכת לא הצליחה לטעון את שירותי גוגל.");
+                alert("המערכת לא הצליחה לטעון את שירותי גוגל. ייתכן ויש חסימה בדפדפן.");
                 return;
             }
             tokenClient.requestAccessToken();
+        }
+
+        // פונקציית התנתקות
+        function logoutGoogle() {
+            if(confirm("להתנתק מחשבון גוגל ולנקות הרשאות?")) {
+                localStorage.removeItem('g_access_token');
+                localStorage.removeItem('g_token_expiry');
+                localStorage.removeItem('g_user_email');
+                window.location.reload(); // רענון הדף יחזיר את המסך למצב התחלתי
+            }
         }
 
         function toggleFeeds() {
@@ -344,7 +363,7 @@
                     btn.innerHTML = '<a href="https://drive.google.com/file/d/' + data.fileId + '/view?usp=sharing" target="_blank" style="text-decoration:none; color:inherit;">👁️ פתח מדרייב</a>';
                 } else {
                     btn.innerText = originalText;
-                    st.innerText = "❌ שגיאה בשמירה";
+                    st.innerText = "❌ שגיאה: " + (data.error || "נכשל");
                 }
                 setTimeout(() => st.innerText = "", 3000);
             } catch (e) {
