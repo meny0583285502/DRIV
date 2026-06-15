@@ -411,4 +411,77 @@
             if(!q) return st.innerText = "❌ הזן ערך";
             st.innerText = "⏳ מנסה לשלוח...";
             try {
-                const res = await fetch(WORKER, { method: 'POST', body: JSON
+                const res = await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type: 'wikipedia', query: q, accessToken: access_token, userEmail }) });
+                const data = await res.json();
+                st.innerText = data.success ? "✅ הערך נשלח למייל!" : "❌ " + (data.error || "תקלה בשליחה");
+            } catch(e) { st.innerText = "❌ שגיאת רשת. נסה שוב."; }
+        }
+
+        async function getWikiSuggestions(val) {
+            const box = document.getElementById('wiki-suggestions');
+            if (val.length < 2) { box.style.display = 'none'; return; }
+            try {
+                const r = await fetch(`https://he.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(val)}&limit=5&format=json&origin=*`);
+                const d = await r.json();
+                if(d[1] && d[1].length > 0) {
+                    box.innerHTML = d[1].map(t => `<div style="padding:10px; border-bottom:1px solid #eee; cursor:pointer;" onclick="document.getElementById('wiki-query').value='${t}';document.getElementById('wiki-suggestions').style.display='none'">${t}</div>`).join('');
+                    box.style.display = 'block';
+                } else { box.style.display = 'none'; }
+            } catch(e) { box.style.display = 'none'; }
+        }
+        
+        async function doShorten() {
+            const val = document.getElementById('short-url').value;
+            const st = document.getElementById('st-short');
+            try {
+                const res = await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type: 'shorten', value: val }) });
+                const data = await res.json();
+                st.innerHTML = data.success ? `<a href="${data.shortUrl}" target="_blank" style="font-weight:bold;">${data.shortUrl}</a>` : "❌ שגיאה בקיצור";
+            } catch(e) { st.innerText = "❌ תקלת רשת"; }
+        }
+        
+        async function doWork(type, id) {
+            const val = document.getElementById(id).value;
+            const st = document.getElementById('st-' + id);
+            if(!val) return st.innerText = "❌ מלא את השדה";
+            st.innerText = "⏳ השרת עובד...";
+            try {
+                const res = await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type, value: val, accessToken: access_token, userEmail }) });
+                const data = await res.json();
+                if (data.success && data.fileId) {
+                    st.innerHTML = `✅ בוצע! <br><a href="https://drive.google.com/file/d/${data.fileId}/view?usp=sharing" target="_blank" style="color:var(--primary); font-weight:bold;">פתח קובץ</a>`;
+                } else if (data.success) {
+                    st.innerText = "✅ הושלם בהצלחה!";
+                } else {
+                    st.innerText = "❌ " + (data.error || "פעולה נכשלה");
+                }
+            } catch (e) { st.innerText = "❌ השרת לא מגיב כרגע"; }
+        }
+
+        async function openAdmin() {
+            const pass = prompt("הכנס קוד מנהל:");
+            if (pass === "5502") {
+                document.getElementById('admin-panel').style.display = 'block';
+                try {
+                    const res = await fetch(`${WORKER}?action=admin_stats`);
+                    const data = await res.json();
+                    document.getElementById('admin-online').innerText = data.onlineUsers;
+                    document.getElementById('admin-locs').innerText = data.locations.join(', ');
+                } catch(e) {
+                    document.getElementById('admin-online').innerText = "1";
+                    document.getElementById('admin-locs').innerText = "מרכז";
+                }
+            } else if (pass !== null) alert("קוד שגוי");
+        }
+
+        function openModal(time, text) {
+            document.getElementById('modalTime').innerText = `🕒 עדכון משעה: ${time}`;
+            document.getElementById('modalText').innerText = text;
+            document.getElementById('msgModal').style.display = 'flex';
+        }
+        function closeModal() { document.getElementById('msgModal').style.display = 'none'; }
+        function escapeHTML(str) { return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+    </script>
+    <script src="https://accounts.google.com/gsi/client" onload="initGoogle()" async defer></script>
+</body>
+</html>
