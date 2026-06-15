@@ -2,137 +2,203 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>Cloud Master Pro V42</title>
+    <title>Cloud Master Pro V43</title>
     <link rel="icon" href="https://upload.wikimedia.org/wikipedia/commons/d/da/Google_Drive_logo.png">
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        :root { --p: #1a73e8; --s: #34a853; --bg: #f8f9fa; --w: #202124; --r: #ea4335; --t: #0088cc; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; }
-        .wrapper { width: 100%; max-width: 1400px; display: flex; flex-direction: column; align-items: center; }
+        :root { 
+            --primary: #2563eb; 
+            --secondary: #10b981; 
+            --bg-color: #f1f5f9; 
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+        }
         
-        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; width: 100%; border-top: 5px solid var(--p); box-sizing: border-box; }
-        .grid-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; width: 100%; }
+        body { 
+            font-family: 'Rubik', sans-serif; 
+            background: linear-gradient(135deg, #e2e8f0 0%, #f8fafc 100%);
+            color: var(--text-main);
+            display: flex; flex-direction: column; align-items: center; 
+            padding: 30px 20px; margin: 0; min-height: 100vh;
+        }
         
-        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; margin-top: 5px; transition: 0.2s; }
-        button:hover { opacity: 0.9; }
-        .status { font-size: 0.85rem; text-align: center; font-weight: bold; margin-top: 8px; color: var(--p); word-break: break-word; }
+        .wrapper { width: 100%; max-width: 1300px; display: flex; flex-direction: column; align-items: center; gap: 25px; }
         
-        .feed-container { background: #e5ddd5; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; align-items: flex-start; gap: 12px; height: 60vh; overflow-y: auto; box-shadow: inset 0 2px 5px rgba(0,0,0,0.05); }
-        .chat-bubble { background: #dcf8c6; padding: 10px 14px; border-radius: 12px; border-top-right-radius: 0; max-width: 70%; min-width: 150px; box-shadow: 0 1px 1px rgba(0,0,0,0.15); cursor: pointer; display: flex; flex-direction: column; gap: 5px; }
-        .chat-bubble:hover { filter: brightness(0.95); }
-        .msg-time { font-size: 0.75rem; color: #666; align-self: flex-end; margin-top: 2px; }
-        .msg-text { font-size: 1rem; line-height: 1.4; color: #111; white-space: pre-wrap; word-wrap: break-word; }
+        .card { 
+            background: var(--card-bg); 
+            padding: 24px; 
+            border-radius: 20px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.02); 
+            width: 100%; 
+            box-sizing: border-box; 
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.8);
+            transition: transform 0.2s ease;
+        }
+        .card:hover { transform: translateY(-2px); box-shadow: 0 15px 35px rgba(0,0,0,0.06); }
         
-        .media-icon { background: #ffffff; color: #1a73e8; border: 1px solid #c6e3fa; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; font-weight: bold; display: inline-flex; align-items: center; width: fit-content; }
-        .media-icon.video { background: #fff0f0; color: #d93025; border-color: #fad2d2; }
-        .media-icon.preview { background: #fef0db; color: #d35400; border-color: #fbd6b0; margin-left: 5px;}
+        .card h3 { margin-top: 0; font-size: 1.15rem; display: flex; align-items: center; gap: 8px; color: #334155; }
+        
+        .grid-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; width: 100%; }
+        
+        input { 
+            width: 100%; padding: 14px 16px; margin: 10px 0; 
+            border: 1px solid #cbd5e1; border-radius: 12px; 
+            box-sizing: border-box; font-family: inherit; font-size: 0.95rem;
+            background: #f8fafc; transition: all 0.2s;
+        }
+        input:focus { outline: none; border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+        
+        button { 
+            width: 100%; padding: 14px; border: none; border-radius: 12px; 
+            cursor: pointer; font-weight: 600; font-family: inherit; font-size: 1rem;
+            color: white; margin-top: 8px; transition: all 0.2s;
+        }
+        button:hover { filter: brightness(1.1); transform: scale(0.99); }
+        button:active { transform: scale(0.97); }
+        
+        .status { font-size: 0.85rem; text-align: center; font-weight: 500; margin-top: 12px; color: var(--primary); min-height: 18px; word-break: break-word;}
+        
+        /* Specific Button Colors */
+        .btn-drive { background: linear-gradient(135deg, #10b981, #059669); }
+        .btn-copy { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+        .btn-pdf { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .btn-wiki { background: linear-gradient(135deg, #475569, #334155); }
+        .btn-short { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .btn-scrape { background: linear-gradient(135deg, #06b6d4, #0891b2); }
+        .btn-wife { background: linear-gradient(135deg, #ec4899, #db2777); }
+        .btn-yt { background: linear-gradient(135deg, #f43f5e, #e11d48); }
+        .btn-sefaria { background: linear-gradient(135deg, #14b8a6, #0d9488); }
+
+        /* Feed Styles */
+        .feed-container { 
+            background: #f8fafc; border-radius: 16px; padding: 20px; 
+            display: flex; flex-direction: column; align-items: flex-start; gap: 16px; 
+            height: 50vh; overflow-y: auto; border: 1px solid #e2e8f0;
+        }
+        .chat-bubble { 
+            background: #fff; padding: 14px 18px; border-radius: 16px; border-top-right-radius: 4px; 
+            max-width: 75%; box-shadow: 0 2px 8px rgba(0,0,0,0.05); cursor: pointer;
+            border: 1px solid #f1f5f9; display: flex; flex-direction: column; gap: 8px;
+        }
+        .msg-time { font-size: 0.75rem; color: var(--text-muted); align-self: flex-end; }
+        .msg-text { font-size: 1rem; line-height: 1.5; color: var(--text-main); white-space: pre-wrap; word-wrap: break-word; }
+        
+        .media-icon { 
+            background: #eff6ff; color: var(--primary); border: 1px solid #bfdbfe; 
+            padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; 
+            cursor: pointer; font-weight: 500; display: inline-flex; align-items: center; width: fit-content; text-decoration: none;
+        }
+        .media-icon.video { background: #fef2f2; color: #ef4444; border-color: #fecaca; }
         .media-icon:hover { opacity: 0.8; }
         
-        .admin-panel { background: #fff3cd; border: 2px dashed #ffc107; padding: 15px; border-radius: 8px; width: 100%; max-width: 500px; margin-top: 15px; display: none; box-sizing: border-box; }
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; padding: 15px; box-sizing: border-box; }
-        .modal-content { background: white; padding: 25px; border-radius: 12px; max-width: 500px; width: 100%; max-height: 80vh; overflow-y: auto; border-top: 6px solid var(--t); position: relative; }
-        .modal-time { font-size: 0.85rem; color: #555; font-weight: bold; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 8px; }
-        .modal-text { font-size: 1.05rem; line-height: 1.6; color: #111; white-space: pre-wrap; }
-        .modal-close { display: block; margin-top: 20px; background: #444; font-size: 1rem; text-align: center; }
+        .admin-panel { background: #fffbeb; border: 1px solid #fde68a; padding: 20px; border-radius: 16px; width: 100%; max-width: 500px; display: none; box-sizing: border-box; }
+        
+        /* Modal */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.6); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
+        .modal-content { background: white; padding: 30px; border-radius: 24px; max-width: 500px; width: 100%; max-height: 80vh; overflow-y: auto; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
+        .modal-time { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; margin-bottom: 15px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; }
+        .modal-text { font-size: 1.05rem; line-height: 1.6; color: var(--text-main); white-space: pre-wrap; }
+        .modal-close { display: block; margin-top: 25px; background: #cbd5e1; color: #334155; font-size: 1rem; text-align: center; }
+        .modal-close:hover { background: #94a3b8; color: white; }
     </style>
 </head>
 <body>
     <div class="wrapper">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/d/da/Google_Drive_logo.png" width="80" style="margin-bottom: 15px;">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/d/da/Google_Drive_logo.png" width="70" style="margin-bottom: 5px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));">
         
-        <div class="card" style="border-top-color: var(--t);">
-            <h2 id="feed-title">📢 עדכונים (שעון ישראל)</h2>
-            <p id="feed-desc" style="font-size: 0.9rem; color: #555; margin-top: -10px;">מערכת מטמון חכמה. השתמש ב-👁️ צפה לבדיקת הסינון, או ב-📸 לשמירה לדרייב.</p>
+        <div class="card">
+            <h2 id="feed-title" style="color:var(--text-main); margin-top:0;">📢 פיד עדכונים</h2>
             <div id="telegram-feed" class="feed-container">
-                <div style="text-align:center; color:#666; width:100%;">טוען עדכונים אחרונים...</div>
+                <div style="text-align:center; color:var(--text-muted); width:100%; margin-top: 20px;">טוען עדכונים...</div>
             </div>
             <div id="st-feed" class="status"></div>
-            <button id="toggle-btn" onclick="toggleFeeds()" style="background:var(--t); width: 250px; display: block; margin: 15px auto 0;">🏛️ עבור לעדכוני הכנסת</button>
+            <button id="toggle-btn" onclick="toggleFeeds()" style="background:#475569; width: 250px; display: block; margin: 20px auto 0; border-radius: 30px;">🏛️ עבור לעדכוני הכנסת</button>
         </div>
 
-        <div id="login-section" class="card" style="max-width: 500px;">
-            <button onclick="loginGoogle()" style="background:var(--p); font-size: 1.1rem;">התחבר לגוגל דרייב לשמירת קבצים</button>
+        <div id="login-section" class="card" style="max-width: 400px; text-align: center;">
+            <p style="color:var(--text-muted); font-size: 0.95rem;">יש להתחבר כדי לשמור קבצים ישירות לדרייב.</p>
+            <button onclick="loginGoogle()" style="background:var(--primary); font-size: 1.1rem; border-radius: 30px;">התחבר לגוגל דרייב</button>
         </div>
         
         <div id="main-ui" style="display:none; width:100%;">
             <div class="grid-container">
-                <div class="card" style="border-top-color: var(--s);">
-                    <h3>📤 1. שליחת קובץ לדרייב</h3>
-                    <input type="text" id="direct-url" placeholder="קישור ישיר...">
-                    <button onclick="doWork('direct_link', 'direct-url')" style="background:var(--s);">שלח לדרייב</button>
+                <div class="card">
+                    <h3>📤 1. שליחה לדרייב</h3>
+                    <input type="text" id="direct-url" placeholder="הדבק קישור לקובץ...">
+                    <button onclick="doWork('direct_link', 'direct-url')" class="btn-drive">שמור בחשבון שלי</button>
                     <div id="st-direct-url" class="status"></div>
                 </div>
                 
-                <div class="card" style="border-top-color: #a142f4;">
-                    <h3>📂 2. העתקת קובץ/תיקייה</h3>
-                    <input type="text" id="drive-url" placeholder="קישור דרייב...">
-                    <button onclick="doWork('drive_copy', 'drive-url')" style="background:#a142f4;">צור עותק אישי</button>
+                <div class="card">
+                    <h3>📂 2. העתקת קובץ</h3>
+                    <input type="text" id="drive-url" placeholder="קישור לדרייב של מישהו אחר...">
+                    <button onclick="doWork('drive_copy', 'drive-url')" class="btn-copy">צור עותק אישי</button>
                     <div id="st-drive-url" class="status"></div>
                 </div>
                 
-                <div class="card" style="border-top-color: #f9ab00;">
+                <div class="card">
                     <h3>📄 3. סורק אתרים ל-PDF</h3>
-                    <input type="text" id="pdf-url" placeholder="כתובת אתר...">
-                    <button onclick="doWork('web_to_pdf', 'pdf-url')" style="background:#f9ab00;">שמור כ-PDF</button>
+                    <input type="text" id="pdf-url" placeholder="כתובת אתר (URL)...">
+                    <button onclick="doWork('web_to_pdf', 'pdf-url')" class="btn-pdf">המר ושמור כ-PDF</button>
                     <div id="st-pdf-url" class="status"></div>
                 </div>
                 
-                <div class="card" style="border-top-color: var(--w);">
+                <div class="card">
                     <h3>📖 4. ויקיפדיה למייל</h3>
-                    <input type="text" id="wiki-query" placeholder="שם ערך..." oninput="getWikiSuggestions(this.value)">
-                    <div id="wiki-suggestions"></div>
-                    <button onclick="doWiki()" style="background:var(--w);">שלח ערך למייל</button>
+                    <input type="text" id="wiki-query" placeholder="שם ערך בויקיפדיה..." oninput="getWikiSuggestions(this.value)">
+                    <div id="wiki-suggestions" style="background:#fff; border-radius:8px; box-shadow:0 4px 6px rgba(0,0,0,0.1); display:none; max-height:150px; overflow-y:auto;"></div>
+                    <button onclick="doWiki()" class="btn-wiki">שלח את הערך למייל</button>
                     <div id="st-wiki" class="status"></div>
                 </div>
                 
-                <div class="card" style="border-top-color: var(--r);">
-                    <h3>✂️ 5. קיצור קישור אישי</h3>
-                    <input type="text" id="short-url" placeholder="קישור ארוך...">
-                    <button onclick="doShorten()" style="background:var(--r);">קצר קישור</button>
+                <div class="card">
+                    <h3>✂️ 5. קיצור קישורים</h3>
+                    <input type="text" id="short-url" placeholder="הדבק קישור ארוך...">
+                    <button onclick="doShorten()" class="btn-short">יצר קישור מקוצר</button>
                     <div id="st-short" class="status"></div>
                 </div>
                 
-                <div class="card" style="border-top-color: #00bcd4;">
+                <div class="card">
                     <h3>📥 6. צילום מסך אוטומטי</h3>
-                    <input type="text" id="scrape-url" placeholder="הדבק קישור ג'מיני או כל אתר...">
-                    <button onclick="doWork('smart_scrape', 'scrape-url')" style="background:#00bcd4;">צלם ושמור בדרייב</button>
+                    <input type="text" id="scrape-url" placeholder="הדבק קישור לאתר...">
+                    <button onclick="doWork('smart_scrape', 'scrape-url')" class="btn-scrape">צלם מסך ושמור</button>
                     <div id="st-scrape-url" class="status"></div>
                 </div>
 
-                <div class="card" style="border-top-color: #e91e63;">
-                    <h3>🌸 7. לאשה (שאיבת עמוד מוגן)</h3>
-                    <p style="font-size: 0.8rem; color: #555; margin-top: -10px;">הזן את הסיסמה. השרת ישאב את הטקסט ויגבה לדרייב.</p>
-                    <input type="text" id="wife-password" placeholder="הכנס את הסיסמה לאתר...">
-                    <button onclick="doWifeScrape()" style="background:#e91e63;">משוך כתבה ושלח אלי</button>
+                <div class="card">
+                    <h3>🌸 7. לאשה (עמוד מוגן)</h3>
+                    <input type="text" id="wife-password" placeholder="הכנס סיסמת אתר...">
+                    <button onclick="doWifeScrape()" class="btn-wife">משוך כתבה למייל ולדרייב</button>
                     <div id="st-wife" class="status"></div>
                 </div>
 
-                <div class="card" style="border-top-color: #ff0000;">
-                    <h3>▶️ 8. הורדה מיוטיוב לדרייב</h3>
-                    <p style="font-size: 0.8rem; color: #555; margin-top: -10px;">מזרים סרטונים לדרייב בעזרת API חינמי ציבורי.</p>
-                    <input type="text" id="youtube-url" placeholder="הדבק קישור ליוטיוב...">
-                    <button onclick="doYoutube()" style="background:#ff0000;">הורד סרטון</button>
+                <div class="card">
+                    <h3>▶️ 8. הורדה מיוטיוב</h3>
+                    <input type="text" id="youtube-url" placeholder="הדבק קישור לסרטון...">
+                    <button onclick="doYoutube()" class="btn-yt">הזרם ישירות לדרייב</button>
                     <div id="st-youtube" class="status"></div>
                 </div>
 
-                <div class="card" style="border-top-color: #2e7d32;">
+                <div class="card">
                     <h3>📚 9. ספריא (הורדת ספרים)</h3>
-                    <p style="font-size: 0.8rem; color: #555; margin-top: -10px;">הורד טקסטים של ספרים או פרקים (למשל: בראשית, מסילת ישרים).</p>
-                    <input type="text" id="sefaria-book" placeholder="שם הספר...">
-                    <label style="font-size: 0.9rem; display: flex; align-items: center; gap: 5px; margin-bottom: 10px;">
-                        <input type="checkbox" id="sefaria-tags" checked style="width: auto; margin: 0;"> כלול ניקוד וטעמים (תיוגים)
+                    <input type="text" id="sefaria-book" placeholder="ספר או פרק (למשל: בראשית א)...">
+                    <label style="font-size: 0.9rem; display: flex; align-items: center; gap: 8px; margin: 10px 0; color: var(--text-muted);">
+                        <input type="checkbox" id="sefaria-tags" checked style="width: 18px; height: 18px; margin: 0; cursor: pointer;"> 
+                        כלול ניקוד וטעמים
                     </label>
-                    <button onclick="doSefaria()" style="background:#2e7d32;">הורד מספריא ושמור בדרייב</button>
+                    <button onclick="doSefaria()" class="btn-sefaria">הורד מספריא לדרייב</button>
                     <div id="st-sefaria" class="status"></div>
                 </div>
             </div>
         </div>
 
-        <button onclick="openAdmin()" style="background:gray; width:auto; padding:8px 20px; font-size:0.9rem; margin-top:20px;">🔒 כניסת מנהל מערכת</button>
+        <button onclick="openAdmin()" style="background:transparent; color:var(--text-muted); width:auto; font-size:0.85rem; margin-top:10px; cursor:pointer;">כניסת מנהל 🔒</button>
         <div id="admin-panel" class="admin-panel">
-            <h4>📊 נתוני משתמשים באתר (זמן אמת)</h4>
-            <p>👥 משתמשים אונליין כרגע: <strong id="admin-online">0</strong></p>
-            <p>📍 אזורי גלישה פעילים כעת: <strong id="admin-locs">-</strong></p>
+            <h4 style="margin-top:0;">📊 נתוני אמת</h4>
+            <p style="margin:5px 0;">👥 משתמשים כרגע: <strong id="admin-online">0</strong></p>
+            <p style="margin:5px 0;">📍 אזורים פעילים: <strong id="admin-locs">-</strong></p>
         </div>
     </div>
 
@@ -140,7 +206,7 @@
         <div class="modal-content" onclick="event.stopPropagation()">
             <div id="modalTime" class="modal-time"></div>
             <div id="modalText" class="modal-text"></div>
-            <button class="modal-close" onclick="closeModal()">סגור חלונית</button>
+            <button class="modal-close" onclick="closeModal()">סגור</button>
         </div>
     </div>
 
@@ -189,7 +255,7 @@
 
         function loginGoogle() {
             if (!tokenClient) {
-                alert("המערכת לא הצליחה לטעון את שירותי גוגל. ייתכן וקיימת חסימת רשת.");
+                alert("המערכת לא הצליחה לטעון את שירותי גוגל.");
                 return;
             }
             tokenClient.requestAccessToken();
@@ -201,15 +267,15 @@
             
             if (currentActiveChannel === 'Moshepargod') {
                 currentActiveChannel = 'knessettv';
-                title.innerText = '🏛️ עדכוני ערוץ ודוברות הכנסת';
-                btn.innerText = '📢 חזור לעדכונים';
+                title.innerText = '🏛️ עדכוני הכנסת';
+                btn.innerText = '📢 חזור לעדכונים כלליים';
             } else {
                 currentActiveChannel = 'Moshepargod';
-                title.innerText = '📢 עדכונים (שעון ישראל)';
+                title.innerText = '📢 פיד עדכונים';
                 btn.innerText = '🏛️ עבור לעדכוני הכנסת';
             }
             
-            document.getElementById('telegram-feed').innerHTML = '<div style="text-align:center; color:#666; width:100%;">טוען עדכונים...</div>';
+            document.getElementById('telegram-feed').innerHTML = '<div style="text-align:center; color:#64748b; width:100%; margin-top:20px;">טוען...</div>';
             loadTelegramFeed();
         }
         
@@ -226,13 +292,13 @@
                     
                     let mediaBtn = '';
                     if (msg.mediaUrl) {
-                        let saveBtnText = msg.isVideo ? '🎥 שמור סרטון' : '📸 שמור תמונה';
+                        let saveBtnText = msg.isVideo ? '🎥 שמור לדרייב' : '📸 שמור לדרייב';
                         let vidClass = msg.isVideo ? 'video' : '';
                         
                         mediaBtn = `
-                            <div style="display:flex; gap:8px; margin-top:5px; flex-wrap:wrap;">
-                                <a href="${msg.mediaUrl}" target="_blank" class="media-icon preview" style="text-decoration:none;" onclick="event.stopPropagation()">👁️ צפה</a>
-                                <button id="btn-${msg.id}" class="media-icon ${vidClass}" onclick="handleMediaClick(event, '${msg.mediaUrl}', 'btn-${msg.id}')">${saveBtnText}</button>
+                            <div style="display:flex; gap:10px; margin-top:8px; flex-wrap:wrap;">
+                                <a href="${msg.mediaUrl}" target="_blank" class="media-icon preview" onclick="event.stopPropagation()">👁️ צפייה ברשת</a>
+                                <div id="btn-${msg.id}" class="media-icon ${vidClass}" onclick="handleMediaClick(event, '${msg.mediaUrl}', 'btn-${msg.id}')">${saveBtnText}</div>
                             </div>
                         `;
                     }
@@ -246,13 +312,13 @@
                     msgEl.onclick = () => openModal(msg.time, msg.text);
                     feedDiv.appendChild(msgEl);
                 });
-            } catch (e) { feedDiv.innerHTML = '<div style="text-align:center; color:red; width:100%;">שגיאה בטעינת התוכן.</div>'; }
+            } catch (e) { feedDiv.innerHTML = '<div style="text-align:center; color:red; width:100%;">שגיאה בטעינת הפיד.</div>'; }
         }
 
         function handleMediaClick(event, directMediaUrl, btnId) {
             event.stopPropagation();
             if (!access_token) {
-                alert("כדי לשמור את המדיה לדרייב, עליך להתחבר תחילה לחשבון גוגל (הכפתור הכחול למטה)!");
+                alert("עליך להתחבר תחילה לגוגל!");
                 return;
             }
             saveMediaToDrive(directMediaUrl, btnId);
@@ -264,7 +330,7 @@
             const originalText = btn.innerText;
             
             btn.innerText = "⏳ שומר...";
-            st.innerText = "⏳ מוריד לתיקיית News_Media בדרייב...";
+            st.innerText = "⏳ מוריד לחשבון שלך...";
             
             try {
                 const res = await fetch(WORKER, {
@@ -274,16 +340,11 @@
                 const data = await res.json();
                 
                 if (data.success && data.fileId) {
-                    st.innerText = "✅ הקובץ נשמר בהצלחה!";
+                    st.innerText = "✅ נשמר בהצלחה!";
                     btn.style.background = '#dcf8c6';
                     btn.style.color = '#111';
                     btn.style.borderColor = '#34a853';
-                    btn.innerText = '👁️ פתח מהדרייב';
-                    btn.onclick = (e) => {
-                        e.stopPropagation();
-                        // הוספנו את התיקון שהקישור יהיה במבנה של שיתוף תצוגה כדי שלא ייתקע בחסימות או בקשות התחברות נוספות
-                        window.open('https://drive.google.com/file/d/' + data.fileId + '/view?usp=sharing', '_blank');
-                    };
+                    btn.innerHTML = '<a href="https://drive.google.com/file/d/' + data.fileId + '/view?usp=sharing" target="_blank" style="text-decoration:none; color:inherit;">👁️ פתח מדרייב</a>';
                 } else {
                     btn.innerText = originalText;
                     st.innerText = "❌ שגיאה בשמירה";
@@ -291,7 +352,7 @@
                 setTimeout(() => st.innerText = "", 3000);
             } catch (e) {
                 btn.innerText = originalText;
-                st.innerText = "❌ שגיאה: החיבור התנתק בגלל גודל הקובץ.";
+                st.innerText = "❌ שגיאה בחיבור.";
                 setTimeout(() => st.innerText = "", 3000);
             }
         }
@@ -299,8 +360,8 @@
         async function doYoutube() {
             const url = document.getElementById('youtube-url').value;
             const st = document.getElementById('st-youtube');
-            if (!url) return st.innerText = "❌ הכנס קישור";
-            st.innerHTML = "⏳ שואב סרטון ומזרים לדרייב (זה יכול לקחת קצת זמן)...";
+            if (!url) return st.innerText = "❌ אנא הדבק קישור";
+            st.innerHTML = "⏳ השרת מבצע שאיבה והזרמה (זה ייקח זמן)...";
             try {
                 const res = await fetch(WORKER, {
                     method: 'POST',
@@ -308,25 +369,22 @@
                 });
                 const data = await res.json();
                 if (data.success && data.fileId) {
-                    st.innerHTML = `✅ הסרטון נשמר! <br><a href="https://drive.google.com/file/d/${data.fileId}/view?usp=sharing" target="_blank" style="color:red; font-weight:bold;">לחץ כאן לצפייה בדרייב</a>`;
+                    st.innerHTML = `✅ הסרטון נשמר! <br><a href="https://drive.google.com/file/d/${data.fileId}/view?usp=sharing" target="_blank" style="color:var(--primary); font-weight:bold;">לפתיחה בדרייב לחץ כאן</a>`;
                 } else {
-                    st.innerText = "❌ שגיאה: " + (data.error || "נכשל");
+                    st.innerText = "❌ שגיאה: " + (data.error || "השירות דחה את הבקשה");
                 }
-            } catch (e) { st.innerText = "❌ שגיאת רשת"; }
+            } catch (e) { st.innerText = "❌ שגיאת רשת מול ה-Worker"; }
         }
 
         async function doWifeScrape() {
             const pass = document.getElementById('wife-password').value;
             const st = document.getElementById('st-wife');
-            if (!pass) return st.innerText = "❌ אנא הכנס סיסמה";
-            st.innerText = "⏳ מתחבר לאתר, שואב ושולח אליך...";
+            if (!pass) return st.innerText = "❌ הכנס סיסמה";
+            st.innerText = "⏳ מתחבר מאחורי הקלעים...";
             try {
-                const res = await fetch(WORKER, {
-                    method: 'POST',
-                    body: JSON.stringify({ type: 'wife_scrape', password: pass, accessToken: access_token, userEmail })
-                });
+                const res = await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type: 'wife_scrape', password: pass, accessToken: access_token, userEmail }) });
                 const data = await res.json();
-                st.innerText = data.success ? "✅ התוכן נשמר בדרייב ונשלח למייל!" : "❌ " + (data.error || "נכשל");
+                st.innerText = data.success ? "✅ התוכן נשמר אצלך במייל ובדרייב!" : "❌ " + (data.error || "שגיאה במשיכה");
             } catch (e) { st.innerText = "❌ שגיאת רשת"; }
         }
 
@@ -334,94 +392,23 @@
             const book = document.getElementById('sefaria-book').value;
             const tags = document.getElementById('sefaria-tags').checked;
             const st = document.getElementById('st-sefaria');
-            if (!book) return st.innerText = "❌ הכנס שם ספר או פרק";
-            st.innerText = "⏳ מושך טקסט מספריא ושומר לדרייב...";
+            if (!book) return st.innerText = "❌ הכנס שם ספר/פרק";
+            st.innerText = "⏳ מתקשר עם ספריא...";
             try {
-                const res = await fetch(WORKER, {
-                    method: 'POST',
-                    body: JSON.stringify({ type: 'sefaria', book: book, tags: tags, accessToken: access_token })
-                });
+                const res = await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type: 'sefaria', book: book, tags: tags, accessToken: access_token }) });
                 const data = await res.json();
                 if (data.success && data.fileId) {
-                    st.innerHTML = `✅ נשמר! <br><a href="https://drive.google.com/file/d/${data.fileId}/view?usp=sharing" target="_blank" style="color:green; font-weight:bold;">לחץ לפתיחת הספר בדרייב</a>`;
+                    st.innerHTML = `✅ נשמר בדרייב! <br><a href="https://drive.google.com/file/d/${data.fileId}/view?usp=sharing" target="_blank" style="color:var(--primary); font-weight:bold;">לפתיחת הספר לחץ כאן</a>`;
                 } else {
-                    st.innerText = "❌ " + (data.error || "נכשל");
+                    st.innerText = "❌ שגיאה: " + (data.error || "הספר לא נמצא");
                 }
             } catch (e) { st.innerText = "❌ שגיאת רשת"; }
         }
 
-        async function openAdmin() {
-            const pass = prompt("הכנס קוד מנהל מערכת:");
-            if (pass === "5502") {
-                document.getElementById('admin-panel').style.display = 'block';
-                try {
-                    const res = await fetch(`${WORKER}?action=admin_stats`);
-                    const data = await res.json();
-                    document.getElementById('admin-online').innerText = data.onlineUsers;
-                    document.getElementById('admin-locs').innerText = data.locations.join(', ');
-                } catch(e) {
-                    document.getElementById('admin-online').innerText = "1";
-                    document.getElementById('admin-locs').innerText = "מרכז";
-                }
-            } else if (pass !== null) alert("קוד שגוי!");
-        }
-
-        function openModal(time, text) {
-            document.getElementById('modalTime').innerText = `🕒 שעת פרסום: ${time}`;
-            document.getElementById('modalText').innerText = text;
-            document.getElementById('msgModal').style.display = 'flex';
-        }
-
-        function closeModal() { document.getElementById('msgModal').style.display = 'none'; }
-        function escapeHTML(str) { return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
-        
-        async function getWikiSuggestions(val) {
-            const box = document.getElementById('wiki-suggestions');
-            if (val.length < 2) { box.style.display = 'none'; return; }
-            const r = await fetch(`https://he.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(val)}&limit=5&format=json&origin=*`);
-            const d = await r.json();
-            box.innerHTML = d[1].map(t => `<div class="sugg-item" onclick="document.getElementById('wiki-query').value='${t}';document.getElementById('wiki-suggestions').style.display='none'">${t}</div>`).join('');
-            box.style.display = 'block';
-        }
-        
         async function doWiki() {
             const q = document.getElementById('wiki-query').value;
             const st = document.getElementById('st-wiki');
-            st.innerText = "⏳ שולח...";
+            if(!q) return st.innerText = "❌ הזן ערך";
+            st.innerText = "⏳ מנסה לשלוח...";
             try {
-                const res = await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type: 'wikipedia', query: q, accessToken: access_token, userEmail }) });
-                const data = await res.json();
-                st.innerText = data.success ? "✅ נשלח למייל בהצלחה!" : "❌ שגיאה: " + (data.error || "נכשל");
-            } catch(e) { st.innerText = "❌ שגיאת רשת במערכת"; }
-        }
-        
-        async function doShorten() {
-            const val = document.getElementById('short-url').value;
-            const st = document.getElementById('st-short');
-            try {
-                const res = await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type: 'shorten', value: val }) });
-                const data = await res.json();
-                st.innerHTML = data.success ? `<a href="${data.shortUrl}" target="_blank">${data.shortUrl}</a>` : "❌ שגיאה";
-            } catch(e) { st.innerText = "❌ שגיאה בקצרן"; }
-        }
-        
-        async function doWork(type, id) {
-            const val = document.getElementById(id).value;
-            const st = document.getElementById('st-' + id);
-            st.innerText = "⏳ מבצע...";
-            try {
-                const res = await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type, value: val, accessToken: access_token, userEmail }) });
-                const data = await res.json();
-                if (data.success && data.fileId) {
-                    st.innerHTML = `✅ הושלם בהצלחה! <br><a href="https://drive.google.com/file/d/${data.fileId}/view?usp=sharing" target="_blank">לחץ כאן לפתיחה בדרייב</a>`;
-                } else if (data.success) {
-                    st.innerText = "✅ הושלם בהצלחה!";
-                } else {
-                    st.innerText = "❌ שגיאה: " + (data.error || "פעולה נכשלה");
-                }
-            } catch (e) { st.innerText = "❌ שגיאה: לא ניתן היה ליצור קשר עם ה-Worker"; }
-        }
-    </script>
-    <script src="https://accounts.google.com/gsi/client" onload="initGoogle()" async defer></script>
-</body>
-</html>
+                const res = await fetch(WORKER, { method: 'POST', body: JSON
