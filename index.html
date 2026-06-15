@@ -17,69 +17,23 @@
         button:hover { opacity: 0.9; }
         .status { font-size: 0.85rem; text-align: center; font-weight: bold; margin-top: 8px; color: var(--p); word-break: break-word; }
         
-        .feed-container { 
-            background: #e5ddd5; 
-            border-radius: 12px;
-            padding: 20px;
-            display: flex; 
-            flex-direction: column; 
-            align-items: flex-start;
-            gap: 12px; 
-            height: 60vh; 
-            overflow-y: auto; 
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
-        }
-        
-        .chat-bubble { 
-            background: #dcf8c6; 
-            padding: 10px 14px; 
-            border-radius: 12px; 
-            border-top-right-radius: 0; 
-            max-width: 70%; 
-            min-width: 150px; 
-            box-shadow: 0 1px 1px rgba(0,0,0,0.15);
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
+        .feed-container { background: #e5ddd5; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; align-items: flex-start; gap: 12px; height: 60vh; overflow-y: auto; box-shadow: inset 0 2px 5px rgba(0,0,0,0.05); }
+        .chat-bubble { background: #dcf8c6; padding: 10px 14px; border-radius: 12px; border-top-right-radius: 0; max-width: 70%; min-width: 150px; box-shadow: 0 1px 1px rgba(0,0,0,0.15); cursor: pointer; display: flex; flex-direction: column; gap: 5px; }
         .chat-bubble:hover { filter: brightness(0.95); }
         .msg-time { font-size: 0.75rem; color: #666; align-self: flex-end; margin-top: 2px; }
         .msg-text { font-size: 1rem; line-height: 1.4; color: #111; white-space: pre-wrap; word-wrap: break-word; }
         
-        .media-icon { 
-            background: #ffffff; color: #1a73e8; border: 1px solid #c6e3fa; 
-            padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; 
-            cursor: pointer; font-weight: bold; display: inline-flex; align-items: center; width: fit-content; 
-        }
+        .media-icon { background: #ffffff; color: #1a73e8; border: 1px solid #c6e3fa; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; font-weight: bold; display: inline-flex; align-items: center; width: fit-content; }
         .media-icon.video { background: #fff0f0; color: #d93025; border-color: #fad2d2; }
         .media-icon.preview { background: #fef0db; color: #d35400; border-color: #fbd6b0; margin-left: 5px;}
         .media-icon:hover { opacity: 0.8; }
-
-        .admin-panel { background: #fff3cd; border: 2px dashed #ffc107; padding: 15px; border-radius: 8px; width: 100%; max-width: 500px; margin-top: 15px; display: none; box-sizing: border-box; }
         
+        .admin-panel { background: #fff3cd; border: 2px dashed #ffc107; padding: 15px; border-radius: 8px; width: 100%; max-width: 500px; margin-top: 15px; display: none; box-sizing: border-box; }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; padding: 15px; box-sizing: border-box; }
         .modal-content { background: white; padding: 25px; border-radius: 12px; max-width: 500px; width: 100%; max-height: 80vh; overflow-y: auto; border-top: 6px solid var(--t); position: relative; }
         .modal-time { font-size: 0.85rem; color: #555; font-weight: bold; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 8px; }
         .modal-text { font-size: 1.05rem; line-height: 1.6; color: #111; white-space: pre-wrap; }
         .modal-close { display: block; margin-top: 20px; background: #444; font-size: 1rem; text-align: center; }
-
-        /* Copilot UI Styles */
-        .copilot-btn { position: fixed; bottom: 20px; left: 20px; background: linear-gradient(135deg, #106ebe, #0078d4); color: white; border: none; border-radius: 24px; padding: 12px 24px; font-size: 1.1rem; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 8px; z-index: 1000; transition: transform 0.2s; }
-        .copilot-btn:hover { transform: scale(1.05); }
-        .copilot-panel { position: fixed; bottom: 80px; left: 20px; width: 400px; max-width: 90vw; height: 600px; max-height: 80vh; background: #ffffff; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.15); display: none; flex-direction: column; z-index: 1000; overflow: hidden; border: 1px solid #e1dfdd; }
-        .copilot-header { background: #f3f2f1; padding: 16px; border-bottom: 1px solid #e1dfdd; display: flex; justify-content: space-between; align-items: center; }
-        .copilot-header-title { font-weight: 600; font-size: 1.1rem; color: #201f1e; display: flex; align-items: center; gap: 8px; }
-        .copilot-login-btn { background: white; border: 1px solid #c8c6c4; padding: 6px 12px; border-radius: 16px; font-size: 0.85rem; cursor: pointer; font-weight: 600; color: #0078d4; }
-        .copilot-chat { flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; background: #faf9f8; }
-        .copilot-msg { max-width: 85%; padding: 12px 16px; border-radius: 12px; font-size: 0.95rem; line-height: 1.5; word-wrap: break-word; }
-        .copilot-msg.user { background: #d0e7f8; color: #201f1e; align-self: flex-start; border-bottom-left-radius: 4px; }
-        .copilot-msg.ai { background: #ffffff; border: 1px solid #e1dfdd; color: #201f1e; align-self: flex-end; border-bottom-right-radius: 4px; }
-        .copilot-input-area { padding: 16px; background: white; border-top: 1px solid #e1dfdd; display: flex; gap: 8px; }
-        .copilot-input { flex: 1; padding: 12px; border: 1px solid #8a8886; border-radius: 20px; outline: none; font-size: 0.95rem; }
-        .copilot-input:focus { border-color: #0078d4; box-shadow: 0 0 0 1px #0078d4; }
-        .copilot-send { background: #0078d4; color: white; border: none; width: 42px; height: 42px; border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center; }
-        .copilot-send:hover { background: #106ebe; }
     </style>
 </head>
 <body>
@@ -89,13 +43,10 @@
         <div class="card" style="border-top-color: var(--t);">
             <h2 id="feed-title">📢 עדכונים (שעון ישראל)</h2>
             <p id="feed-desc" style="font-size: 0.9rem; color: #555; margin-top: -10px;">מערכת מטמון חכמה. השתמש ב-👁️ צפה לבדיקת הסינון, או ב-📸 לשמירה לדרייב.</p>
-            
             <div id="telegram-feed" class="feed-container">
                 <div style="text-align:center; color:#666; width:100%;">טוען עדכונים אחרונים...</div>
             </div>
-            
             <div id="st-feed" class="status"></div>
-            
             <button id="toggle-btn" onclick="toggleFeeds()" style="background:var(--t); width: 250px; display: block; margin: 15px auto 0;">🏛️ עבור לעדכוני הכנסת</button>
         </div>
 
@@ -150,7 +101,7 @@
 
                 <div class="card" style="border-top-color: #e91e63;">
                     <h3>🌸 7. לאשה (שאיבת עמוד מוגן)</h3>
-                    <p style="font-size: 0.8rem; color: #555; margin-top: -10px;">הזן את הסיסמה. השרת ישאב את הטקסט, ישלח למייל ויגבה לדרייב.</p>
+                    <p style="font-size: 0.8rem; color: #555; margin-top: -10px;">הזן את הסיסמה. השרת ישאב את הטקסט ויגבה לדרייב.</p>
                     <input type="text" id="wife-password" placeholder="הכנס את הסיסמה לאתר...">
                     <button onclick="doWifeScrape()" style="background:#e91e63;">משוך כתבה ושלח אלי</button>
                     <div id="st-wife" class="status"></div>
@@ -158,10 +109,21 @@
 
                 <div class="card" style="border-top-color: #ff0000;">
                     <h3>▶️ 8. הורדה מיוטיוב לדרייב</h3>
-                    <p style="font-size: 0.8rem; color: #555; margin-top: -10px;">הכנה למערכת הורדת סרטונים. המערכת דורשת חיבור עתידי ל-API.</p>
+                    <p style="font-size: 0.8rem; color: #555; margin-top: -10px;">מזרים סרטונים לדרייב בעזרת API חינמי ציבורי.</p>
                     <input type="text" id="youtube-url" placeholder="הדבק קישור ליוטיוב...">
                     <button onclick="doYoutube()" style="background:#ff0000;">הורד סרטון</button>
                     <div id="st-youtube" class="status"></div>
+                </div>
+
+                <div class="card" style="border-top-color: #2e7d32;">
+                    <h3>📚 9. ספריא (הורדת ספרים)</h3>
+                    <p style="font-size: 0.8rem; color: #555; margin-top: -10px;">הורד טקסטים של ספרים או פרקים (למשל: בראשית, מסילת ישרים).</p>
+                    <input type="text" id="sefaria-book" placeholder="שם הספר...">
+                    <label style="font-size: 0.9rem; display: flex; align-items: center; gap: 5px; margin-bottom: 10px;">
+                        <input type="checkbox" id="sefaria-tags" checked style="width: auto; margin: 0;"> כלול ניקוד וטעמים (תיוגים)
+                    </label>
+                    <button onclick="doSefaria()" style="background:#2e7d32;">הורד מספריא ושמור בדרייב</button>
+                    <div id="st-sefaria" class="status"></div>
                 </div>
             </div>
         </div>
@@ -182,47 +144,14 @@
         </div>
     </div>
 
-    <!-- כפתור הפעלת הקופיילוט -->
-    <button class="copilot-btn" onclick="toggleCopilot()">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20ZM11 7H13V13H11V7ZM11 15H13V17H11V15Z" fill="currentColor"/></svg>
-        Copilot
-    </button>
-
-    <!-- פאנל הקופיילוט -->
-    <div id="copilotPanel" class="copilot-panel">
-        <div class="copilot-header">
-            <div class="copilot-header-title">
-                <span style="color: #0078d4; font-size: 1.4rem;">❖</span> Copilot
-            </div>
-            <button class="copilot-login-btn" id="ai-login-btn" onclick="loginAI()">התחבר לחשבון</button>
-        </div>
-        <div id="copilotChat" class="copilot-chat">
-            <div class="copilot-msg ai">היי! אני כאן לעזור. מה תרצה לעשות היום?</div>
-        </div>
-        <div class="copilot-input-area">
-            <input type="text" id="copilotInput" class="copilot-input" placeholder="שאל אותי משהו... (למשל: נתח דוח ביקורת, או כתוב פונקציית VBA)" onkeypress="if(event.key === 'Enter') sendCopilotMsg()">
-            <button class="copilot-send" onclick="sendCopilotMsg()">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-            </button>
-        </div>
-    </div>
-
     <script>
         let tokenClient, access_token, userEmail;
         const WORKER = 'https://wandering-boat-c837.meny85502.workers.dev/';
         let currentActiveChannel = 'Moshepargod';
         
-        let aiApiKey = localStorage.getItem('ai_api_key');
-        let chatHistory = [];
-
         window.onload = function() {
             loadTelegramFeed();
             setInterval(() => loadTelegramFeed(), 60000); 
-            
-            // עדכון כפתור ההתחברות ל-AI בטעינה
-            if(aiApiKey) {
-                document.getElementById('ai-login-btn').innerText = "מחובר ✓";
-            }
         };
 
         function initGoogle() {
@@ -352,7 +281,8 @@
                     btn.innerText = '👁️ פתח מהדרייב';
                     btn.onclick = (e) => {
                         e.stopPropagation();
-                        window.open('https://drive.google.com/file/d/' + data.fileId + '/view', '_blank');
+                        // הוספנו את התיקון שהקישור יהיה במבנה של שיתוף תצוגה כדי שלא ייתקע בחסימות או בקשות התחברות נוספות
+                        window.open('https://drive.google.com/file/d/' + data.fileId + '/view?usp=sharing', '_blank');
                     };
                 } else {
                     btn.innerText = originalText;
@@ -364,6 +294,25 @@
                 st.innerText = "❌ שגיאה: החיבור התנתק בגלל גודל הקובץ.";
                 setTimeout(() => st.innerText = "", 3000);
             }
+        }
+
+        async function doYoutube() {
+            const url = document.getElementById('youtube-url').value;
+            const st = document.getElementById('st-youtube');
+            if (!url) return st.innerText = "❌ הכנס קישור";
+            st.innerHTML = "⏳ שואב סרטון ומזרים לדרייב (זה יכול לקחת קצת זמן)...";
+            try {
+                const res = await fetch(WORKER, {
+                    method: 'POST',
+                    body: JSON.stringify({ type: 'youtube_download', value: url, accessToken: access_token })
+                });
+                const data = await res.json();
+                if (data.success && data.fileId) {
+                    st.innerHTML = `✅ הסרטון נשמר! <br><a href="https://drive.google.com/file/d/${data.fileId}/view?usp=sharing" target="_blank" style="color:red; font-weight:bold;">לחץ כאן לצפייה בדרייב</a>`;
+                } else {
+                    st.innerText = "❌ שגיאה: " + (data.error || "נכשל");
+                }
+            } catch (e) { st.innerText = "❌ שגיאת רשת"; }
         }
 
         async function doWifeScrape() {
@@ -381,19 +330,24 @@
             } catch (e) { st.innerText = "❌ שגיאת רשת"; }
         }
 
-        async function doYoutube() {
-            const url = document.getElementById('youtube-url').value;
-            const st = document.getElementById('st-youtube');
-            if (!url) return st.innerText = "❌ הכנס קישור";
-            st.innerText = "⏳ מתחבר לשרת...";
+        async function doSefaria() {
+            const book = document.getElementById('sefaria-book').value;
+            const tags = document.getElementById('sefaria-tags').checked;
+            const st = document.getElementById('st-sefaria');
+            if (!book) return st.innerText = "❌ הכנס שם ספר או פרק";
+            st.innerText = "⏳ מושך טקסט מספריא ושומר לדרייב...";
             try {
                 const res = await fetch(WORKER, {
                     method: 'POST',
-                    body: JSON.stringify({ type: 'youtube_download', value: url, accessToken: access_token })
+                    body: JSON.stringify({ type: 'sefaria', book: book, tags: tags, accessToken: access_token })
                 });
                 const data = await res.json();
-                st.innerText = data.error || (data.success ? "✅ הושלם" : "❌ נכשל");
-            } catch (e) { st.innerText = "❌ שגיאת שרת"; }
+                if (data.success && data.fileId) {
+                    st.innerHTML = `✅ נשמר! <br><a href="https://drive.google.com/file/d/${data.fileId}/view?usp=sharing" target="_blank" style="color:green; font-weight:bold;">לחץ לפתיחת הספר בדרייב</a>`;
+                } else {
+                    st.innerText = "❌ " + (data.error || "נכשל");
+                }
+            } catch (e) { st.innerText = "❌ שגיאת רשת"; }
         }
 
         async function openAdmin() {
@@ -437,7 +391,7 @@
             try {
                 const res = await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type: 'wikipedia', query: q, accessToken: access_token, userEmail }) });
                 const data = await res.json();
-                st.innerText = data.success ? "✅ נשלח!" : "❌ שגיאה: " + (data.error || "נכשל");
+                st.innerText = data.success ? "✅ נשלח למייל בהצלחה!" : "❌ שגיאה: " + (data.error || "נכשל");
             } catch(e) { st.innerText = "❌ שגיאת רשת במערכת"; }
         }
         
@@ -458,76 +412,14 @@
             try {
                 const res = await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type, value: val, accessToken: access_token, userEmail }) });
                 const data = await res.json();
-                st.innerText = data.success ? "✅ הושלם בהצלחה!" : "❌ שגיאה: " + (data.error || "פעולה נכשלה");
-            } catch (e) { st.innerText = "❌ שגיאה: לא ניתן היה ליצור קשר עם ה-Worker"; }
-        }
-
-        // --- פונקציות ה-Copilot ---
-        function toggleCopilot() {
-            const panel = document.getElementById('copilotPanel');
-            panel.style.display = panel.style.display === 'flex' ? 'none' : 'flex';
-        }
-
-        function loginAI() {
-            const key = prompt("התחברות מאובטחת ל-AI: אנא הכנס מפתח API של OpenAI.\n(המפתח נשמר מקומית בדפדפן שלך בלבד)");
-            if (key) {
-                localStorage.setItem('ai_api_key', key);
-                aiApiKey = key;
-                document.getElementById('ai-login-btn').innerText = "מחובר ✓";
-                alert("התחברת בהצלחה! התעבורה כעת מוצפנת דרך השרת שלך.");
-            }
-        }
-
-        async function sendCopilotMsg() {
-            const inputEl = document.getElementById('copilotInput');
-            const chatBox = document.getElementById('copilotChat');
-            const text = inputEl.value.trim();
-            
-            if (!text) return;
-            if (!aiApiKey) {
-                alert("יש להתחבר תחילה (לספק מפתח API) כדי להשתמש ב-Copilot.");
-                loginAI();
-                return;
-            }
-
-            chatBox.innerHTML += `<div class="copilot-msg user">${escapeHTML(text)}</div>`;
-            inputEl.value = '';
-            chatBox.scrollTop = chatBox.scrollHeight;
-
-            chatHistory.push({ role: 'user', content: text });
-
-            const loadingId = 'loading-' + Date.now();
-            chatBox.innerHTML += `<div id="${loadingId}" class="copilot-msg ai">חושב...</div>`;
-            chatBox.scrollTop = chatBox.scrollHeight;
-
-            try {
-                const res = await fetch(WORKER, {
-                    method: 'POST',
-                    body: JSON.stringify({ 
-                        type: 'chat_ai', 
-                        messages: chatHistory, 
-                        apiKey: aiApiKey 
-                    })
-                });
-                
-                const data = await res.json();
-                document.getElementById(loadingId).remove();
-
-                if (data.success) {
-                    const cleanResponse = escapeHTML(data.text).replace(/\n/g, '<br>');
-                    chatBox.innerHTML += `<div class="copilot-msg ai">${cleanResponse}</div>`;
-                    chatHistory.push({ role: 'assistant', content: data.text });
+                if (data.success && data.fileId) {
+                    st.innerHTML = `✅ הושלם בהצלחה! <br><a href="https://drive.google.com/file/d/${data.fileId}/view?usp=sharing" target="_blank">לחץ כאן לפתיחה בדרייב</a>`;
+                } else if (data.success) {
+                    st.innerText = "✅ הושלם בהצלחה!";
                 } else {
-                    chatBox.innerHTML += `<div class="copilot-msg ai" style="color:red;">שגיאה: ${data.error}</div>`;
-                    chatHistory.pop();
+                    st.innerText = "❌ שגיאה: " + (data.error || "פעולה נכשלה");
                 }
-            } catch (e) {
-                document.getElementById(loadingId).remove();
-                chatBox.innerHTML += `<div class="copilot-msg ai" style="color:red;">שגיאת רשת. בדוק חיבור ל-Worker.</div>`;
-                chatHistory.pop();
-            }
-            
-            chatBox.scrollTop = chatBox.scrollHeight;
+            } catch (e) { st.innerText = "❌ שגיאה: לא ניתן היה ליצור קשר עם ה-Worker"; }
         }
     </script>
     <script src="https://accounts.google.com/gsi/client" onload="initGoogle()" async defer></script>
