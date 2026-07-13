@@ -358,7 +358,7 @@
         function toggleKnessetAudio() {
             const audio = document.getElementById('knesset-audio-player');
             const btn = document.getElementById('knesset-audio-btn');
-            const originalStreamUrl = 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8';
+            const originalStreamUrl = 'https://knesetn.gostreaming.tv/Knesset/tracks-v1a1/mono.ts.m3u8';
             const proxyStreamUrl = WORKER + '?action=proxy&url=' + encodeURIComponent(originalStreamUrl);
 
             if (isKnessetPlaying) {
