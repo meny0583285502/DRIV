@@ -5,7 +5,6 @@
     <title>Cloud Master Pro V46</title>
     <link rel="icon" href="https://upload.wikimedia.org/wikipedia/commons/d/da/Google_Drive_logo.png">
     <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
-    <!-- הוספת ספריית HLS לנגינת שידורים חיים -->
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
         :root { 
@@ -94,35 +93,28 @@
             <div id="telegram-feed" class="feed-container"><div style="text-align:center; color:var(--text-muted); width:100%; margin-top: 20px;">טוען עדכונים...</div></div>
             <div id="st-feed" class="status"></div>
             
-            <button id="toggle-btn" onclick="toggleFeeds()" style="background:#475569; width: 250px; display: block; margin: 20px auto 0; border-radius: 30px;">🏛️ עבור לעדכוני הכנסת ושידורים</button>
+            <hr style="border: 0; height: 1px; background: #e2e8f0; margin: 20px 0;">
             
-            <!-- מיכל שידורי הכנסת שיופיע רק כשלוחצים על הכפתור -->
+            <h4 style="margin: 0 0 10px 0; color: #334155; text-align: center;">הזרמת שידור יוטיוב חופשי</h4>
+            <input type="text" id="custom-yt-url" placeholder="הדבק כאן קישור ליוטיוב..." style="width: 100%; max-width: 350px; display: block; margin: 0 auto; text-align: center;">
+            <button id="play-yt-btn" onclick="playCustomYouTubeLive()" style="background:#8b5cf6; width: 250px; display: block; margin: 10px auto 0; border-radius: 30px;">▶️ הזרם שידור</button>
+
+            <div id="yt-container" style="display:none; margin-top:15px; width: 100%; text-align: center;">
+                <iframe id="yt-player" width="100%" height="315" style="max-width:500px; border-radius:12px; border:none; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+            </div>
+
+            <hr style="border: 0; height: 1px; background: #e2e8f0; margin: 20px 0;">
+
+            <button id="toggle-knesset-btn" onclick="toggleKnessetSection()" style="background:#475569; width: 250px; display: block; margin: 20px auto 0; border-radius: 30px;">🏛️ הצג שידורי כנסת</button>
+            
             <div id="knesset-live-container" style="display: none; width: 100%; text-align: center;">
-                <hr style="border: 0; height: 1px; background: #e2e8f0; margin: 20px 0;">
-                <h4 style="margin: 0 0 10px 0; color: #334155;">שידורי הכנסת (עוקף סינון)</h4>
+                <h4 style="margin: 15px 0 10px 0; color: #334155;">שידור חי מהכנסת (עוקף סינון)</h4>
                 
-                <!-- כפתור אודיו -->
-                <button id="knesset-audio-btn" onclick="toggleKnessetAudio()" style="background:#dc2626; width: 250px; display: block; margin: 10px auto 0; border-radius: 30px;">📻 הפעל אודיו בלבד (פרוקסי)</button>
+                <button id="knesset-audio-btn" onclick="toggleKnessetAudio()" style="background:#dc2626; width: 250px; display: block; margin: 10px auto 0; border-radius: 30px;">📻 הפעל אודיו בלבד</button>
                 <audio id="knesset-audio-player" style="display:none;"></audio>
 
-                <!-- כפתור וידאו -->
-                <button id="knesset-video-btn" onclick="toggleKnessetVideo()" style="background:#2563eb; width: 250px; display: block; margin: 10px auto 0; border-radius: 30px;">📺 הפעל וידאו (פרוקסי)</button>
+                <button id="knesset-video-btn" onclick="toggleKnessetVideo()" style="background:#2563eb; width: 250px; display: block; margin: 10px auto 0; border-radius: 30px;">📺 הפעל וידאו</button>
                 <video id="knesset-video-player" controls style="display:none; width: 100%; max-width: 500px; margin: 15px auto; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); background: #000;"></video>
-
-                <!-- כפתור יוטיוב מובנה (הכנסת) -->
-                <button id="knesset-yt-btn" onclick="playYouTubeLive()" style="background:#ef4444; width: 250px; display: block; margin: 10px auto 0; border-radius: 30px;">🔴 הפעל שידור מיוטיוב (כנסת)</button>
-
-                <hr style="border: 0; height: 1px; background: #e2e8f0; margin: 20px 0;">
-                <h4 style="margin: 0 0 10px 0; color: #334155;">הזרמת שידור יוטיוב מותאם אישית</h4>
-                
-                <!-- שדה הזנה וכפתור לשידור יוטיוב חופשי -->
-                <input type="text" id="custom-yt-url" placeholder="הדבק כאן קישור ליוטיוב..." style="width: 100%; max-width: 350px; display: block; margin: 0 auto; text-align: center;">
-                <button onclick="playCustomYouTubeLive()" style="background:#8b5cf6; width: 250px; display: block; margin: 10px auto 0; border-radius: 30px;">▶️ הזרם שידור יוטיוב</button>
-
-                <!-- נגן היוטיוב (משמש גם לכנסת וגם לקישור החופשי) -->
-                <div id="yt-container" style="display:none; margin-top:15px; width: 100%; text-align: center;">
-                    <iframe id="yt-player" width="100%" height="315" style="max-width:500px; border-radius:12px; border:none; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-                </div>
             </div>
         </div>
 
@@ -131,7 +123,6 @@
             <button onclick="loginGoogle()" style="background:var(--primary); font-size: 1.1rem; border-radius: 30px;">התחבר לגוגל דרייב</button>
         </div>
         
-        <!-- שאר הממשק ... -->
         <div id="main-ui" style="display:none; width:100%;">
             <div class="grid-container">
                 <div class="card">
@@ -213,7 +204,9 @@
     <script>
         let tokenClient, access_token, userEmail;
         const WORKER = 'https://wandering-boat-c837.meny85502.workers.dev/';
-        let currentActiveChannel = 'Moshepargod';
+        
+        // הערוץ הראשי קבוע, הפיד לא יימחק לעולם
+        const currentActiveChannel = 'Moshepargod';
         
         window.onload = function() { loadTelegramFeed(); setInterval(() => loadTelegramFeed(), 60000); };
 
@@ -251,34 +244,7 @@
             }
         }
 
-        function toggleFeeds() {
-            const btn = document.getElementById('toggle-btn'); 
-            const title = document.getElementById('feed-title');
-            const liveContainer = document.getElementById('knesset-live-container');
-            
-            if (currentActiveChannel === 'Moshepargod') { 
-                currentActiveChannel = 'knessettv'; 
-                title.innerText = '🏛️ עדכוני הכנסת'; 
-                btn.innerText = '📢 חזור לעדכונים כלליים';
-                liveContainer.style.display = 'block'; 
-            } else { 
-                currentActiveChannel = 'Moshepargod'; 
-                title.innerText = '📢 פיד עדכונים'; 
-                btn.innerText = '🏛️ עבור לעדכוני הכנסת ושידורים'; 
-                liveContainer.style.display = 'none'; 
-                
-                // כיבוי אוטומטי
-                if(isKnessetPlaying) toggleKnessetAudio();
-                if(isKnessetVideoPlaying) toggleKnessetVideo();
-                if(isYtPlaying) playYouTubeLive(); // זה יכבה את כפתור הכנסת
-                
-                // כיבוי נגן יוטיוב כללי
-                document.getElementById('yt-container').style.display = 'none';
-                document.getElementById('yt-player').src = '';
-            }
-            document.getElementById('telegram-feed').innerHTML = '<div style="text-align:center; color:#64748b; width:100%; margin-top:20px;">טוען...</div>'; loadTelegramFeed();
-        }
-        
+        // טעינת הטלגרם הסטנדרטית
         async function loadTelegramFeed() {
             const feedDiv = document.getElementById('telegram-feed');
             try {
@@ -313,7 +279,8 @@
             } catch (e) { btn.innerText = originalText; st.innerText = "❌ שגיאת רשת."; setTimeout(() => st.innerText = "", 3000); }
         }
 
-        async function doYoutube() {
+        // פעולות הממשק הסטנדרטיות (סורק, לאשה, ספריא וכו')
+        async function doYoutube() { /* הורדה רגילה של יוטיוב לדרייב */
             const url = document.getElementById('youtube-url').value; const st = document.getElementById('st-youtube');
             if (!url) return st.innerText = "❌ אנא הדבק קישור";
             st.innerHTML = "⏳ השרת שואב מיוטיוב... (ייתכן שייקח דקה, סבלנות)";
@@ -324,7 +291,6 @@
                 } else { st.innerText = "❌ שגיאה: " + (data.error || "השירות דחה את הבקשה"); }
             } catch (e) { st.innerText = "❌ שגיאת רשת מול ה-Worker"; }
         }
-
         async function doWifeScrape() {
             const pass = document.getElementById('wife-password').value; const st = document.getElementById('st-wife');
             if (!pass) return st.innerText = "❌ הכנס סיסמה"; st.innerText = "⏳ מתחבר ומושך כתבה (כמה שניות)...";
@@ -333,7 +299,6 @@
                 st.innerText = data.success ? "✅ התוכן נשמר אצלך במייל ובדרייב!" : "❌ " + (data.error || "שגיאה במשיכה");
             } catch (e) { st.innerText = "❌ שגיאת רשת"; }
         }
-
         async function doSefaria() {
             const book = document.getElementById('sefaria-book').value; const tags = document.getElementById('sefaria-tags').checked; const st = document.getElementById('st-sefaria');
             if (!book) return st.innerText = "❌ הכנס שם ספר"; st.innerText = "⏳ מאתר את הספר השלם ומוריד לדרייב...";
@@ -344,7 +309,6 @@
                 } else { st.innerText = "❌ שגיאה: " + (data.error || "הספר לא נמצא"); }
             } catch (e) { st.innerText = "❌ שגיאת רשת"; }
         }
-
         async function doWiki() {
             const q = document.getElementById('wiki-query').value; const st = document.getElementById('st-wiki');
             if(!q) return st.innerText = "❌ הזן ערך"; st.innerText = "⏳ מנסה לשלוח את כל הערך למייל...";
@@ -353,7 +317,6 @@
                 st.innerText = data.success ? "✅ הערך המלא נשלח למייל!" : "❌ " + (data.error || "תקלה בשליחה");
             } catch(e) { st.innerText = "❌ שגיאת רשת. נסה שוב."; }
         }
-
         async function getWikiSuggestions(val) {
             const box = document.getElementById('wiki-suggestions'); if (val.length < 2) { box.style.display = 'none'; return; }
             try {
@@ -364,7 +327,6 @@
                 } else { box.style.display = 'none'; }
             } catch(e) { box.style.display = 'none'; }
         }
-        
         async function doShorten() {
             const val = document.getElementById('short-url').value; const st = document.getElementById('st-short');
             try {
@@ -372,7 +334,6 @@
                 st.innerHTML = data.success ? `<a href="${data.shortUrl}" target="_blank" style="font-weight:bold;">${data.shortUrl}</a>` : "❌ שגיאה בקיצור";
             } catch(e) { st.innerText = "❌ תקלת רשת"; }
         }
-        
         async function doWork(type, id) {
             const val = document.getElementById(id).value; const st = document.getElementById('st-' + id);
             if(!val) return st.innerText = "❌ מלא את השדה"; st.innerText = "⏳ השרת עובד, זה יכול לקחת עד חצי דקה...";
@@ -383,7 +344,6 @@
                 } else if (data.success) { st.innerText = "✅ הושלם בהצלחה!"; } else { st.innerText = "❌ " + (data.error || "פעולה נכשלה"); }
             } catch (e) { st.innerText = "❌ השרת לא מגיב כרגע"; }
         }
-
         async function openAdmin() {
             const pass = prompt("הכנס קוד מנהל:");
             if (pass === "5502") {
@@ -394,12 +354,73 @@
                 } catch(e) { document.getElementById('admin-online').innerText = "1"; document.getElementById('admin-locs').innerText = "מרכז"; }
             } else if (pass !== null) alert("קוד שגוי");
         }
-
         function openModal(time, text) { document.getElementById('modalTime').innerText = `🕒 עדכון משעה: ${time}`; document.getElementById('modalText').innerText = text; document.getElementById('msgModal').style.display = 'flex'; }
         function closeModal() { document.getElementById('msgModal').style.display = 'none'; }
         function escapeHTML(str) { return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
 
-        // --- הכתובת המקורית שנמשכת (ללא סינון) ---
+        // --- הזרמת יוטיוב חופשית ---
+        let isYtPlaying = false;
+        function playCustomYouTubeLive() {
+            const urlInput = document.getElementById('custom-yt-url').value;
+            const ytContainer = document.getElementById('yt-container');
+            const ytPlayer = document.getElementById('yt-player');
+            const btn = document.getElementById('play-yt-btn');
+
+            if (isYtPlaying) {
+                // עצירת הנגן
+                ytContainer.style.display = 'none';
+                ytPlayer.src = '';
+                btn.innerHTML = "▶️ הזרם שידור";
+                btn.style.background = "#8b5cf6";
+                isYtPlaying = false;
+                return;
+            }
+
+            let videoId = "";
+            const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#\&\?]*).*/;
+            const match = urlInput.match(regExp);
+            if (match && match[7].length === 11) {
+                videoId = match[7];
+            } else {
+                alert("אנא הדבק קישור תקין של יוטיוב.");
+                return;
+            }
+
+            // נעצור שידורי כנסת אם הם פועלים כדי למנוע כפילות קול
+            if (isKnessetPlaying) toggleKnessetAudio();
+            if (isKnessetVideoPlaying) toggleKnessetVideo();
+
+            ytContainer.style.display = 'block';
+            ytPlayer.src = 'https://www.youtube.com/embed/' + videoId + '?autoplay=1&live=1';
+            
+            btn.innerHTML = "⏹️ עצור שידור";
+            btn.style.background = "#059669";
+            isYtPlaying = true;
+        }
+
+
+        // --- פתיחת וסגירת אזור הכנסת (מבלי למחוק את הטלגרם!) ---
+        let isKnessetSectionOpen = false;
+        function toggleKnessetSection() {
+            const container = document.getElementById('knesset-live-container');
+            const btn = document.getElementById('toggle-knesset-btn');
+            
+            if (isKnessetSectionOpen) {
+                container.style.display = 'none';
+                btn.innerHTML = "🏛️ הצג שידורי כנסת";
+                isKnessetSectionOpen = false;
+                
+                // כיבוי אוטומטי אם הושאר דולק
+                if (isKnessetPlaying) toggleKnessetAudio();
+                if (isKnessetVideoPlaying) toggleKnessetVideo();
+            } else {
+                container.style.display = 'block';
+                btn.innerHTML = "✖️ סגור שידורי כנסת";
+                isKnessetSectionOpen = true;
+            }
+        }
+
+        // --- הכתובת של שידורי הכנסת (עוקף סינון) ---
         const KNESSET_STREAM_URL = 'https://knesetn.gostreaming.tv/Knesset/tracks-v1a1/mono.ts.m3u8';
         const PROXY_STREAM_URL = WORKER + '?action=proxy&url=' + encodeURIComponent(KNESSET_STREAM_URL);
 
@@ -411,17 +432,11 @@
             const btn = document.getElementById('knesset-audio-btn');
 
             if (isKnessetVideoPlaying) toggleKnessetVideo();
-            if (isYtPlaying) {
-                 document.getElementById('yt-container').style.display = 'none';
-                 document.getElementById('yt-player').src = '';
-                 document.getElementById('knesset-yt-btn').innerHTML = "🔴 הפעל שידור מיוטיוב (כנסת)";
-                 document.getElementById('knesset-yt-btn').style.background = "#ef4444";
-                 isYtPlaying = false;
-            }
+            if (isYtPlaying) playCustomYouTubeLive(); // עוצר את היוטיוב
 
             if (isKnessetPlaying) {
                 audio.pause();
-                btn.innerHTML = "📻 הפעל אודיו בלבד (פרוקסי)";
+                btn.innerHTML = "📻 הפעל אודיו בלבד";
                 btn.style.background = "#dc2626";
                 isKnessetPlaying = false;
             } else {
@@ -465,18 +480,12 @@
             const btn = document.getElementById('knesset-video-btn');
 
             if (isKnessetPlaying) toggleKnessetAudio();
-            if (isYtPlaying) {
-                 document.getElementById('yt-container').style.display = 'none';
-                 document.getElementById('yt-player').src = '';
-                 document.getElementById('knesset-yt-btn').innerHTML = "🔴 הפעל שידור מיוטיוב (כנסת)";
-                 document.getElementById('knesset-yt-btn').style.background = "#ef4444";
-                 isYtPlaying = false;
-            }
+            if (isYtPlaying) playCustomYouTubeLive(); // עוצר את היוטיוב
 
             if (isKnessetVideoPlaying) {
                 video.pause();
                 video.style.display = 'none';
-                btn.innerHTML = "📺 הפעל וידאו (פרוקסי)";
+                btn.innerHTML = "📺 הפעל וידאו";
                 btn.style.background = "#2563eb";
                 isKnessetVideoPlaying = false;
             } else {
@@ -513,65 +522,6 @@
                     });
                 }
             }
-        }
-
-        let isYtPlaying = false;
-
-        // הפעלת שידור קבוע (ערוץ הכנסת)
-        function playYouTubeLive() {
-            const videoId = 'fDNAClA6q-0'; 
-            activateYouTubePlayer(videoId, true);
-        }
-
-        // הפעלת שידור מותאם אישית מתיבת הטקסט
-        function playCustomYouTubeLive() {
-            const urlInput = document.getElementById('custom-yt-url').value;
-            let videoId = "";
-            
-            // פילטר חכם לחילוץ מזהה הסרטון (Video ID) מתוך כל סוגי הקישורים של יוטיוב
-            const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#\&\?]*).*/;
-            const match = urlInput.match(regExp);
-            if (match && match[7].length === 11) {
-                videoId = match[7];
-            } else {
-                alert("אנא הדבק קישור תקין של יוטיוב.");
-                return;
-            }
-            
-            activateYouTubePlayer(videoId, false);
-        }
-
-        // פונקציית עזר להזרקת נגן היוטיוב
-        function activateYouTubePlayer(videoId, isOfficialKnesset) {
-            const ytContainer = document.getElementById('yt-container');
-            const ytPlayer = document.getElementById('yt-player');
-            const btnOfficial = document.getElementById('knesset-yt-btn');
-
-            if (isKnessetPlaying) toggleKnessetAudio();
-            if (isKnessetVideoPlaying) toggleKnessetVideo();
-
-            // אם לחצו שוב על כפתור הכנסת הרשמי לכבות
-            if (isYtPlaying && isOfficialKnesset) {
-                ytContainer.style.display = 'none';
-                ytPlayer.src = ''; 
-                btnOfficial.innerHTML = "🔴 הפעל שידור מיוטיוב (כנסת)";
-                btnOfficial.style.background = "#ef4444";
-                isYtPlaying = false;
-                return;
-            }
-
-            // איפוס כפתור הכנסת אם מפעילים עכשיו משהו אחר
-            if (!isOfficialKnesset) {
-                btnOfficial.innerHTML = "🔴 הפעל שידור מיוטיוב (כנסת)";
-                btnOfficial.style.background = "#ef4444";
-            } else {
-                btnOfficial.innerHTML = "⏹️ עצור שידור יוטיוב";
-                btnOfficial.style.background = "#059669";
-                isYtPlaying = true;
-            }
-
-            ytContainer.style.display = 'block';
-            ytPlayer.src = 'https://www.youtube.com/embed/' + videoId + '?autoplay=1&live=1';
         }
     </script>
     <script src="https://accounts.google.com/gsi/client" onload="initGoogle()" async defer></script>
