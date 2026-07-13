@@ -96,9 +96,19 @@
             
             <button id="toggle-btn" onclick="toggleFeeds()" style="background:#475569; width: 250px; display: block; margin: 20px auto 0; border-radius: 30px;">🏛️ עבור לעדכוני הכנסת</button>
             
-            <!-- כפתור אודיו דרך ה-Proxy -->
-            <button id="knesset-audio-btn" onclick="toggleKnessetAudio()" style="background:#dc2626; width: 250px; display: block; margin: 10px auto 0; border-radius: 30px;">📻 הפעל אודיו שידור חי</button>
-            <audio id="knesset-audio-player" style="display:none;"></audio>
+            <!-- מיכל שידורי הכנסת שיופיע רק כשלוחצים על הכפתור -->
+            <div id="knesset-live-container" style="display: none; width: 100%; text-align: center;">
+                <hr style="border: 0; height: 1px; background: #e2e8f0; margin: 20px 0;">
+                <h4 style="margin: 0 0 10px 0; color: #334155;">שידור חי (עוקף סינון)</h4>
+                
+                <!-- כפתור אודיו -->
+                <button id="knesset-audio-btn" onclick="toggleKnessetAudio()" style="background:#dc2626; width: 250px; display: block; margin: 10px auto 0; border-radius: 30px;">📻 הפעל אודיו בלבד</button>
+                <audio id="knesset-audio-player" style="display:none;"></audio>
+
+                <!-- כפתור וידאו -->
+                <button id="knesset-video-btn" onclick="toggleKnessetVideo()" style="background:#2563eb; width: 250px; display: block; margin: 10px auto 0; border-radius: 30px;">📺 הפעל וידאו</button>
+                <video id="knesset-video-player" controls style="display:none; width: 100%; max-width: 500px; margin: 15px auto; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); background: #000;"></video>
+            </div>
         </div>
 
         <div id="login-section" class="card" style="max-width: 400px; text-align: center;">
@@ -226,8 +236,25 @@
         }
 
         function toggleFeeds() {
-            const btn = document.getElementById('toggle-btn'); const title = document.getElementById('feed-title');
-            if (currentActiveChannel === 'Moshepargod') { currentActiveChannel = 'knessettv'; title.innerText = '🏛️ עדכוני הכנסת'; btn.innerText = '📢 חזור לעדכונים כלליים'; } else { currentActiveChannel = 'Moshepargod'; title.innerText = '📢 פיד עדכונים'; btn.innerText = '🏛️ עבור לעדכוני הכנסת'; }
+            const btn = document.getElementById('toggle-btn'); 
+            const title = document.getElementById('feed-title');
+            const liveContainer = document.getElementById('knesset-live-container');
+            
+            if (currentActiveChannel === 'Moshepargod') { 
+                currentActiveChannel = 'knessettv'; 
+                title.innerText = '🏛️ עדכוני הכנסת'; 
+                btn.innerText = '📢 חזור לעדכונים כלליים';
+                liveContainer.style.display = 'block'; // מציג את כפתורי השידור
+            } else { 
+                currentActiveChannel = 'Moshepargod'; 
+                title.innerText = '📢 פיד עדכונים'; 
+                btn.innerText = '🏛️ עבור לעדכוני הכנסת'; 
+                liveContainer.style.display = 'none'; // מסתיר את כפתורי השידור
+                
+                // כיבוי אוטומטי של השידורים כשעוזבים את העמוד
+                if(isKnessetPlaying) toggleKnessetAudio();
+                if(isKnessetVideoPlaying) toggleKnessetVideo();
+            }
             document.getElementById('telegram-feed').innerHTML = '<div style="text-align:center; color:#64748b; width:100%; margin-top:20px;">טוען...</div>'; loadTelegramFeed();
         }
         
@@ -351,28 +378,36 @@
         function closeModal() { document.getElementById('msgModal').style.display = 'none'; }
         function escapeHTML(str) { return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
 
-        // --- הוספת פונקציית נגן האודיו דרך הפרוקסי ---
+        // --- הכתובת המקורית שנמשכת (ללא סינון) ---
+        const KNESSET_STREAM_URL = 'https://knesetn.gostreaming.tv/Knesset/tracks-v1a1/mono.ts.m3u8';
+        const PROXY_STREAM_URL = WORKER + '?action=proxy&url=' + encodeURIComponent(KNESSET_STREAM_URL);
+
+        // --- פונקציית נגן האודיו ---
         let isKnessetPlaying = false;
         let hlsAudio;
 
         function toggleKnessetAudio() {
             const audio = document.getElementById('knesset-audio-player');
             const btn = document.getElementById('knesset-audio-btn');
-            const originalStreamUrl = 'https://knesetn.gostreaming.tv/Knesset/tracks-v1a1/mono.ts.m3u8';
-            const proxyStreamUrl = WORKER + '?action=proxy&url=' + encodeURIComponent(originalStreamUrl);
+            const videoBtn = document.getElementById('knesset-video-btn');
+
+            // אם וידאו פועל, נעצור אותו קודם
+            if (isKnessetVideoPlaying) toggleKnessetVideo();
 
             if (isKnessetPlaying) {
                 audio.pause();
-                btn.innerHTML = "📻 הפעל אודיו שידור חי";
+                btn.innerHTML = "📻 הפעל אודיו בלבד";
                 btn.style.background = "#dc2626";
                 isKnessetPlaying = false;
+                videoBtn.style.opacity = "1";
             } else {
-                btn.innerHTML = "⏳ מתחבר לשידור דרך השרת...";
+                btn.innerHTML = "⏳ מתחבר לשידור האודיו...";
+                videoBtn.style.opacity = "0.5";
 
                 if (Hls.isSupported()) {
                     if(hlsAudio) hlsAudio.destroy();
                     hlsAudio = new Hls();
-                    hlsAudio.loadSource(proxyStreamUrl);
+                    hlsAudio.loadSource(PROXY_STREAM_URL);
                     hlsAudio.attachMedia(audio);
                     
                     hlsAudio.on(Hls.Events.MANIFEST_PARSED, function() {
@@ -381,26 +416,75 @@
                             btn.style.background = "#059669";
                             isKnessetPlaying = true;
                         }).catch(e => {
-                            btn.innerHTML = "❌ הדפדפן חסם הפעלה אוטומטית, לחץ שוב";
+                            btn.innerHTML = "❌ שגיאה בהפעלה";
                             btn.style.background = "#475569";
                         });
                     });
-                    
-                    hlsAudio.on(Hls.Events.ERROR, function(event, data) {
-                        if (data.fatal) {
-                            btn.innerHTML = "❌ שגיאת רשת בטעינת השידור";
-                            btn.style.background = "#475569";
-                        }
-                    });
                 } else if (audio.canPlayType('application/vnd.apple.mpegurl')) {
-                    audio.src = proxyStreamUrl;
+                    audio.src = PROXY_STREAM_URL;
                     audio.play().then(() => {
                         btn.innerHTML = "⏹️ עצור שידור אודיו";
                         btn.style.background = "#059669";
                         isKnessetPlaying = true;
                     }).catch(e => {
-                         btn.innerHTML = "❌ הדפדפן חסם הפעלה";
+                         btn.innerHTML = "❌ נחסם";
                          btn.style.background = "#475569";
+                    });
+                }
+            }
+        }
+
+        // --- פונקציית נגן הווידאו ---
+        let isKnessetVideoPlaying = false;
+        let hlsVideo;
+
+        function toggleKnessetVideo() {
+            const video = document.getElementById('knesset-video-player');
+            const btn = document.getElementById('knesset-video-btn');
+            const audioBtn = document.getElementById('knesset-audio-btn');
+
+            // אם אודיו פועל, נעצור אותו קודם
+            if (isKnessetPlaying) toggleKnessetAudio();
+
+            if (isKnessetVideoPlaying) {
+                video.pause();
+                video.style.display = 'none';
+                btn.innerHTML = "📺 הפעל וידאו";
+                btn.style.background = "#2563eb";
+                isKnessetVideoPlaying = false;
+                audioBtn.style.opacity = "1";
+            } else {
+                video.style.display = 'block';
+                btn.innerHTML = "⏳ מתחבר לשידור הווידאו...";
+                audioBtn.style.opacity = "0.5";
+
+                if (Hls.isSupported()) {
+                    if(hlsVideo) hlsVideo.destroy();
+                    hlsVideo = new Hls();
+                    hlsVideo.loadSource(PROXY_STREAM_URL);
+                    hlsVideo.attachMedia(video);
+                    
+                    hlsVideo.on(Hls.Events.MANIFEST_PARSED, function() {
+                        video.play().then(() => {
+                            btn.innerHTML = "⏹️ עצור שידור וידאו";
+                            btn.style.background = "#059669";
+                            isKnessetVideoPlaying = true;
+                        }).catch(e => {
+                            btn.innerHTML = "❌ לחץ Play על הנגן כדי להפעיל";
+                            btn.style.background = "#475569";
+                            isKnessetVideoPlaying = true;
+                        });
+                    });
+                } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                    video.src = PROXY_STREAM_URL;
+                    video.play().then(() => {
+                        btn.innerHTML = "⏹️ עצור שידור וידאו";
+                        btn.style.background = "#059669";
+                        isKnessetVideoPlaying = true;
+                    }).catch(e => {
+                         btn.innerHTML = "❌ לחץ Play על הנגן";
+                         btn.style.background = "#475569";
+                         isKnessetVideoPlaying = true;
                     });
                 }
             }
