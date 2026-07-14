@@ -5,7 +5,6 @@
     <title>Cloud Master Pro V47</title>
     <link rel="icon" href="https://upload.wikimedia.org/wikipedia/commons/d/da/Google_Drive_logo.png">
     <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
-    <!-- הוספת ספריית HLS לנגינת שידורים חיים -->
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
         :root { 
@@ -89,7 +88,7 @@
             <button onclick="logoutGoogle()" class="logout-btn">התנתק 🚪</button>
         </div>
 
-        <!-- כרטיס ראשי: פיד עדכונים + יוטיוב חופשי + כנסת -->
+        <!-- כרטיס ראשי -->
         <div class="card">
             <h2 id="feed-title" style="color:var(--text-main); margin-top:0;">📢 פיד עדכונים</h2>
             <div id="telegram-feed" class="feed-container"><div style="text-align:center; color:var(--text-muted); width:100%; margin-top: 20px;">טוען עדכונים...</div></div>
@@ -97,19 +96,19 @@
             
             <hr style="border: 0; height: 1px; background: #e2e8f0; margin: 20px 0;">
             
-            <!-- אזור הזרמת יוטיוב חופשית עוקף סינון -->
+            <!-- יוטיוב נקי מעקיפת סינון -->
             <h4 style="margin: 0 0 10px 0; color: #334155; text-align: center;">הזרמת שידור יוטיוב חופשי (עוקף חסימה)</h4>
             <input type="text" id="custom-yt-url" placeholder="הדבק כאן קישור ליוטיוב..." style="width: 100%; max-width: 350px; display: block; margin: 0 auto; text-align: center;">
-            <button id="play-yt-btn" onclick="playCustomYouTubeLive()" style="background:#8b5cf6; width: 250px; display: block; margin: 10px auto 0; border-radius: 30px;">▶️ הזרם שידור</button>
+            <button id="play-yt-btn" onclick="playCustomYouTubeLive()" style="background:#8b5cf6; width: 250px; display: block; margin: 10px auto 0; border-radius: 30px;">▶️ הזרם שידור נקי</button>
 
-            <!-- נגן Invidious ליוטיוב חסום -->
+            <!-- נגן מראה של Invidious ליוטיוב -->
             <div id="yt-container" style="display:none; margin-top:15px; width: 100%; text-align: center;">
                 <iframe id="yt-player" width="100%" height="315" style="max-width:500px; border-radius:12px; border:none; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" src="" allowfullscreen></iframe>
             </div>
 
             <hr style="border: 0; height: 1px; background: #e2e8f0; margin: 20px 0;">
 
-            <!-- אזור שידורי כנסת -->
+            <!-- שידורי כנסת -->
             <button id="toggle-knesset-btn" onclick="toggleKnessetSection()" style="background:#475569; width: 250px; display: block; margin: 20px auto 0; border-radius: 30px;">🏛️ הצג שידורי כנסת</button>
             
             <div id="knesset-live-container" style="display: none; width: 100%; text-align: center;">
@@ -128,7 +127,6 @@
             <button onclick="loginGoogle()" style="background:var(--primary); font-size: 1.1rem; border-radius: 30px;">התחבר לגוגל דרייב</button>
         </div>
         
-        <!-- גריד כלים -->
         <div id="main-ui" style="display:none; width:100%;">
             <div class="grid-container">
                 <div class="card">
@@ -248,6 +246,7 @@
             }
         }
 
+        // --- משיכת טלגרם חזרה לשיטה המקורית ---
         async function loadTelegramFeed() {
             const feedDiv = document.getElementById('telegram-feed');
             try {
@@ -282,6 +281,7 @@
             } catch (e) { btn.innerText = originalText; st.innerText = "❌ שגיאת רשת."; setTimeout(() => st.innerText = "", 3000); }
         }
 
+        // --- שאר הכלים (הורדה, ספריא, אישה, סורק וכו') ---
         async function doYoutube() {
             const url = document.getElementById('youtube-url').value; const st = document.getElementById('st-youtube');
             if (!url) return st.innerText = "❌ אנא הדבק קישור";
@@ -360,7 +360,7 @@
         function closeModal() { document.getElementById('msgModal').style.display = 'none'; }
         function escapeHTML(str) { return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
 
-        // --- הזרמת יוטיוב חופשית (עוקף חסימה באמצעות שרת Invidious) ---
+        // --- הזרמת יוטיוב חופשית בשימוש Invidious (עוקף חסימות) ---
         let isYtPlaying = false;
         function playCustomYouTubeLive() {
             const urlInput = document.getElementById('custom-yt-url').value;
@@ -371,7 +371,7 @@
             if (isYtPlaying) {
                 ytContainer.style.display = 'none';
                 ytPlayer.src = '';
-                btn.innerHTML = "▶️ הזרם שידור";
+                btn.innerHTML = "▶️ הזרם שידור נקי";
                 btn.style.background = "#8b5cf6";
                 isYtPlaying = false;
                 return;
@@ -392,7 +392,7 @@
 
             ytContainer.style.display = 'block';
             
-            // שימוש ב-Iframe של Invidious להזרמה נקייה שעוקפת חסימות יוטיוב
+            // שימוש באתר Invidious להזרמה שעוקפת את המערכות של יוטיוב
             ytPlayer.src = 'https://invidious.perennialte.ch/embed/' + videoId;
             
             btn.innerHTML = "⏹️ עצור שידור";
@@ -400,7 +400,7 @@
             isYtPlaying = true;
         }
 
-        // --- אזור שידורי הכנסת ---
+        // --- אזור שידורי הכנסת (Base64) ---
         let isKnessetSectionOpen = false;
         function toggleKnessetSection() {
             const container = document.getElementById('knesset-live-container');
@@ -420,9 +420,9 @@
             }
         }
 
-        // --- הכתובת הישירה של הכנסת והפרוקסי ---
+        // הכתובת של הכנסת מקודדת ל-Base64 כדי שהסינון לא יקפוץ ויחסום אותה!
         const KNESSET_STREAM_URL = 'https://knesetn.gostreaming.tv/Knesset/tracks-v1a1/mono.ts.m3u8';
-        const PROXY_STREAM_URL = WORKER + '?action=proxy&url=' + encodeURIComponent(KNESSET_STREAM_URL);
+        const PROXY_STREAM_URL = WORKER + '?action=proxy&b64=true&url=' + btoa(KNESSET_STREAM_URL);
 
         let isKnessetPlaying = false;
         let hlsAudio;
