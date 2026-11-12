@@ -67,7 +67,8 @@ def kv_put(key, value):
 
 # ---------------- דרייב ----------------
 class Drive:
-    def __init__(self, token):
+    def __init__(self, token, folder_name=DRIVE_FOLDER_NAME):
+        self.folder_name = folder_name
         self.s = requests.Session()
         self.s.headers["Authorization"] = f"Bearer {token}"
         self.folder = None
@@ -75,7 +76,7 @@ class Drive:
     def folder_id(self):
         if self.folder:
             return self.folder
-        q = (f"name='{DRIVE_FOLDER_NAME}' and mimeType='application/vnd.google-apps.folder' "
+        q = (f"name='{self.folder_name}' and mimeType='application/vnd.google-apps.folder' "
              f"and trashed=false")
         r = self.s.get("https://www.googleapis.com/drive/v3/files", params={"q": q})
         r.raise_for_status()
@@ -84,7 +85,7 @@ class Drive:
             self.folder = files[0]["id"]
         else:
             r = self.s.post("https://www.googleapis.com/drive/v3/files",
-                            json={"name": DRIVE_FOLDER_NAME,
+                            json={"name": self.folder_name,
                                   "mimeType": "application/vnd.google-apps.folder"})
             r.raise_for_status()
             self.folder = r.json()["id"]
@@ -324,7 +325,7 @@ async def do_transfer(args, drive_token):
         raise RuntimeError("לא נבחרו קבצים")
 
     client = await logged_in_client()
-    drive = Drive(drive_token)
+    drive = Drive(drive_token, "DRIV_Temp" if args.get("temp") else DRIVE_FOLDER_NAME)
     results = []
     for i, it in enumerate(items, 1):
         if it.get("bad"):
