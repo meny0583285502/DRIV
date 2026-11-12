@@ -1,0 +1,29 @@
+name: telegram
+
+on:
+  workflow_dispatch:
+    inputs:
+      job_id:
+        description: "מזהה משימה (נוצר ע\"י ה-Worker)"
+        required: true
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: pip install -q telethon cryptg requests cryptography
+      - name: Run job
+        env:
+          JOB_ID: ${{ inputs.job_id }}
+          WORKER_URL: ${{ secrets.WORKER_URL }}
+          CALLBACK_SECRET: ${{ secrets.CALLBACK_SECRET }}
+          TG_API_ID: ${{ secrets.TG_API_ID }}
+          TG_API_HASH: ${{ secrets.TG_API_HASH }}
+          SESSION_KEY: ${{ secrets.SESSION_KEY }}
+        run: python telegram/tg_job.py

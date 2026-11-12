@@ -195,6 +195,39 @@
             <h4 style="margin-top:0;">📊 נתוני אמת</h4>
             <p style="margin:5px 0;">👥 משתמשים כרגע: <strong id="admin-online">0</strong></p>
             <p style="margin:5px 0;">📍 אזורים פעילים: <strong id="admin-locs">-</strong></p>
+
+            <hr style="border:none;border-top:1px solid #fde68a;margin:15px 0;">
+            <h4 style="margin:0 0 8px;">✈️ טלגרם אישי → דרייב</h4>
+            <div id="tg-status" class="status" style="min-height:1.2em;"></div>
+
+            <details style="margin:8px 0;">
+                <summary style="cursor:pointer;font-weight:bold;">🔑 התחברות לחשבון טלגרם</summary>
+                <input type="text" id="tg-phone" placeholder="מספר טלפון (למשל 0501234567)" dir="ltr">
+                <button onclick="tgLoginStart()">שלח קוד</button>
+                <input type="text" id="tg-code" placeholder="הקוד שהתקבל" dir="ltr">
+                <input type="password" id="tg-2fa" placeholder="סיסמת אימות דו-שלבי (אם יש)" dir="ltr">
+                <button onclick="tgLoginFinish()">התחבר</button>
+                <button onclick="tgLogout()" style="background:#fee2e2;color:#b91c1c;">נתק חשבון</button>
+            </details>
+
+            <div style="margin:10px 0;">
+                <b>א. העברה לפי קישור</b>
+                <textarea id="tg-links" rows="3" style="width:100%;box-sizing:border-box;" dir="ltr" placeholder="https://t.me/c/123456/789&#10;(קישור אחד בכל שורה)"></textarea>
+                <button onclick="tgTransferLinks()">העבר לדרייב</button>
+            </div>
+
+            <div style="margin:10px 0;">
+                <b>ב. בחירה מרשימה</b>
+                <button onclick="tgLoadChats()">טען צ'אטים</button>
+                <input type="text" id="tg-chat-filter" placeholder="סינון לפי שם..." oninput="tgRenderChats()" style="display:none;">
+                <div id="tg-chats" style="max-height:220px;overflow:auto;"></div>
+                <div id="tg-files-box" style="display:none;">
+                    <div id="tg-files-title" style="font-weight:bold;margin:8px 0;"></div>
+                    <div id="tg-files" style="max-height:300px;overflow:auto;"></div>
+                    <button onclick="tgLoadFiles(true)">טען עוד</button>
+                    <button onclick="tgTransferSelected()">העבר מסומנים לדרייב</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -346,16 +379,123 @@
                 } else if (data.success) { st.innerText = "✅ הושלם בהצלחה!"; } else { st.innerText = "❌ " + (data.error || "פעולה נכשלה"); }
             } catch (e) { st.innerText = "❌ השרת לא מגיב כרגע"; }
         }
+        // --- כניסת מנהל: הקוד נבדק בשרת (ה-Worker), לא בדף ---
+        let ADMIN_PASS = null;
         async function openAdmin() {
             const pass = prompt("הכנס קוד מנהל:");
-            if (pass === "5502") {
-                document.getElementById('admin-panel').style.display = 'block';
-                try {
-                    const data = await (await fetch(`${WORKER}?action=admin_stats`)).json();
-                    document.getElementById('admin-online').innerText = data.onlineUsers; document.getElementById('admin-locs').innerText = data.locations.join(', ');
-                } catch(e) { document.getElementById('admin-online').innerText = "1"; document.getElementById('admin-locs').innerText = "מרכז"; }
-            } else if (pass !== null) alert("קוד שגוי");
+            if (pass === null) return;
+            try {
+                const r = await (await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type: 'admin_check', adminPass: pass }) })).json();
+                if (!r.success) { alert("קוד שגוי"); return; }
+            } catch (e) { alert("השרת לא מגיב"); return; }
+            ADMIN_PASS = pass;
+            document.getElementById('admin-panel').style.display = 'block';
+            try {
+                const data = await (await fetch(`${WORKER}?action=admin_stats`)).json();
+                document.getElementById('admin-online').innerText = data.onlineUsers; document.getElementById('admin-locs').innerText = data.locations.join(', ');
+            } catch(e) { document.getElementById('admin-online').innerText = "1"; document.getElementById('admin-locs').innerText = "מרכז"; }
         }
+
+        // --- טלגרם אישי -> דרייב ---
+        let tgChats = [], tgCurrentChat = null, tgNextOffset = 0, tgBusy = false;
+        const tgSt = (t) => { document.getElementById('tg-status').innerText = t; };
+        const tgSleep = (ms) => new Promise(r => setTimeout(r, ms));
+        function tgSize(b) { if (!b) return ''; const u = ['B','KB','MB','GB']; let i = 0; while (b >= 1024 && i < 3) { b /= 1024; i++; } return b.toFixed(i ? 1 : 0) + u[i]; }
+
+        async function tgCall(type, extra = {}) {
+            return (await fetch(WORKER, { method: 'POST', body: JSON.stringify({ type, adminPass: ADMIN_PASS, accessToken: access_token, ...extra }) })).json();
+        }
+        async function tgJob(mode, args = {}) {
+            if (tgBusy) throw new Error("פעולה אחרת עדיין רצה - המתן");
+            tgBusy = true;
+            try {
+                const r = await tgCall('tg_start', { mode, args });
+                if (!r.success) throw new Error(r.error || "ההפעלה נכשלה");
+                const t0 = Date.now();
+                while (true) {
+                    await tgSleep(4000);
+                    let s;
+                    try { s = await tgCall('tg_status', { job_id: r.job_id }); } catch (e) { continue; }
+                    const sec = Math.round((Date.now() - t0) / 1000);
+                    if (s.status === 'done') return s.data;
+                    if (s.status === 'error') throw new Error(s.data || "שגיאה");
+                    tgSt(s.status === 'queued' ? `⏳ ממתין לשרת של GitHub... (${sec} שנ')` : `⚙️ ${s.progress || 'עובד...'} (${sec} שנ')`);
+                    if (sec > 3 * 3600) throw new Error("נגמר הזמן");
+                }
+            } finally { tgBusy = false; }
+        }
+        async function tgRun(fn) { try { await fn(); } catch (e) { tgSt("❌ " + e.message); } }
+
+        function tgLoginStart() { tgRun(async () => {
+            const phone = document.getElementById('tg-phone').value.trim();
+            if (!phone) return tgSt("❌ הכנס מספר טלפון");
+            const d = await tgJob('login_start', { phone }); tgSt("✅ " + d.msg);
+        }); }
+        function tgLoginFinish() { tgRun(async () => {
+            const code = document.getElementById('tg-code').value.trim();
+            const password = document.getElementById('tg-2fa').value;
+            const d = await tgJob('login_finish', { code, password });
+            document.getElementById('tg-2fa').value = '';
+            tgSt("✅ " + d.msg);
+        }); }
+        function tgLogout() { if (!confirm("לנתק את חשבון הטלגרם מהאתר?")) return; tgRun(async () => { const d = await tgJob('logout'); tgSt("✅ " + d.msg); }); }
+
+        function tgShowResults(d) {
+            const res = d.results || [];
+            const ok = res.filter(x => x.ok).length;
+            const lines = res.map(x => (x.ok ? "✅ " : "❌ ") + x.name + (x.ok ? "" : " - " + x.error));
+            tgSt(`הסתיים: ${ok}/${res.length} הועברו לתיקייה Telegram_Files\n` + lines.join("\n"));
+        }
+        function tgTransferLinks() { tgRun(async () => {
+            if (!access_token) return tgSt("❌ צריך להתחבר לגוגל קודם");
+            const links = document.getElementById('tg-links').value.split('\n').map(s => s.trim()).filter(Boolean);
+            if (!links.length) return tgSt("❌ הדבק קישור");
+            tgShowResults(await tgJob('transfer', { links }));
+        }); }
+
+        function tgLoadChats() { tgRun(async () => {
+            const d = await tgJob('list_chats');
+            tgChats = d.chats || [];
+            document.getElementById('tg-chat-filter').style.display = 'block';
+            tgRenderChats(); tgSt(`✅ נטענו ${tgChats.length} צ'אטים`);
+        }); }
+        function tgRenderChats() {
+            const f = document.getElementById('tg-chat-filter').value.trim();
+            const box = document.getElementById('tg-chats'); box.innerHTML = '';
+            tgChats.filter(c => !f || c.name.includes(f)).forEach(c => {
+                const b = document.createElement('button');
+                b.style.cssText = 'display:block;width:100%;text-align:right;margin:3px 0;background:#fff;color:#333;border:1px solid #eee;';
+                b.textContent = `${c.name}  ·  ${c.type}` + (c.unread ? `  (${c.unread})` : '');
+                b.onclick = () => { tgCurrentChat = c; tgNextOffset = 0; document.getElementById('tg-files').innerHTML = ''; tgLoadFiles(false); };
+                box.appendChild(b);
+            });
+        }
+        function tgLoadFiles(more) { tgRun(async () => {
+            if (!tgCurrentChat) return;
+            if (more && !tgNextOffset) return tgSt("אין עוד קבצים");
+            document.getElementById('tg-files-box').style.display = 'block';
+            document.getElementById('tg-files-title').textContent = "📁 " + tgCurrentChat.name;
+            const d = await tgJob('list_files', { chat: tgCurrentChat.id, offset_id: more ? tgNextOffset : 0 });
+            tgNextOffset = d.next_offset || 0;
+            const box = document.getElementById('tg-files');
+            (d.files || []).forEach(f => {
+                const row = document.createElement('label');
+                row.style.cssText = 'display:flex;gap:8px;align-items:flex-start;padding:5px;border-bottom:1px solid #f3f4f6;cursor:pointer;';
+                const cb = document.createElement('input'); cb.type = 'checkbox'; cb.style.cssText = 'width:18px;height:18px;margin:2px 0;';
+                cb.dataset.chat = tgCurrentChat.id; cb.dataset.msg = f.id; cb.dataset.name = f.name;
+                const txt = document.createElement('div');
+                txt.textContent = `${f.name}  ·  ${tgSize(f.size)}  ·  ${f.date}` + (f.text ? `\n${f.text}` : '');
+                txt.style.whiteSpace = 'pre-wrap'; txt.style.fontSize = '0.85rem';
+                row.appendChild(cb); row.appendChild(txt); box.appendChild(row);
+            });
+            tgSt(`✅ נטענו ${(d.files || []).length} קבצים`);
+        }); }
+        function tgTransferSelected() { tgRun(async () => {
+            if (!access_token) return tgSt("❌ צריך להתחבר לגוגל קודם");
+            const items = [...document.querySelectorAll('#tg-files input:checked')].map(c => ({ chat: c.dataset.chat, msg_id: c.dataset.msg, name: c.dataset.name }));
+            if (!items.length) return tgSt("❌ לא סימנת קבצים");
+            tgShowResults(await tgJob('transfer', { items }));
+        }); }
         function openModal(time, text) { document.getElementById('modalTime').innerText = `🕒 עדכון משעה: ${time}`; document.getElementById('modalText').innerText = text; document.getElementById('msgModal').style.display = 'flex'; }
         function closeModal() { document.getElementById('msgModal').style.display = 'none'; }
         function escapeHTML(str) { return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
