@@ -443,8 +443,29 @@
         function tgShowResults(d) {
             const res = d.results || [];
             const ok = res.filter(x => x.ok).length;
-            const lines = res.map(x => (x.ok ? "✅ " : "❌ ") + x.name + (x.ok ? "" : " - " + x.error));
-            tgSt(`הסתיים: ${ok}/${res.length} הועברו לתיקייה Telegram_Files\n` + lines.join("\n"));
+            const box = document.getElementById('tg-status');
+            box.innerHTML = '';
+            const head = document.createElement('div');
+            head.textContent = `הסתיים: ${ok}/${res.length} הועברו לתיקייה Telegram_Files`;
+            head.style.fontWeight = 'bold';
+            box.appendChild(head);
+            res.forEach(x => {
+                const row = document.createElement('div');
+                row.style.margin = '6px 0';
+                row.textContent = (x.ok ? "✅ " : "❌ ") + x.name + (x.ok ? "  " : " - " + x.error);
+                if (x.ok && x.fileId) {
+                    const dl = document.createElement('a');
+                    dl.href = `https://drive.google.com/uc?export=download&id=${encodeURIComponent(x.fileId)}`;
+                    dl.target = '_blank'; dl.textContent = '⬇️ הורד למחשב';
+                    dl.style.cssText = 'color:var(--primary);font-weight:bold;margin-inline-start:8px;';
+                    const view = document.createElement('a');
+                    view.href = `https://drive.google.com/file/d/${encodeURIComponent(x.fileId)}/view`;
+                    view.target = '_blank'; view.textContent = '👁️ פתח';
+                    view.style.cssText = 'color:var(--primary);margin-inline-start:8px;';
+                    row.appendChild(dl); row.appendChild(view);
+                }
+                box.appendChild(row);
+            });
         }
         function tgTransferLinks() { tgRun(async () => {
             if (!access_token) return tgSt("❌ צריך להתחבר לגוגל קודם");
