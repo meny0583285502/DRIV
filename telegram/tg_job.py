@@ -266,7 +266,8 @@ async def do_list_files(args):
     entity = await resolve(client, args["chat"])
     offset = int(args.get("offset_id") or 0)
     files, last_id, scanned = [], None, 0
-    async for msg in client.iter_messages(entity, limit=400, offset_id=offset):
+    search = (args.get("search") or "").strip() or None
+    async for msg in client.iter_messages(entity, limit=400, offset_id=offset, search=search):
         scanned += 1
         last_id = msg.id
         if msg.file and not msg.sticker:

@@ -225,6 +225,10 @@
                 <div id="tg-chats" style="max-height:220px;overflow:auto;"></div>
                 <div id="tg-files-box" style="display:none;">
                     <div id="tg-files-title" style="font-weight:bold;margin:8px 0;"></div>
+                    <div style="display:flex;gap:8px;align-items:center;">
+                        <input type="text" id="tg-search" placeholder="חיפוש בצ'אט (שם קובץ או מילה מההודעה)..." onkeydown="if(event.key==='Enter')tgSearch()" style="margin:0;">
+                        <button onclick="tgSearch()" style="width:auto;margin:0;padding:12px 18px;">🔍</button>
+                    </div>
                     <div id="tg-files" style="max-height:300px;overflow:auto;"></div>
                     <button onclick="tgLoadFiles(true)">טען עוד</button>
                     <div style="display:flex;gap:8px;"><button onclick="tgTransferSelected('download')">⬇️ הורד מסומנים</button><button onclick="tgTransferSelected('drive')" style="background:var(--secondary);">☁️ שמור מסומנים בדרייב</button></div>
@@ -515,16 +519,22 @@
                 const b = document.createElement('button');
                 b.style.cssText = 'display:block;width:100%;text-align:right;margin:3px 0;background:#fff;color:#333;border:1px solid #eee;';
                 b.textContent = `${c.name}  ·  ${c.type}` + (c.unread ? `  (${c.unread})` : '');
-                b.onclick = () => { tgCurrentChat = c; tgNextOffset = 0; document.getElementById('tg-files').innerHTML = ''; tgLoadFiles(false); };
+                b.onclick = () => { tgCurrentChat = c; tgNextOffset = 0; document.getElementById('tg-search').value = ''; document.getElementById('tg-files').innerHTML = ''; tgLoadFiles(false); };
                 box.appendChild(b);
             });
+        }
+        function tgSearch() {
+            if (!tgCurrentChat) return;
+            tgNextOffset = 0; document.getElementById('tg-files').innerHTML = '';
+            tgLoadFiles(false);
         }
         function tgLoadFiles(more) { tgRun(async () => {
             if (!tgCurrentChat) return;
             if (more && !tgNextOffset) return tgSt("אין עוד קבצים");
             document.getElementById('tg-files-box').style.display = 'block';
             document.getElementById('tg-files-title').textContent = "📁 " + tgCurrentChat.name;
-            const d = await tgJob('list_files', { chat: tgCurrentChat.id, offset_id: more ? tgNextOffset : 0 });
+            const search = document.getElementById('tg-search').value.trim();
+            const d = await tgJob('list_files', { chat: tgCurrentChat.id, offset_id: more ? tgNextOffset : 0, search });
             tgNextOffset = d.next_offset || 0;
             const box = document.getElementById('tg-files');
             (d.files || []).forEach(f => {
@@ -537,7 +547,8 @@
                 txt.style.whiteSpace = 'pre-wrap'; txt.style.fontSize = '0.85rem';
                 row.appendChild(cb); row.appendChild(txt); box.appendChild(row);
             });
-            tgSt(`✅ נטענו ${(d.files || []).length} קבצים`);
+            const n = (d.files || []).length;
+            tgSt(n ? `✅ נטענו ${n} קבצים` + (search ? ` לחיפוש "${search}"` : '') : (search ? `לא נמצאו קבצים לחיפוש "${search}"` : 'לא נמצאו קבצים'));
         }); }
         function tgTransferSelected(mode) { tgRun(async () => {
             const items = [...document.querySelectorAll('#tg-files input:checked')].map(c => ({ chat: c.dataset.chat, msg_id: c.dataset.msg, name: c.dataset.name }));
